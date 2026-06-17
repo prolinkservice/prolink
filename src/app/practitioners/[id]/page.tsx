@@ -77,23 +77,23 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <span className="font-semibold">老師詳細資料</span>
+        <span className="font-semibold text-lg">老師詳細資料</span>
       </div>
 
       {/* 老師基本資訊 */}
       <div className="bg-gradient-to-br from-primary to-[#FF8E53] px-4 py-8 text-white">
         <div className="flex gap-4 items-start">
-          <Avatar className="w-20 h-20 border-2 border-white/50">
+          <Avatar className="w-24 h-24 border-2 border-white/50">
             <AvatarImage src={avatar} />
-            <AvatarFallback className="bg-white/20 text-white text-2xl font-bold">
+            <AvatarFallback className="bg-white/20 text-white text-3xl font-bold">
               {name[0]}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h1 className="text-xl font-bold">{name}</h1>
+            <h1 className="text-2xl font-bold">{name}</h1>
             <div className="flex gap-1 mt-2">
               {serviceMode.map((mode) => (
-                <Badge key={mode} className="bg-white/20 text-white border-white/30 text-xs">
+                <Badge key={mode} className="bg-white/20 text-white border-white/30 text-sm px-3 py-1">
                   {mode}
                 </Badge>
               ))}
@@ -102,72 +102,72 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <div className="px-4 py-4 flex flex-col gap-4">
+      <div className="px-4 py-5 flex flex-col gap-5">
         {/* 簡介 */}
         <Card>
-          <CardContent className="p-3">
-            <p className="text-sm text-muted-foreground leading-relaxed">{practitioner.bio ?? '尚未填寫簡介'}</p>
+          <CardContent className="p-4">
+            <p className="text-base text-muted-foreground leading-relaxed">{practitioner.bio ?? '尚未填寫簡介'}</p>
             {practitioner.shop_address && (
-              <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                <MapPin className="w-3 h-3" />
+              <div className="flex items-center gap-1.5 mt-3 text-sm text-muted-foreground">
+                <MapPin className="w-4 h-4" />
                 <span>{practitioner.shop_address}</span>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* 服務項目 — 雙欄 */}
+        {/* 服務項目 */}
         <div>
-          <h2 className="font-semibold mb-2">服務項目</h2>
-          <div className="grid grid-cols-2 gap-2">
+          <h2 className="font-bold text-lg mb-3">服務項目</h2>
+          <div className="grid grid-cols-2 gap-3">
             {services.map((service) => (
               <Card key={service.id}>
-                <CardContent className="p-3">
-                  <p className="font-medium text-sm leading-snug">{service.name}</p>
-                  <div className="flex items-center gap-1 mt-1 text-muted-foreground">
-                    <Clock className="w-3 h-3" />
-                    <span className="text-xs">{service.duration_minutes} 分</span>
+                <CardContent className="p-4">
+                  <p className="font-semibold text-base leading-snug">{service.name}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5 text-muted-foreground">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm">{service.duration_minutes} 分鐘</span>
                   </div>
-                  <span className="text-primary font-bold text-sm mt-1 block">NT${service.price}</span>
+                  <span className="text-primary font-bold text-lg mt-1.5 block">NT${service.price}</span>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
 
-        {/* 可預約時段 — 日期分行 */}
+        {/* 可預約時段 */}
         <div>
-          <h2 className="font-semibold mb-3">可預約時段</h2>
+          <h2 className="font-bold text-lg mb-3">可預約時段</h2>
           {Object.keys(groupedSlots).length === 0 ? (
-            <p className="text-muted-foreground text-sm">目前沒有可預約時段</p>
+            <p className="text-muted-foreground text-base">目前沒有可預約時段</p>
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               {Object.entries(groupedSlots).map(([date, dateSlots]) => {
                 const weekdays = ['日', '一', '二', '三', '四', '五', '六']
                 const wd = weekdays[new Date(date + 'T00:00:00+08:00').getDay()]
                 const [, m, day] = date.split('-')
                 return (
                   <div key={date}>
-                    <p className="text-base font-bold mb-2">{m}/{day}（{wd}）</p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <p className="text-base font-bold mb-2.5">{m}/{day}（{wd}）</p>
+                    <div className="grid grid-cols-3 gap-2.5">
                       {dateSlots.map((slot) => (
                         slot.is_booked ? (
-                          <div key={slot.id} className="rounded-xl border border-border bg-muted/40 px-3 py-3.5 text-center opacity-40 cursor-not-allowed">
+                          <div key={slot.id} className="rounded-xl border border-border bg-muted/40 px-3 py-4 text-center opacity-40 cursor-not-allowed">
                             <p className="text-base font-medium text-muted-foreground">{toTaipeiTime(slot.start_time)}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">已預約</p>
+                            <p className="text-sm text-muted-foreground mt-1">已預約</p>
                           </div>
                         ) : user ? (
                           <Link key={slot.id} href={`/booking?slotId=${slot.id}&practitionerId=${practitioner.id}`}>
-                            <div className="rounded-xl border-2 border-primary/30 bg-primary/5 px-3 py-3.5 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
+                            <div className="rounded-xl border-2 border-primary/30 bg-primary/5 px-3 py-4 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
                               <p className="text-base font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
-                              <p className="text-xs text-primary/70 group-hover:text-white/80 mt-0.5">點擊預約</p>
+                              <p className="text-sm text-primary/70 group-hover:text-white/80 mt-1">點擊預約</p>
                             </div>
                           </Link>
                         ) : (
                           <form key={slot.id} action={signInWithGoogle}>
-                            <button type="submit" className="w-full rounded-xl border-2 border-primary/30 bg-primary/5 px-3 py-3.5 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
+                            <button type="submit" className="w-full rounded-xl border-2 border-primary/30 bg-primary/5 px-3 py-4 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
                               <p className="text-base font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
-                              <p className="text-xs text-primary/70 group-hover:text-white/80 mt-0.5">登入預約</p>
+                              <p className="text-sm text-primary/70 group-hover:text-white/80 mt-1">登入預約</p>
                             </button>
                           </form>
                         )
@@ -182,9 +182,9 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       </div>
 
       {/* 底部提示 */}
-      <div className="sticky bottom-0 bg-white border-t border-border px-4 py-3">
+      <div className="sticky bottom-0 bg-white border-t border-border px-4 py-4">
         {user ? (
-          <p className="text-center text-sm text-muted-foreground">請點選上方時段開始預約</p>
+          <p className="text-center text-base text-muted-foreground">請點選上方時段開始預約</p>
         ) : (
           <form action={signInWithGoogle}>
             <Button className="w-full" size="lg" type="submit">登入以預約</Button>
