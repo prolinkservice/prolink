@@ -1,9 +1,11 @@
-import { MapPin, Search, SlidersHorizontal } from 'lucide-react'
+import { MapPin, Search, SlidersHorizontal, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { signInWithGoogle, signOut } from '@/app/auth/actions'
 
 const MOCK_PRACTITIONERS = [
   {
@@ -41,7 +43,10 @@ const MOCK_PRACTITIONERS = [
   },
 ]
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
@@ -53,8 +58,25 @@ export default function Home() {
           <span className="font-bold text-xl text-foreground">ProLink</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">登入</Button>
-          <Button size="sm">立即預約</Button>
+          {user ? (
+            <>
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={user.user_metadata?.avatar_url} />
+                <AvatarFallback className="bg-accent text-xs">
+                  {user.user_metadata?.full_name?.[0] ?? user.email?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <form action={signOut}>
+                <Button variant="ghost" size="sm" type="submit">
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </form>
+            </>
+          ) : (
+            <form action={signInWithGoogle}>
+              <Button size="sm" type="submit">Google 登入</Button>
+            </form>
+          )}
         </div>
       </nav>
 
