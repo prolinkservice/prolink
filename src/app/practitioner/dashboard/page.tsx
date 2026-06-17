@@ -62,7 +62,7 @@ export default async function PractitionerDashboardPage() {
 
       <div className="px-4 py-6 max-w-lg mx-auto">
         <p className="text-muted-foreground text-sm mb-1">歡迎回來</p>
-        <h1 className="text-2xl font-bold text-foreground mb-6">{profile?.display_name ?? '師傅'}</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-6">{profile?.display_name ?? '老師'}</h1>
 
         {/* 統計卡片 */}
         <div className="grid grid-cols-2 gap-3 mb-6">

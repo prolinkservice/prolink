@@ -45,7 +45,7 @@ export default async function Home() {
     const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
     return {
       id: p.id,
-      name: prof?.display_name ?? '師傅',
+      name: prof?.display_name ?? '老師',
       avatar: prof?.avatar_url ?? '',
       serviceMode: SERVICE_MODE_LABEL[p.service_mode] ?? [],
       price: minPrice,
@@ -116,8 +116,8 @@ export default async function Home() {
       </nav>
 
       {/* Hero + Search */}
-      <div className="bg-gradient-to-br from-primary to-[#FF8E53] px-4 py-8 text-white">
-        <h1 className="text-xl font-bold mb-0.5">找到附近的專業師傅</h1>
+      <div className="bg-gradient-to-br from-primary to-[#6FAE82] px-4 py-8 text-white">
+        <h1 className="text-xl font-bold mb-0.5">找到附近的專業老師</h1>
         <p className="text-white/80 text-sm mb-4">按摩・舒壓・到府服務，隨時預約</p>
         <div className="flex gap-2">
           <div className="flex-1 relative">
@@ -145,14 +145,14 @@ export default async function Home() {
         ) : (
           <div className="h-full flex items-center justify-center text-muted-foreground text-xs gap-2">
             <MapPin className="w-4 h-4" />
-            尚無師傅位置資料
+            尚無老師位置資料
           </div>
         )}
       </div>
 
-      {/* 精選師傅橫捲 */}
+      {/* 精選老師橫捲 */}
       <div className="px-4 pt-4">
-        <h2 className="font-semibold text-sm mb-2">精選師傅</h2>
+        <h2 className="font-semibold text-sm mb-2">精選老師</h2>
         <div className="flex gap-3 overflow-x-auto pb-2">
           {featured.map((p) => (
             <Link key={p.id} href={`/practitioners/${p.id}`} className="shrink-0">
@@ -171,11 +171,11 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* 附近所有師傅 */}
+      {/* 附近所有老師 */}
       <div className="px-4 pt-3 pb-6">
-        <h2 className="font-semibold text-sm mb-2">附近師傅</h2>
+        <h2 className="font-semibold text-sm mb-2">附近老師</h2>
         {list.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-8">目前尚無師傅上架</p>
+          <p className="text-muted-foreground text-sm text-center py-8">目前尚無老師上架</p>
         ) : (
           <div className="grid grid-cols-4 gap-2">
             {list.map((p) => (

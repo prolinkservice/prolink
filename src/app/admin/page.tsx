@@ -102,7 +102,7 @@ export default async function AdminPage() {
                 return (
                   <div key={p.id} className="bg-white rounded-2xl border border-border overflow-hidden">
                     {/* 頂部色條 */}
-                    <div className="h-1 bg-gradient-to-r from-primary to-[#FF8E53]" />
+                    <div className="h-1 bg-gradient-to-r from-primary to-[#6FAE82]" />
 
                     <div className="p-6">
                       {/* 標頭 */}

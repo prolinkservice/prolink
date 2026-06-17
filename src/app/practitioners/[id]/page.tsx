@@ -81,7 +81,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       </div>
 
       {/* 老師基本資訊 */}
-      <div className="bg-gradient-to-br from-primary to-[#FF8E53] px-4 py-8 text-white">
+      <div className="bg-gradient-to-br from-primary to-[#6FAE82] px-4 py-8 text-white">
         <div className="flex gap-4 items-start">
           <Avatar className="w-24 h-24 border-2 border-white/50">
             <AvatarImage src={avatar} />

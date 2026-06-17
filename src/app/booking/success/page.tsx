@@ -60,7 +60,7 @@ export default async function BookingSuccessPage({
           <CheckCircle2 className="w-9 h-9 text-green-500" />
         </div>
         <h1 className="text-xl font-bold">預約成功！</h1>
-        <p className="text-muted-foreground text-sm text-center">我們已收到你的預約，師傅確認後將通知你</p>
+        <p className="text-muted-foreground text-sm text-center">我們已收到你的預約，老師確認後將通知你</p>
       </div>
 
       {/* 預約摘要 */}
@@ -68,8 +68,8 @@ export default async function BookingSuccessPage({
         <Card className="w-full max-w-sm mb-6">
           <CardContent className="p-4 flex flex-col gap-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">師傅</span>
-              <span className="font-medium">{profile?.display_name ?? '師傅'}</span>
+              <span className="text-muted-foreground">老師</span>
+              <span className="font-medium">{profile?.display_name ?? '老師'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">服務</span>

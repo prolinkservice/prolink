@@ -111,7 +111,7 @@ export default function MyBookingsPage() {
           <div className="text-center py-16">
             <p className="text-muted-foreground text-sm mb-4">尚無預約紀錄</p>
             <Button asChild size="sm">
-              <Link href="/">去找師傅</Link>
+              <Link href="/">去找老師</Link>
             </Button>
           </div>
         ) : (
@@ -138,7 +138,7 @@ export default function MyBookingsPage() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <p className="font-semibold text-sm">{prof?.display_name ?? '師傅'}</p>
+                        <p className="font-semibold text-sm">{prof?.display_name ?? '老師'}</p>
                         <p className="text-xs text-muted-foreground">{startStr}{endStr ? ` – ${endStr}` : ''}</p>
                       </div>
                       <Badge variant={STATUS_VARIANT[b.status] ?? 'outline'}>

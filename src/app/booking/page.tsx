@@ -65,7 +65,7 @@ export default async function BookingPage({
 
   const profileRaw = practitioner.profiles as unknown
   const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
-  const practitionerName = profile?.display_name ?? '師傅'
+  const practitionerName = profile?.display_name ?? '老師'
   const services = practitioner.services as { id: string; name: string; duration_minutes: number; price: number }[]
   const modes = practitioner.service_mode === 'both' ? ['at_shop', 'on_site'] : [practitioner.service_mode]
   const hasOnSite = practitioner.service_mode === 'on_site' || practitioner.service_mode === 'both'
@@ -89,7 +89,7 @@ export default async function BookingPage({
         <div className="px-4 py-5 flex flex-col gap-5 pb-32 max-w-lg mx-auto">
 
           {/* 預約摘要卡 */}
-          <div className="bg-gradient-to-br from-primary to-[#FF8E53] rounded-2xl p-5 text-white shadow-md">
+          <div className="bg-gradient-to-br from-primary to-[#6FAE82] rounded-2xl p-5 text-white shadow-md">
             <p className="text-white/70 text-xs font-medium uppercase tracking-widest mb-3">預約資訊</p>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">
@@ -97,7 +97,7 @@ export default async function BookingPage({
               </div>
               <div>
                 <p className="font-bold text-lg leading-tight">{practitionerName}</p>
-                <p className="text-white/70 text-xs">專業師傅</p>
+                <p className="text-white/70 text-xs">專業老師</p>
               </div>
             </div>
             <div className="bg-white/15 rounded-xl px-4 py-3 flex items-center gap-3">
