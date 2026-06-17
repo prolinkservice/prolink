@@ -47,8 +47,20 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
     .filter(s => new Date(s.start_time) > new Date())
     .sort((a, b) => a.start_time.localeCompare(b.start_time))
 
+  const toTaipei = (iso: string) => new Date(new Date(iso).getTime() + 8 * 60 * 60 * 1000)
+
+  const toTaipeiDate = (iso: string) => {
+    const d = toTaipei(iso)
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
+  }
+
+  const toTaipeiTime = (iso: string) => {
+    const d = toTaipei(iso)
+    return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
+  }
+
   const groupedSlots = slots.reduce((acc, slot) => {
-    const date = slot.start_time.slice(0, 10)
+    const date = toTaipeiDate(slot.start_time)
     if (!acc[date]) acc[date] = []
     acc[date].push(slot)
     return acc
@@ -139,7 +151,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
                       variant={slot.is_booked ? 'secondary' : 'outline'}
                       className={`text-xs px-2.5 py-1 ${!slot.is_booked ? 'cursor-pointer hover:bg-primary hover:text-white hover:border-primary transition-colors' : 'opacity-40 cursor-not-allowed'}`}
                     >
-                      {new Date(slot.start_time).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                      {toTaipeiTime(slot.start_time)}
                     </Badge>
                   ))}
                 </div>
