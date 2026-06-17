@@ -152,18 +152,18 @@ export default async function Home() {
 
       {/* 精選老師橫捲 */}
       <div className="px-4 pt-4">
-        <h2 className="font-semibold text-sm mb-2">精選老師</h2>
+        <h2 className="font-semibold text-base mb-3">精選老師</h2>
         <div className="flex gap-3 overflow-x-auto pb-2">
           {featured.map((p) => (
             <Link key={p.id} href={`/practitioners/${p.id}`} className="shrink-0">
-              <Card className="w-24 cursor-pointer hover:shadow-md transition-shadow">
-                <CardContent className="p-2.5 flex flex-col items-center text-center">
-                  <Avatar className="w-10 h-10 mb-1.5">
+              <Card className="w-36 cursor-pointer hover:shadow-md active:scale-95 transition-all duration-150">
+                <CardContent className="p-3 flex flex-col items-center text-center">
+                  <Avatar className="w-16 h-16 mb-2">
                     <AvatarImage src={p.avatar} />
-                    <AvatarFallback className="bg-accent text-foreground text-sm font-semibold">{p.name[0]}</AvatarFallback>
+                    <AvatarFallback className="bg-accent text-foreground text-xl font-semibold">{p.name[0]}</AvatarFallback>
                   </Avatar>
-                  <span className="text-xs font-semibold truncate w-full">{p.name}</span>
-                  <span className="text-primary text-xs font-bold mt-0.5">NT${p.price}</span>
+                  <span className="text-sm font-semibold truncate w-full">{p.name}</span>
+                  <span className="text-primary text-sm font-bold mt-1">NT${p.price}</span>
                 </CardContent>
               </Card>
             </Link>
