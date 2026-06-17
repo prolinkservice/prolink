@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { signInWithGoogle, signOut } from '@/app/auth/actions'
+import GoogleMap from '@/components/GoogleMap'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -18,12 +19,18 @@ export default async function Home() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  const { data: profile } = user
+    ? await supabase.from('profiles').select('role').eq('id', user.id).single()
+    : { data: null }
+
   const { data: practitioners } = await supabase
     .from('practitioners')
     .select(`
       id,
       service_mode,
       shop_address,
+      latitude,
+      longitude,
       status,
       profiles ( display_name, avatar_url ),
       services ( price )
@@ -35,17 +42,25 @@ export default async function Home() {
     const prices = (p.services as { price: number }[]).map(s => s.price)
     const minPrice = prices.length ? Math.min(...prices) : 0
     const profileRaw = p.profiles as unknown
-    const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
+    const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
     return {
       id: p.id,
-      name: profile?.display_name ?? '師傅',
-      avatar: profile?.avatar_url ?? '',
+      name: prof?.display_name ?? '師傅',
+      avatar: prof?.avatar_url ?? '',
       serviceMode: SERVICE_MODE_LABEL[p.service_mode] ?? [],
       price: minPrice,
+      lat: p.latitude as number | null,
+      lng: p.longitude as number | null,
     }
   })
 
   const featured = list.slice(0, 5)
+  const mapPractitioners = list.filter(p => p.lat && p.lng).map(p => ({
+    id: p.id,
+    name: p.name,
+    lat: p.lat!,
+    lng: p.lng!,
+  }))
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,6 +75,16 @@ export default async function Home() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
+              {profile?.role === 'practitioner' && (
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/practitioner/dashboard">職人後台</Link>
+                </Button>
+              )}
+              {profile?.role === 'admin' && (
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/admin">管理後台</Link>
+                </Button>
+              )}
               <Avatar className="w-8 h-8">
                 <AvatarImage src={user.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-accent text-xs">
@@ -73,9 +98,14 @@ export default async function Home() {
               </form>
             </>
           ) : (
-            <form action={signInWithGoogle}>
-              <Button size="sm" type="submit">Google 登入</Button>
-            </form>
+            <div className="flex items-center gap-2">
+              <Button asChild size="sm" variant="outline">
+                <Link href="/practitioner/register">職人入駐</Link>
+              </Button>
+              <form action={signInWithGoogle}>
+                <Button size="sm" type="submit">Google 登入</Button>
+              </form>
+            </div>
           )}
         </div>
       </nav>
@@ -103,10 +133,16 @@ export default async function Home() {
         ))}
       </div>
 
-      {/* 地圖佔位 */}
-      <div className="mx-4 rounded-xl border border-border bg-muted h-36 flex items-center justify-center text-muted-foreground text-xs gap-2">
-        <MapPin className="w-4 h-4" />
-        地圖載入中（Google Maps API Key 待申請）
+      {/* Google Map */}
+      <div className="mx-4 rounded-xl border border-border overflow-hidden h-48">
+        {mapPractitioners.length > 0 ? (
+          <GoogleMap practitioners={mapPractitioners} />
+        ) : (
+          <div className="h-full flex items-center justify-center text-muted-foreground text-xs gap-2">
+            <MapPin className="w-4 h-4" />
+            尚無師傅位置資料
+          </div>
+        )}
       </div>
 
       {/* 精選師傅橫捲 */}
@@ -130,7 +166,7 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* 附近所有師傅 — 四欄 */}
+      {/* 附近所有師傅 */}
       <div className="px-4 pt-3 pb-6">
         <h2 className="font-semibold text-sm mb-2">附近師傅</h2>
         {list.length === 0 ? (
