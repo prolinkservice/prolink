@@ -146,13 +146,25 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
                 <div key={date} className="flex items-center gap-2 flex-wrap">
                   <span className="text-xs font-medium text-muted-foreground w-12 shrink-0">{date.slice(5)}</span>
                   {dateSlots.map((slot) => (
-                    <Badge
-                      key={slot.id}
-                      variant={slot.is_booked ? 'secondary' : 'outline'}
-                      className={`text-xs px-2.5 py-1 ${!slot.is_booked ? 'cursor-pointer hover:bg-primary hover:text-white hover:border-primary transition-colors' : 'opacity-40 cursor-not-allowed'}`}
-                    >
-                      {toTaipeiTime(slot.start_time)}
-                    </Badge>
+                    slot.is_booked ? (
+                      <Badge key={slot.id} variant="secondary" className="text-xs px-2.5 py-1 opacity-40 cursor-not-allowed">
+                        {toTaipeiTime(slot.start_time)}
+                      </Badge>
+                    ) : user ? (
+                      <Link key={slot.id} href={`/booking?slotId=${slot.id}&practitionerId=${practitioner.id}`}>
+                        <Badge variant="outline" className="text-xs px-2.5 py-1 cursor-pointer hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                          {toTaipeiTime(slot.start_time)}
+                        </Badge>
+                      </Link>
+                    ) : (
+                      <form key={slot.id} action={signInWithGoogle}>
+                        <button type="submit">
+                          <Badge variant="outline" className="text-xs px-2.5 py-1 cursor-pointer hover:bg-primary hover:text-white hover:border-primary transition-colors">
+                            {toTaipeiTime(slot.start_time)}
+                          </Badge>
+                        </button>
+                      </form>
+                    )
                   ))}
                 </div>
               ))}
@@ -161,17 +173,13 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      {/* 底部預約按鈕 */}
-      <div className="sticky bottom-0 bg-white border-t border-border px-4 py-4">
+      {/* 底部提示 */}
+      <div className="sticky bottom-0 bg-white border-t border-border px-4 py-3">
         {user ? (
-          <Button className="w-full" size="lg">
-            立即預約
-          </Button>
+          <p className="text-center text-sm text-muted-foreground">請點選上方時段開始預約</p>
         ) : (
           <form action={signInWithGoogle}>
-            <Button className="w-full" size="lg" type="submit">
-              登入以預約
-            </Button>
+            <Button className="w-full" size="lg" type="submit">登入以預約</Button>
           </form>
         )}
       </div>
