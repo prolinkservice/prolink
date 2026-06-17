@@ -39,7 +39,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
 
   const profileRaw = practitioner.profiles as unknown
   const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
-  const name = profile?.display_name ?? '師傅'
+  const name = profile?.display_name ?? '老師'
   const avatar = profile?.avatar_url ?? ''
   const serviceMode = SERVICE_MODE_LABEL[practitioner.service_mode] ?? []
 
@@ -77,10 +77,10 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
             <ChevronLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <span className="font-semibold">師傅詳細資料</span>
+        <span className="font-semibold">老師詳細資料</span>
       </div>
 
-      {/* 師傅基本資訊 */}
+      {/* 老師基本資訊 */}
       <div className="bg-gradient-to-br from-primary to-[#FF8E53] px-4 py-8 text-white">
         <div className="flex gap-4 items-start">
           <Avatar className="w-20 h-20 border-2 border-white/50">
@@ -137,37 +137,45 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
 
         {/* 可預約時段 — 日期分行 */}
         <div>
-          <h2 className="font-semibold mb-2">可預約時段</h2>
+          <h2 className="font-semibold mb-3">可預約時段</h2>
           {Object.keys(groupedSlots).length === 0 ? (
             <p className="text-muted-foreground text-sm">目前沒有可預約時段</p>
           ) : (
-            <div className="flex flex-col gap-2">
-              {Object.entries(groupedSlots).map(([date, dateSlots]) => (
-                <div key={date} className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-medium text-muted-foreground w-12 shrink-0">{date.slice(5)}</span>
-                  {dateSlots.map((slot) => (
-                    slot.is_booked ? (
-                      <Badge key={slot.id} variant="secondary" className="text-xs px-2.5 py-1 opacity-40 cursor-not-allowed">
-                        {toTaipeiTime(slot.start_time)}
-                      </Badge>
-                    ) : user ? (
-                      <Link key={slot.id} href={`/booking?slotId=${slot.id}&practitionerId=${practitioner.id}`}>
-                        <Badge variant="outline" className="text-xs px-2.5 py-1 cursor-pointer hover:bg-primary hover:text-white hover:border-primary transition-colors">
-                          {toTaipeiTime(slot.start_time)}
-                        </Badge>
-                      </Link>
-                    ) : (
-                      <form key={slot.id} action={signInWithGoogle}>
-                        <button type="submit">
-                          <Badge variant="outline" className="text-xs px-2.5 py-1 cursor-pointer hover:bg-primary hover:text-white hover:border-primary transition-colors">
-                            {toTaipeiTime(slot.start_time)}
-                          </Badge>
-                        </button>
-                      </form>
-                    )
-                  ))}
-                </div>
-              ))}
+            <div className="flex flex-col gap-4">
+              {Object.entries(groupedSlots).map(([date, dateSlots]) => {
+                const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+                const wd = weekdays[new Date(date + 'T00:00:00+08:00').getDay()]
+                const [, m, day] = date.split('-')
+                return (
+                  <div key={date}>
+                    <p className="text-sm font-semibold mb-2">{m}/{day}（{wd}）</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {dateSlots.map((slot) => (
+                        slot.is_booked ? (
+                          <div key={slot.id} className="rounded-xl border border-border bg-muted/40 px-3 py-3 text-center opacity-40 cursor-not-allowed">
+                            <p className="text-sm font-medium text-muted-foreground">{toTaipeiTime(slot.start_time)}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">已預約</p>
+                          </div>
+                        ) : user ? (
+                          <Link key={slot.id} href={`/booking?slotId=${slot.id}&practitionerId=${practitioner.id}`}>
+                            <div className="rounded-xl border-2 border-primary/30 bg-primary/5 px-3 py-3 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
+                              <p className="text-sm font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
+                              <p className="text-xs text-primary/70 group-hover:text-white/80 mt-0.5">點擊預約</p>
+                            </div>
+                          </Link>
+                        ) : (
+                          <form key={slot.id} action={signInWithGoogle}>
+                            <button type="submit" className="w-full rounded-xl border-2 border-primary/30 bg-primary/5 px-3 py-3 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
+                              <p className="text-sm font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
+                              <p className="text-xs text-primary/70 group-hover:text-white/80 mt-0.5">登入預約</p>
+                            </button>
+                          </form>
+                        )
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
