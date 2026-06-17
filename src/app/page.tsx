@@ -117,8 +117,8 @@ export default async function Home() {
 
       {/* Hero + Search */}
       <div className="bg-gradient-to-br from-primary to-[#6FAE82] px-4 py-8 text-white">
-        <h1 className="text-xl font-bold mb-0.5">找到附近的專業老師</h1>
-        <p className="text-white/80 text-sm mb-4">按摩・舒壓・到府服務，隨時預約</p>
+        <h1 className="text-xl font-bold mb-0.5">找到你的專屬健康老師</h1>
+        <p className="text-white/80 text-sm mb-4">按摩・瑜伽・個人教練，一鍵預約到府或到店</p>
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -131,7 +131,7 @@ export default async function Home() {
 
       {/* 篩選標籤 */}
       <div className="px-4 py-2.5 flex gap-2 overflow-x-auto">
-        {['全部', '到店', '到府', '評分最高', '距離最近', '價格最低'].map((tag) => (
+        {['全部', '按摩', '瑜伽', '個人教練', '到店', '到府'].map((tag) => (
           <Badge key={tag} variant={tag === '全部' ? 'default' : 'outline'} className="cursor-pointer whitespace-nowrap text-xs">
             {tag}
           </Badge>
