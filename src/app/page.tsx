@@ -75,6 +75,11 @@ export default async function Home() {
         <div className="flex items-center gap-2">
           {user ? (
             <>
+              {profile?.role === 'customer' && (
+                <Button asChild size="sm" variant="outline">
+                  <Link href="/my-bookings">我的預約</Link>
+                </Button>
+              )}
               {profile?.role === 'practitioner' && (
                 <Button asChild size="sm" variant="outline">
                   <Link href="/practitioner/dashboard">職人後台</Link>
