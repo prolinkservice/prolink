@@ -5,7 +5,11 @@ import { Badge } from '@/components/ui/badge'
 import { approvePractitioner, rejectPractitioner } from './actions'
 import { signOut } from '@/app/auth/actions'
 import { Button } from '@/components/ui/button'
-import { LogOut } from 'lucide-react'
+import { LogOut, Clock, CheckCircle2, MapPin, CreditCard, FileText, User, Store } from 'lucide-react'
+
+const SERVICE_MODE_LABEL: Record<string, string> = {
+  at_shop: '到店', on_site: '到府', both: '到店 + 到府'
+}
 
 export default async function AdminPage() {
   const supabase = await createServerSupabaseClient()
@@ -17,10 +21,7 @@ export default async function AdminPage() {
 
   const { data: pending } = await supabase
     .from('practitioners')
-    .select(`
-      id, bio, service_mode, shop_address, license_url, bank_name, bank_account, created_at,
-      profiles ( display_name )
-    `)
+    .select(`id, bio, service_mode, shop_address, license_url, bank_name, bank_account, created_at, profiles ( display_name )`)
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
 
@@ -31,71 +32,167 @@ export default async function AdminPage() {
     .order('created_at', { ascending: false })
     .limit(10)
 
-  const SERVICE_MODE_LABEL: Record<string, string> = {
-    at_shop: '到店', on_site: '到府', both: '兩者皆提供'
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
-        <span className="font-bold text-lg">ProLink 管理後台</span>
-        <form action={signOut}>
-          <Button variant="ghost" size="sm" type="submit"><LogOut className="w-4 h-4" /></Button>
-        </form>
+    <div className="min-h-screen bg-[#F8F7F5]">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+              <span className="text-white font-bold text-sm">P</span>
+            </div>
+            <div>
+              <span className="font-bold text-base text-foreground">ProLink</span>
+              <span className="ml-2 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">管理後台</span>
+            </div>
+          </div>
+          <form action={signOut}>
+            <Button variant="ghost" size="sm" type="submit" className="text-muted-foreground">
+              <LogOut className="w-4 h-4 mr-1.5" />登出
+            </Button>
+          </form>
+        </div>
       </nav>
 
-      <div className="px-4 py-6 max-w-2xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto px-6 py-8 space-y-10">
+
+        {/* 統計卡片 */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center">
+              <Clock className="w-6 h-6 text-amber-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{pending?.length ?? 0}</p>
+              <p className="text-sm text-muted-foreground">待審核申請</p>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-green-500" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-foreground">{approved?.length ?? 0}</p>
+              <p className="text-sm text-muted-foreground">已上架職人</p>
+            </div>
+          </div>
+        </div>
+
         {/* 待審核 */}
         <section>
-          <h2 className="font-bold text-lg mb-3">
-            待審核職人
-            <Badge className="ml-2" variant="default">{pending?.length ?? 0}</Badge>
-          </h2>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="font-bold text-xl text-foreground">待審核申請</h2>
+            {(pending?.length ?? 0) > 0 && (
+              <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                {pending!.length}
+              </span>
+            )}
+          </div>
 
           {!pending || pending.length === 0 ? (
-            <p className="text-muted-foreground text-sm">目前沒有待審核的申請</p>
+            <div className="bg-white rounded-2xl border border-border p-10 text-center">
+              <CheckCircle2 className="w-10 h-10 text-green-400 mx-auto mb-3" />
+              <p className="text-muted-foreground text-sm">目前沒有待審核的申請</p>
+            </div>
           ) : (
             <div className="space-y-4">
               {pending.map(p => {
                 const profileRaw = p.profiles as unknown
                 const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
                 return (
-                  <Card key={p.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className="font-semibold">{prof?.display_name ?? '未知'}</p>
-                          <p className="text-xs text-muted-foreground">
-                            申請時間：{new Date(p.created_at).toLocaleString('zh-TW')}
-                          </p>
+                  <div key={p.id} className="bg-white rounded-2xl border border-border overflow-hidden">
+                    {/* 頂部色條 */}
+                    <div className="h-1 bg-gradient-to-r from-primary to-[#FF8E53]" />
+
+                    <div className="p-6">
+                      {/* 標頭 */}
+                      <div className="flex items-start justify-between mb-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-full bg-accent flex items-center justify-center">
+                            <User className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-base text-foreground">{prof?.display_name ?? '未知'}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              申請時間：{new Date(p.created_at).toLocaleString('zh-TW', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
                         </div>
-                        <Badge variant="outline">待審核</Badge>
+                        <Badge variant="outline" className="border-amber-300 text-amber-600 bg-amber-50">
+                          待審核
+                        </Badge>
                       </div>
 
-                      <div className="text-sm space-y-1 mb-4 text-muted-foreground">
-                        <p><span className="text-foreground font-medium">服務方式：</span>{SERVICE_MODE_LABEL[p.service_mode]}</p>
-                        {p.shop_address && <p><span className="text-foreground font-medium">地址：</span>{p.shop_address}</p>}
-                        {p.bio && <p><span className="text-foreground font-medium">自介：</span>{p.bio}</p>}
-                        {p.license_url && (
-                          <p><span className="text-foreground font-medium">證照：</span>
-                            <a href={p.license_url} target="_blank" className="text-primary underline">查看</a>
-                          </p>
+                      {/* 資料區塊 */}
+                      <div className="grid grid-cols-2 gap-3 mb-5">
+                        <div className="bg-[#F8F7F5] rounded-xl p-3.5">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Store className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-xs font-medium text-muted-foreground">服務方式</span>
+                          </div>
+                          <p className="text-sm font-semibold text-foreground">{SERVICE_MODE_LABEL[p.service_mode]}</p>
+                        </div>
+
+                        {p.shop_address && (
+                          <div className="bg-[#F8F7F5] rounded-xl p-3.5">
+                            <div className="flex items-center gap-2 mb-1">
+                              <MapPin className="w-3.5 h-3.5 text-primary" />
+                              <span className="text-xs font-medium text-muted-foreground">店面地址</span>
+                            </div>
+                            <p className="text-sm font-semibold text-foreground leading-snug">{p.shop_address}</p>
+                          </div>
                         )}
-                        {p.bank_name && <p><span className="text-foreground font-medium">銀行：</span>{p.bank_name} {p.bank_account}</p>}
+
+                        {p.bank_name && (
+                          <div className="bg-[#F8F7F5] rounded-xl p-3.5">
+                            <div className="flex items-center gap-2 mb-1">
+                              <CreditCard className="w-3.5 h-3.5 text-primary" />
+                              <span className="text-xs font-medium text-muted-foreground">收款資料</span>
+                            </div>
+                            <p className="text-sm font-semibold text-foreground">{p.bank_name}</p>
+                            <p className="text-xs text-muted-foreground">{p.bank_account}</p>
+                          </div>
+                        )}
+
+                        {p.license_url && (
+                          <div className="bg-[#F8F7F5] rounded-xl p-3.5">
+                            <div className="flex items-center gap-2 mb-1">
+                              <FileText className="w-3.5 h-3.5 text-primary" />
+                              <span className="text-xs font-medium text-muted-foreground">證照</span>
+                            </div>
+                            <a href={p.license_url} target="_blank" className="text-sm font-semibold text-primary underline underline-offset-2">
+                              點此查看
+                            </a>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="flex gap-2">
-                        <form action={approvePractitioner}>
+                      {/* 自我介紹 */}
+                      {p.bio && (
+                        <div className="bg-[#F8F7F5] rounded-xl p-4 mb-5">
+                          <p className="text-xs font-medium text-muted-foreground mb-1.5">自我介紹</p>
+                          <p className="text-sm text-foreground leading-relaxed">{p.bio}</p>
+                        </div>
+                      )}
+
+                      {/* 操作按鈕 */}
+                      <div className="flex gap-3">
+                        <form action={approvePractitioner} className="flex-1">
                           <input type="hidden" name="practitionerId" value={p.id} />
-                          <Button type="submit" size="sm">核准上架</Button>
+                          <Button type="submit" className="w-full" size="default">
+                            <CheckCircle2 className="w-4 h-4 mr-1.5" />
+                            核准上架
+                          </Button>
                         </form>
                         <form action={rejectPractitioner}>
                           <input type="hidden" name="practitionerId" value={p.id} />
-                          <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/10">退回</Button>
+                          <Button type="submit" variant="outline" size="default" className="text-destructive border-destructive hover:bg-destructive/5 px-6">
+                            退回
+                          </Button>
                         </form>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )
               })}
             </div>
@@ -104,25 +201,35 @@ export default async function AdminPage() {
 
         {/* 已上架 */}
         <section>
-          <h2 className="font-bold text-lg mb-3">已上架職人（最新 10 筆）</h2>
-          {!approved || approved.length === 0 ? (
-            <p className="text-muted-foreground text-sm">尚無已上架職人</p>
-          ) : (
-            <div className="space-y-2">
-              {approved.map(p => {
-                const profileRaw = p.profiles as unknown
-                const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
-                return (
-                  <div key={p.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <span className="text-sm">{prof?.display_name ?? '未知'}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(p.created_at).toLocaleDateString('zh-TW')}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+          <h2 className="font-bold text-xl text-foreground mb-4">已上架職人</h2>
+          <div className="bg-white rounded-2xl border border-border overflow-hidden">
+            {!approved || approved.length === 0 ? (
+              <div className="p-10 text-center text-muted-foreground text-sm">尚無已上架職人</div>
+            ) : (
+              <div className="divide-y divide-border">
+                {approved.map((p, idx) => {
+                  const profileRaw = p.profiles as unknown
+                  const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
+                  return (
+                    <div key={p.id} className="flex items-center gap-4 px-6 py-4 hover:bg-[#F8F7F5] transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm text-foreground">{prof?.display_name ?? '未知'}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(p.created_at).toLocaleDateString('zh-TW')} 上架
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </section>
       </div>
     </div>
