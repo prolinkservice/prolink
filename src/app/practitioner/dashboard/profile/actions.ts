@@ -1,0 +1,98 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+
+async function getOwnPractitionerId(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>) {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/')
+  const { data } = await supabase.from('practitioners').select('id').eq('user_id', user.id).single()
+  if (!data) redirect('/')
+  return data.id
+}
+
+export async function updateBankAccount(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const bankName = formData.get('bankName') as string
+  const bankAccount = formData.get('bankAccount') as string
+
+  await supabase
+    .from('practitioners')
+    .update({ bank_name: bankName, bank_account: bankAccount, bank_status: 'pending' })
+    .eq('id', practitionerId)
+
+  revalidatePath('/practitioner/dashboard/profile')
+}
+
+export async function updateIdVerification(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const idFrontUrl = formData.get('idFrontUrl') as string
+  const idBackUrl = formData.get('idBackUrl') as string
+
+  await supabase
+    .from('practitioners')
+    .update({ id_front_url: idFrontUrl, id_back_url: idBackUrl, id_verification_status: 'pending' })
+    .eq('id', practitionerId)
+
+  revalidatePath('/practitioner/dashboard/profile')
+}
+
+export async function revalidateAddress(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+  const address = formData.get('shopAddress') as string
+
+  let latitude: number | null = null
+  let longitude: number | null = null
+
+  if (address) {
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+    )
+    const data = await res.json()
+    if (data.status === 'OK') {
+      const loc = data.results[0].geometry.location
+      latitude = loc.lat
+      longitude = loc.lng
+    }
+  }
+
+  await supabase
+    .from('practitioners')
+    .update({ shop_address: address, latitude, longitude })
+    .eq('id', practitionerId)
+
+  revalidatePath('/practitioner/dashboard/profile')
+}
+
+export async function addSocialLink(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const platform = formData.get('platform') as string
+  const url = formData.get('url') as string
+
+  const { data: current } = await supabase.from('practitioners').select('social_links').eq('id', practitionerId).single()
+  const links = (current?.social_links as { platform: string; url: string }[]) ?? []
+  links.push({ platform, url })
+
+  await supabase.from('practitioners').update({ social_links: links }).eq('id', practitionerId)
+  revalidatePath('/practitioner/dashboard/profile')
+}
+
+export async function removeSocialLink(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+  const index = Number(formData.get('index'))
+
+  const { data: current } = await supabase.from('practitioners').select('social_links').eq('id', practitionerId).single()
+  const links = ((current?.social_links as { platform: string; url: string }[]) ?? []).filter((_, i) => i !== index)
+
+  await supabase.from('practitioners').update({ social_links: links }).eq('id', practitionerId)
+  revalidatePath('/practitioner/dashboard/profile')
+}

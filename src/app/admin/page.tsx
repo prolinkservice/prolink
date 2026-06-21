@@ -2,10 +2,10 @@ import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { approvePractitioner, rejectPractitioner } from './actions'
+import { approvePractitioner, rejectPractitioner, approveBank, rejectBank, approveId, rejectId } from './actions'
 import { signOut } from '@/app/auth/actions'
 import { Button } from '@/components/ui/button'
-import { LogOut, Clock, CheckCircle2, MapPin, CreditCard, FileText, User, Store } from 'lucide-react'
+import { LogOut, Clock, CheckCircle2, MapPin, CreditCard, FileText, User, Store, IdCard } from 'lucide-react'
 
 const SERVICE_MODE_LABEL: Record<string, string> = {
   at_shop: '到店', on_site: '到府', both: '到店 + 到府'
@@ -31,6 +31,20 @@ export default async function AdminPage() {
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
     .limit(10)
+
+  const { data: bankReviews } = await supabase
+    .from('practitioners')
+    .select('id, bank_name, bank_account, profiles ( display_name )')
+    .eq('status', 'approved')
+    .eq('bank_status', 'pending')
+    .not('bank_name', 'is', null)
+
+  const { data: idReviews } = await supabase
+    .from('practitioners')
+    .select('id, id_front_url, id_back_url, profiles ( display_name )')
+    .eq('status', 'approved')
+    .eq('id_verification_status', 'pending')
+    .not('id_front_url', 'is', null)
 
   return (
     <div className="min-h-screen bg-[#F8F7F5]">
@@ -230,6 +244,95 @@ export default async function AdminPage() {
               </div>
             )}
           </div>
+        </section>
+
+        {/* 銀行帳戶審核 */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="font-bold text-xl text-foreground">銀行帳戶待審</h2>
+            {(bankReviews?.length ?? 0) > 0 && (
+              <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">{bankReviews!.length}</span>
+            )}
+          </div>
+          {!bankReviews || bankReviews.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-border p-8 text-center text-muted-foreground text-sm">目前沒有待審核的銀行資料</div>
+          ) : (
+            <div className="space-y-3">
+              {bankReviews.map(b => {
+                const profileRaw = b.profiles as unknown
+                const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
+                return (
+                  <div key={b.id} className="bg-white rounded-2xl border border-border p-5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+                        <CreditCard className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{prof?.display_name ?? '未知'}</p>
+                        <p className="text-xs text-muted-foreground">{b.bank_name}　{b.bank_account}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <form action={approveBank}>
+                        <input type="hidden" name="practitionerId" value={b.id} />
+                        <Button type="submit" size="sm">核准</Button>
+                      </form>
+                      <form action={rejectBank}>
+                        <input type="hidden" name="practitionerId" value={b.id} />
+                        <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">退回</Button>
+                      </form>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* 身份驗證審核 */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <h2 className="font-bold text-xl text-foreground">身份驗證待審</h2>
+            {(idReviews?.length ?? 0) > 0 && (
+              <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">{idReviews!.length}</span>
+            )}
+          </div>
+          {!idReviews || idReviews.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-border p-8 text-center text-muted-foreground text-sm">目前沒有待審核的身份資料</div>
+          ) : (
+            <div className="space-y-3">
+              {idReviews.map(idv => {
+                const profileRaw = idv.profiles as unknown
+                const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
+                return (
+                  <div key={idv.id} className="bg-white rounded-2xl border border-border p-5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+                        <IdCard className="w-4 h-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{prof?.display_name ?? '未知'}</p>
+                        <div className="flex gap-3 text-xs">
+                          {idv.id_front_url && <a href={idv.id_front_url} target="_blank" className="text-primary underline">正面照片</a>}
+                          {idv.id_back_url && <a href={idv.id_back_url} target="_blank" className="text-primary underline">反面照片</a>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                      <form action={approveId}>
+                        <input type="hidden" name="practitionerId" value={idv.id} />
+                        <Button type="submit" size="sm">核准</Button>
+                      </form>
+                      <form action={rejectId}>
+                        <input type="hidden" name="practitionerId" value={idv.id} />
+                        <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">退回</Button>
+                      </form>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </section>
       </div>
     </div>

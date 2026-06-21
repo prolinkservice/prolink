@@ -1,4 +1,4 @@
-import { MapPin, Clock, ChevronLeft, Star } from 'lucide-react'
+import { MapPin, Clock, ChevronLeft, Star, AtSign, Share2, Link2, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -29,7 +29,8 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       status,
       profiles ( display_name, avatar_url ),
       services ( id, name, description, duration_minutes, price ),
-      availability_slots ( id, start_time, end_time, is_booked )
+      availability_slots ( id, start_time, end_time, is_booked ),
+      social_links
     `)
     .eq('id', id)
     .eq('status', 'approved')
@@ -78,6 +79,10 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
   }, {} as Record<string, typeof slots>)
 
   const services = practitioner.services as { id: string; name: string; description: string | null; duration_minutes: number; price: number }[]
+  const socialLinks = (practitioner.social_links as { platform: string; url: string }[]) ?? []
+  const PLATFORM_ICON: Record<string, typeof Globe> = {
+    instagram: AtSign, facebook: Share2, line: Link2, other: Globe,
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,6 +121,24 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
                 </Badge>
               ))}
             </div>
+            {socialLinks.length > 0 && (
+              <div className="flex gap-2 mt-3">
+                {socialLinks.map((link, i) => {
+                  const Icon = PLATFORM_ICON[link.platform] ?? Globe
+                  return (
+                    <a
+                      key={i}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 active:scale-90 transition-all"
+                    >
+                      <Icon className="w-4 h-4 text-white" />
+                    </a>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
