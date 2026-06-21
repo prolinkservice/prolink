@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,8 +9,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 
-export default function PractitionerLoginPage() {
+export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const next = searchParams.get('next') ?? '/'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -24,19 +27,7 @@ export default function PractitionerLoginPage() {
       const supabase = createBrowserSupabaseClient()
       const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) throw signInError
-
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/'); return }
-
-      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-
-      if (profile?.role === 'practitioner') {
-        const { data: prac } = await supabase.from('practitioners').select('status').eq('user_id', user.id).single()
-        if (prac?.status === 'approved') router.push('/practitioner/dashboard')
-        else router.push('/practitioner/pending')
-      } else {
-        router.push('/practitioner/register')
-      }
+      router.push(next)
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : '登入失敗，請確認帳密是否正確')
     } finally {
@@ -50,7 +41,7 @@ export default function PractitionerLoginPage() {
         <Link href="/">
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
-        <h1 className="text-xl font-bold">職人登入</h1>
+        <h1 className="text-xl font-bold">會員登入</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -84,7 +75,7 @@ export default function PractitionerLoginPage() {
 
       <p className="text-center text-sm text-muted-foreground mt-6">
         還沒有帳號？
-        <Link href="/practitioner/signup" className="text-primary font-medium ml-1">立即註冊</Link>
+        <Link href={`/signup?next=${encodeURIComponent(next)}`} className="text-primary font-medium ml-1">立即註冊</Link>
       </p>
     </div>
   )

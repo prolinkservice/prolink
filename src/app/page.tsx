@@ -76,9 +76,14 @@ export default async function Home() {
           {user ? (
             <>
               {profile?.role === 'customer' && (
-                <Button asChild size="sm" variant="outline">
-                  <Link href="/my-bookings">我的預約</Link>
-                </Button>
+                <>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/my-bookings">我的預約</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/practitioner/register">職人入駐</Link>
+                  </Button>
+                </>
               )}
               {profile?.role === 'practitioner' && (
                 <Button asChild size="sm" variant="outline">
@@ -105,7 +110,10 @@ export default async function Home() {
           ) : (
             <div className="flex items-center gap-2">
               <Button asChild size="sm" variant="outline">
-                <Link href="/practitioner/signup">職人入駐</Link>
+                <Link href={`/signup?next=${encodeURIComponent('/practitioner/register')}`}>職人入駐</Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/login">登入</Link>
               </Button>
               <form action={signInWithGoogle}>
                 <Button size="sm" type="submit">Google 登入</Button>
