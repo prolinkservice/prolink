@@ -1,4 +1,4 @@
-import { MapPin, Clock, ChevronLeft } from 'lucide-react'
+import { MapPin, Clock, ChevronLeft, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -36,6 +36,17 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
     .single()
 
   if (!practitioner) notFound()
+
+  const { data: reviews } = await supabase
+    .from('reviews')
+    .select('rating, comment, created_at, profiles ( display_name )')
+    .eq('practitioner_id', id)
+    .order('created_at', { ascending: false })
+
+  const reviewList = reviews ?? []
+  const avgRating = reviewList.length
+    ? reviewList.reduce((sum, r) => sum + r.rating, 0) / reviewList.length
+    : 0
 
   const profileRaw = practitioner.profiles as unknown
   const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
@@ -91,6 +102,13 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
           </Avatar>
           <div className="flex-1">
             <h1 className="text-2xl font-bold">{name}</h1>
+            {reviewList.length > 0 && (
+              <div className="flex items-center gap-1 mt-1">
+                <Star className="w-4 h-4 fill-white text-white" />
+                <span className="font-semibold text-sm">{avgRating.toFixed(1)}</span>
+                <span className="text-white/70 text-sm">（{reviewList.length} 則評價）</span>
+              </div>
+            )}
             <div className="flex gap-1 mt-2">
               {serviceMode.map((mode) => (
                 <Badge key={mode} className="bg-white/20 text-white border-white/30 text-sm px-3 py-1">
@@ -174,6 +192,37 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
                       ))}
                     </div>
                   </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+        {/* 評價 */}
+        <div>
+          <h2 className="font-bold text-lg mb-3">
+            學員評價 {reviewList.length > 0 && `（${reviewList.length}）`}
+          </h2>
+          {reviewList.length === 0 ? (
+            <p className="text-muted-foreground text-base">尚無評價</p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {reviewList.map((r, i) => {
+                const revProfRaw = r.profiles as unknown
+                const revProf = (Array.isArray(revProfRaw) ? revProfRaw[0] : revProfRaw) as { display_name: string | null } | null
+                return (
+                  <Card key={i}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-semibold text-sm">{revProf?.display_name ?? '匿名學員'}</span>
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: 5 }).map((_, j) => (
+                            <Star key={j} className={`w-4 h-4 ${j < r.rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      {r.comment && <p className="text-sm text-muted-foreground leading-relaxed">{r.comment}</p>}
+                    </CardContent>
+                  </Card>
                 )
               })}
             </div>

@@ -40,6 +40,7 @@ type Booking = {
   availability_slots: { start_time: string; end_time: string } | null
   practitioners: { profiles: { display_name: string | null } | null } | null
   services: { name: string; price: number } | null
+  reviews: { id: string }[] | null
 }
 
 export default function MyBookingsPage() {
@@ -59,7 +60,8 @@ export default function MyBookingsPage() {
           id, status, payment_method, service_mode, customer_address, created_at,
           availability_slots ( start_time, end_time ),
           practitioners ( profiles ( display_name ) ),
-          services ( name, price )
+          services ( name, price ),
+          reviews ( id )
         `)
         .eq('customer_id', user.id)
         .order('created_at', { ascending: false })
@@ -151,6 +153,16 @@ export default function MyBookingsPage() {
                       <p>付款：{PAYMENT_LABEL[b.payment_method] ?? b.payment_method}｜{b.service_mode === 'on_site' ? '到府' : '到店'}</p>
                       {b.customer_address && <p>地址：{b.customer_address}</p>}
                     </div>
+
+                    {b.status === 'completed' && (
+                      (b.reviews?.length ?? 0) > 0 ? (
+                        <p className="text-xs text-primary font-medium mt-3">已評價，謝謝你的回饋！</p>
+                      ) : (
+                        <Button asChild size="sm" className="w-full mt-3 active:scale-95 transition-transform">
+                          <Link href={`/review/${b.id}`}>給評價</Link>
+                        </Button>
+                      )
+                    )}
                   </CardContent>
                 </Card>
               )
