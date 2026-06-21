@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,6 +39,15 @@ export default function PractitionerRegisterPage() {
   ])
 
   const [geocoding, setGeocoding] = useState(false)
+  const [checkingAuth, setCheckingAuth] = useState(true)
+
+  useEffect(() => {
+    const supabase = createBrowserSupabaseClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push('/practitioner/signup'); return }
+      setCheckingAuth(false)
+    })
+  }, [router])
 
   function updateService(i: number, field: keyof Service, value: string | number) {
     setServices(prev => prev.map((s, idx) => idx === i ? { ...s, [field]: value } : s))
@@ -133,6 +142,10 @@ export default function PractitionerRegisterPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checkingAuth) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">載入中...</div>
   }
 
   return (

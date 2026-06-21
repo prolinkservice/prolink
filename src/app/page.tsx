@@ -105,7 +105,7 @@ export default async function Home() {
           ) : (
             <div className="flex items-center gap-2">
               <Button asChild size="sm" variant="outline">
-                <Link href="/practitioner/register">職人入駐</Link>
+                <Link href="/practitioner/signup">職人入駐</Link>
               </Button>
               <form action={signInWithGoogle}>
                 <Button size="sm" type="submit">Google 登入</Button>
