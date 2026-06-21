@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { signInWithGoogle, signOut } from '@/app/auth/actions'
+import { signOut } from '@/app/auth/actions'
 import GoogleMap from '@/components/GoogleMap'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
@@ -109,15 +109,9 @@ export default async function Home() {
             </>
           ) : (
             <div className="flex items-center gap-2">
-              <Button asChild size="sm" variant="outline">
-                <Link href={`/signup?next=${encodeURIComponent('/practitioner/register')}`}>職人入駐</Link>
+              <Button asChild size="sm">
+                <Link href="/auth">登入／註冊</Link>
               </Button>
-              <Button asChild size="sm" variant="outline">
-                <Link href="/login">登入</Link>
-              </Button>
-              <form action={signInWithGoogle}>
-                <Button size="sm" type="submit">Google 登入</Button>
-              </form>
             </div>
           )}
         </div>

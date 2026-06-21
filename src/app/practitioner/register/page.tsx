@@ -44,7 +44,7 @@ export default function PractitionerRegisterPage() {
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { router.push(`/signup?next=${encodeURIComponent('/practitioner/register')}`); return }
+      if (!user) { router.push(`/auth?next=${encodeURIComponent('/practitioner/register')}`); return }
       setCheckingAuth(false)
     })
   }, [router])
