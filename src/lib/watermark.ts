@@ -17,24 +17,20 @@ export async function addWatermarkToImage(
 
   ctx.drawImage(img, 0, 0)
 
-  const fontSize = Math.max(20, Math.round(img.width / 22))
+  const fontSize = Math.max(20, Math.round(img.width / 18))
   ctx.font = `bold ${fontSize}px sans-serif`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)'
-  ctx.strokeStyle = 'rgba(0, 0, 0, 0.35)'
-  ctx.lineWidth = Math.max(1, fontSize / 18)
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.55)'
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)'
+  ctx.lineWidth = Math.max(1, fontSize / 16)
 
   ctx.save()
   ctx.translate(canvas.width / 2, canvas.height / 2)
   ctx.rotate(-Math.PI / 6)
 
-  const diagonal = Math.sqrt(canvas.width ** 2 + canvas.height ** 2)
-  const lineGap = Math.max(fontSize * 3, 120)
-  for (let y = -diagonal; y < diagonal; y += lineGap) {
-    ctx.strokeText(watermarkText, 0, y)
-    ctx.fillText(watermarkText, 0, y)
-  }
+  ctx.strokeText(watermarkText, 0, 0)
+  ctx.fillText(watermarkText, 0, 0)
 
   ctx.restore()
 
