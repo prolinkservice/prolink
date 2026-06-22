@@ -152,8 +152,8 @@ export function BankForm() {
               )}
             </div>
             {previewUrl && (
-              <div className="mt-2 inline-block rounded-lg border border-border overflow-hidden">
-                <img src={previewUrl} alt="存摺影本預覽" className="max-w-[200px] max-h-[140px] object-contain" />
+              <div className="mt-2 max-w-md rounded-lg border border-border overflow-hidden">
+                <img src={previewUrl} alt="存摺影本預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
               </div>
             )}
             {uploadError && <p className="text-xs text-destructive mt-1">{uploadError}</p>}

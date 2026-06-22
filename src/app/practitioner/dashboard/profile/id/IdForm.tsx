@@ -159,8 +159,8 @@ export function IdForm() {
                 )}
               </div>
               {frontPreviewUrl && (
-                <div className="mt-2 inline-block rounded-lg border border-border overflow-hidden">
-                  <img src={frontPreviewUrl} alt="身分證正面預覽" className="max-w-[200px] max-h-[140px] object-contain" />
+                <div className="mt-2 max-w-md rounded-lg border border-border overflow-hidden">
+                  <img src={frontPreviewUrl} alt="身分證正面預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
                 </div>
               )}
               {errorFront && <p className="text-xs text-destructive mt-1">{errorFront}</p>}
@@ -194,8 +194,8 @@ export function IdForm() {
                 )}
               </div>
               {backPreviewUrl && (
-                <div className="mt-2 inline-block rounded-lg border border-border overflow-hidden">
-                  <img src={backPreviewUrl} alt="身分證反面預覽" className="max-w-[200px] max-h-[140px] object-contain" />
+                <div className="mt-2 max-w-md rounded-lg border border-border overflow-hidden">
+                  <img src={backPreviewUrl} alt="身分證反面預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
                 </div>
               )}
               {errorBack && <p className="text-xs text-destructive mt-1">{errorBack}</p>}
