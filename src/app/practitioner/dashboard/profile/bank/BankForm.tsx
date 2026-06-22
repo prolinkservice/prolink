@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { addWatermarkToImage } from '@/lib/watermark'
+import { ImageLightbox } from '@/components/ImageLightbox'
 import { updateBankAccount } from '../actions'
 
 const STATUS_CONFIG: Record<string, { label: string; className: string; Icon: typeof CheckCircle2 }> = {
@@ -153,7 +154,7 @@ export function BankForm() {
             </div>
             {previewUrl && (
               <div className="mt-2 max-w-md rounded-lg border border-border overflow-hidden">
-                <img src={previewUrl} alt="存摺影本預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
+                <ImageLightbox src={previewUrl} alt="存摺影本預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
               </div>
             )}
             {uploadError && <p className="text-xs text-destructive mt-1">{uploadError}</p>}

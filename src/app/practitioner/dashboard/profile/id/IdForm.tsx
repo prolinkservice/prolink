@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { addWatermarkToImage } from '@/lib/watermark'
+import { ImageLightbox } from '@/components/ImageLightbox'
 import { updateIdVerification } from '../actions'
 
 const STATUS_CONFIG: Record<string, { label: string; className: string; Icon: typeof CheckCircle2 }> = {
@@ -160,7 +161,7 @@ export function IdForm() {
               </div>
               {frontPreviewUrl && (
                 <div className="mt-2 max-w-md rounded-lg border border-border overflow-hidden">
-                  <img src={frontPreviewUrl} alt="身分證正面預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
+                  <ImageLightbox src={frontPreviewUrl} alt="身分證正面預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
                 </div>
               )}
               {errorFront && <p className="text-xs text-destructive mt-1">{errorFront}</p>}
@@ -195,7 +196,7 @@ export function IdForm() {
               </div>
               {backPreviewUrl && (
                 <div className="mt-2 max-w-md rounded-lg border border-border overflow-hidden">
-                  <img src={backPreviewUrl} alt="身分證反面預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
+                  <ImageLightbox src={backPreviewUrl} alt="身分證反面預覽" className="max-w-full max-h-[400px] object-contain cursor-zoom-in" />
                 </div>
               )}
               {errorBack && <p className="text-xs text-destructive mt-1">{errorBack}</p>}
