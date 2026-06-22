@@ -10,19 +10,12 @@ export default async function PractitionerReviewsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const [{ data: profile }, { data: practitioner }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
+    supabase.from('practitioners').select('status, id').eq('user_id', user.id).single(),
+  ])
 
   if (profile?.role !== 'practitioner' && profile?.role !== 'admin') redirect('/')
-
-  const { data: practitioner } = await supabase
-    .from('practitioners')
-    .select('status, id')
-    .eq('user_id', user.id)
-    .single()
 
   if (!practitioner || practitioner.status !== 'approved') {
     redirect('/practitioner/pending')

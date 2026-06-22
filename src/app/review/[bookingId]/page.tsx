@@ -16,23 +16,20 @@ export default async function ReviewPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/')
 
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select(`
-      id, status, customer_id, practitioner_id,
-      practitioners ( profiles ( display_name ) )
-    `)
-    .eq('id', bookingId)
-    .eq('customer_id', user.id)
-    .single()
+  const [{ data: booking }, { data: existing }] = await Promise.all([
+    supabase
+      .from('bookings')
+      .select(`
+        id, status, customer_id, practitioner_id,
+        practitioners ( profiles ( display_name ) )
+      `)
+      .eq('id', bookingId)
+      .eq('customer_id', user.id)
+      .single(),
+    supabase.from('reviews').select('id').eq('booking_id', bookingId).maybeSingle(),
+  ])
 
   if (!booking || booking.status !== 'completed') notFound()
-
-  const { data: existing } = await supabase
-    .from('reviews')
-    .select('id')
-    .eq('booking_id', bookingId)
-    .maybeSingle()
 
   if (existing) redirect('/my-bookings')
 

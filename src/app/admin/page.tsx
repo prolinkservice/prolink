@@ -20,45 +20,41 @@ export default async function AdminPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') redirect('/')
 
-  const { data: approved } = await supabase
-    .from('practitioners')
-    .select('id, profiles ( display_name ), created_at')
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false })
-    .limit(10)
-
-  const { data: reviewRaw, error: reviewError } = await supabase
-    .from('practitioners')
-    .select(`
-      id, status, bio, service_mode, shop_address, license_url, created_at,
-      bank_name, bank_account, bank_status, passbook_url,
-      id_front_url, id_back_url, id_verification_status,
-      profiles ( display_name )
-    `)
-    .or('status.eq.pending,bank_status.eq.pending,id_verification_status.eq.pending')
-    .order('created_at', { ascending: true })
+  const [{ data: approved }, { data: reviewRaw, error: reviewError }] = await Promise.all([
+    supabase
+      .from('practitioners')
+      .select('id, profiles ( display_name ), created_at')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(10),
+    supabase
+      .from('practitioners')
+      .select(`
+        id, status, bio, service_mode, shop_address, license_url, created_at,
+        bank_name, bank_account, bank_status, passbook_url,
+        id_front_url, id_back_url, id_verification_status,
+        profiles ( display_name )
+      `)
+      .or('status.eq.pending,bank_status.eq.pending,id_verification_status.eq.pending')
+      .order('created_at', { ascending: true }),
+  ])
 
   if (reviewError) console.error('admin review query error:', reviewError)
 
   const reviewList = reviewRaw
     ? await Promise.all(
         reviewRaw.map(async (r) => {
-          let passbookSignedUrl: string | null = null
-          let idFrontSignedUrl: string | null = null
-          let idBackSignedUrl: string | null = null
-          if (r.passbook_url) {
-            const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(r.passbook_url, 60 * 10)
-            passbookSignedUrl = signed?.signedUrl ?? null
+          const [passbookSigned, idFrontSigned, idBackSigned] = await Promise.all([
+            r.passbook_url ? supabase.storage.from('verification-docs').createSignedUrl(r.passbook_url, 60 * 10) : Promise.resolve({ data: null }),
+            r.id_front_url ? supabase.storage.from('verification-docs').createSignedUrl(r.id_front_url, 60 * 10) : Promise.resolve({ data: null }),
+            r.id_back_url ? supabase.storage.from('verification-docs').createSignedUrl(r.id_back_url, 60 * 10) : Promise.resolve({ data: null }),
+          ])
+          return {
+            ...r,
+            passbookSignedUrl: passbookSigned.data?.signedUrl ?? null,
+            idFrontSignedUrl: idFrontSigned.data?.signedUrl ?? null,
+            idBackSignedUrl: idBackSigned.data?.signedUrl ?? null,
           }
-          if (r.id_front_url) {
-            const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(r.id_front_url, 60 * 10)
-            idFrontSignedUrl = signed?.signedUrl ?? null
-          }
-          if (r.id_back_url) {
-            const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(r.id_back_url, 60 * 10)
-            idBackSignedUrl = signed?.signedUrl ?? null
-          }
-          return { ...r, passbookSignedUrl, idFrontSignedUrl, idBackSignedUrl }
         })
       )
     : []

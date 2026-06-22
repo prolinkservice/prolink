@@ -30,26 +30,27 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') redirect('/')
 
-  const { data: practitioner } = await supabase
-    .from('practitioners')
-    .select(`
-      id, bio, service_mode, shop_address, status, created_at,
-      bank_name, bank_account, bank_status,
-      id_verification_status,
-      years_experience, certificate_name, specialty_tags, cover_image_url, social_links,
-      profiles ( display_name, avatar_url ),
-      services ( id, name, description, duration_minutes, price )
-    `)
-    .eq('id', id)
-    .single()
+  const [{ data: practitioner }, { data: reviews }] = await Promise.all([
+    supabase
+      .from('practitioners')
+      .select(`
+        id, bio, service_mode, shop_address, status, created_at,
+        bank_name, bank_account, bank_status,
+        id_verification_status,
+        years_experience, certificate_name, specialty_tags, cover_image_url, social_links,
+        profiles ( display_name, avatar_url ),
+        services ( id, name, description, duration_minutes, price )
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('reviews')
+      .select('rating, comment, created_at, profiles ( display_name )')
+      .eq('practitioner_id', id)
+      .order('created_at', { ascending: false }),
+  ])
 
   if (!practitioner) notFound()
-
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('rating, comment, created_at, profiles ( display_name )')
-    .eq('practitioner_id', id)
-    .order('created_at', { ascending: false })
 
   const profileRaw = practitioner.profiles as unknown
   const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null

@@ -11,38 +11,31 @@ export default async function PractitionerDashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name, role')
-    .eq('id', user.id)
-    .single()
+  const [{ data: profile }, { data: practitioner }] = await Promise.all([
+    supabase.from('profiles').select('display_name, role').eq('id', user.id).single(),
+    supabase.from('practitioners').select('status, id').eq('user_id', user.id).single(),
+  ])
 
   if (profile?.role !== 'practitioner' && profile?.role !== 'admin') redirect('/')
-
-  const { data: practitioner } = await supabase
-    .from('practitioners')
-    .select('status, id')
-    .eq('user_id', user.id)
-    .single()
 
   if (!practitioner || practitioner.status !== 'approved') {
     redirect('/practitioner/pending')
   }
 
-  // 今日預約數
+  // 今日預約數、待確認預約數
   const today = new Date().toISOString().split('T')[0]
-  const { count: todayCount } = await supabase
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .eq('practitioner_id', practitioner.id)
-    .gte('created_at', today)
-
-  // 待確認預約數
-  const { count: pendingCount } = await supabase
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .eq('practitioner_id', practitioner.id)
-    .eq('status', 'pending')
+  const [{ count: todayCount }, { count: pendingCount }] = await Promise.all([
+    supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('practitioner_id', practitioner.id)
+      .gte('created_at', today),
+    supabase
+      .from('bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('practitioner_id', practitioner.id)
+      .eq('status', 'pending'),
+  ])
 
   return (
     <div className="min-h-screen bg-background">

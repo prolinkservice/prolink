@@ -26,17 +26,17 @@ export default async function MemberProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/')
 
-  const { data: practitioner, error: practitionerError } = await supabase
-    .from('practitioners')
-    .select('id, status, bank_status, id_verification_status, latitude, longitude, social_links, years_experience, certificate_name, specialty_tags, cover_image_url')
-    .eq('user_id', user.id)
-    .single()
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name')
-    .eq('id', user.id)
-    .single()
+  const [
+    { data: practitioner, error: practitionerError },
+    { data: profile },
+  ] = await Promise.all([
+    supabase
+      .from('practitioners')
+      .select('id, status, bank_status, id_verification_status, latitude, longitude, social_links, years_experience, certificate_name, specialty_tags, cover_image_url')
+      .eq('user_id', user.id)
+      .single(),
+    supabase.from('profiles').select('display_name').eq('id', user.id).single(),
+  ])
 
   if (practitionerError) {
     return (
