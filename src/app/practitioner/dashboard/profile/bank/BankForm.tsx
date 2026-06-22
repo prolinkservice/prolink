@@ -40,6 +40,7 @@ export function BankForm() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [passbookPath, setPassbookPath] = useState<string | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -54,7 +55,12 @@ export function BankForm() {
         .eq('user_id', user.id)
         .single()
       setData(practitioner as BankData)
-      setPassbookPath((practitioner as BankData | null)?.passbook_url ?? null)
+      const path = (practitioner as BankData | null)?.passbook_url ?? null
+      setPassbookPath(path)
+      if (path) {
+        const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(path, 600)
+        if (signed) setPreviewUrl(signed.signedUrl)
+      }
       setLoading(false)
     }
     load()
@@ -82,6 +88,7 @@ export function BankForm() {
       if (error) throw error
 
       setPassbookPath(path)
+      setPreviewUrl(URL.createObjectURL(watermarkedBlob))
     } catch (err) {
       console.error(err)
       setUploadError('上傳失敗，請再試一次')
@@ -144,6 +151,11 @@ export function BankForm() {
                 </span>
               )}
             </div>
+            {previewUrl && (
+              <div className="mt-2 inline-block rounded-lg border border-border overflow-hidden">
+                <img src={previewUrl} alt="存摺影本預覽" className="max-w-[200px] max-h-[140px] object-contain" />
+              </div>
+            )}
             {uploadError && <p className="text-xs text-destructive mt-1">{uploadError}</p>}
             <p className="text-xs text-muted-foreground mt-1">上傳後會自動加上審核浮水印，僅供 ProLink 審核使用</p>
           </div>

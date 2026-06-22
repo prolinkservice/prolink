@@ -42,6 +42,8 @@ export function IdForm() {
   const [uploadingBack, setUploadingBack] = useState(false)
   const [idFrontPath, setIdFrontPath] = useState<string | null>(null)
   const [idBackPath, setIdBackPath] = useState<string | null>(null)
+  const [frontPreviewUrl, setFrontPreviewUrl] = useState<string | null>(null)
+  const [backPreviewUrl, setBackPreviewUrl] = useState<string | null>(null)
   const [errorFront, setErrorFront] = useState<string | null>(null)
   const [errorBack, setErrorBack] = useState<string | null>(null)
   const frontInputRef = useRef<HTMLInputElement>(null)
@@ -58,8 +60,18 @@ export function IdForm() {
         .eq('user_id', user.id)
         .single()
       setData(practitioner as IdData)
-      setIdFrontPath((practitioner as IdData | null)?.id_front_url ?? null)
-      setIdBackPath((practitioner as IdData | null)?.id_back_url ?? null)
+      const frontPath = (practitioner as IdData | null)?.id_front_url ?? null
+      const backPath = (practitioner as IdData | null)?.id_back_url ?? null
+      setIdFrontPath(frontPath)
+      setIdBackPath(backPath)
+      if (frontPath) {
+        const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(frontPath, 600)
+        if (signed) setFrontPreviewUrl(signed.signedUrl)
+      }
+      if (backPath) {
+        const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(backPath, 600)
+        if (signed) setBackPreviewUrl(signed.signedUrl)
+      }
       setLoading(false)
     }
     load()
@@ -72,6 +84,7 @@ export function IdForm() {
     const setUploading = side === 'front' ? setUploadingFront : setUploadingBack
     const setPath = side === 'front' ? setIdFrontPath : setIdBackPath
     const setError = side === 'front' ? setErrorFront : setErrorBack
+    const setPreview = side === 'front' ? setFrontPreviewUrl : setBackPreviewUrl
     const fileName = side === 'front' ? 'id_front' : 'id_back'
 
     setUploading(true)
@@ -92,6 +105,7 @@ export function IdForm() {
       if (error) throw error
 
       setPath(path)
+      setPreview(URL.createObjectURL(watermarkedBlob))
     } catch (err) {
       console.error(err)
       setError('上傳失敗，請再試一次')
@@ -144,6 +158,11 @@ export function IdForm() {
                   </span>
                 )}
               </div>
+              {frontPreviewUrl && (
+                <div className="mt-2 inline-block rounded-lg border border-border overflow-hidden">
+                  <img src={frontPreviewUrl} alt="身分證正面預覽" className="max-w-[200px] max-h-[140px] object-contain" />
+                </div>
+              )}
               {errorFront && <p className="text-xs text-destructive mt-1">{errorFront}</p>}
             </div>
             <div>
@@ -174,6 +193,11 @@ export function IdForm() {
                   </span>
                 )}
               </div>
+              {backPreviewUrl && (
+                <div className="mt-2 inline-block rounded-lg border border-border overflow-hidden">
+                  <img src={backPreviewUrl} alt="身分證反面預覽" className="max-w-[200px] max-h-[140px] object-contain" />
+                </div>
+              )}
               {errorBack && <p className="text-xs text-destructive mt-1">{errorBack}</p>}
             </div>
           </div>
