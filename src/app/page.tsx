@@ -32,6 +32,7 @@ export default async function Home() {
       latitude,
       longitude,
       status,
+      specialty_tags,
       profiles ( display_name, avatar_url ),
       services ( price )
     `)
@@ -68,6 +69,7 @@ export default async function Home() {
       lng: p.longitude as number | null,
       avgRating,
       reviewCount: ratingEntry?.count ?? 0,
+      specialtyTags: (p.specialty_tags as string[] | null) ?? [],
     }
   })
 
@@ -193,6 +195,15 @@ export default async function Home() {
                     </span>
                   )}
                   <span className="text-primary text-sm font-bold mt-1">NT${p.price}</span>
+                  {p.specialtyTags.length > 0 && (
+                    <div className="flex flex-wrap justify-center gap-1 mt-1.5">
+                      {p.specialtyTags.slice(0, 2).map((tag) => (
+                        <span key={tag} className="text-[10px] bg-accent text-primary px-1.5 py-0.5 rounded-full truncate max-w-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </Link>
