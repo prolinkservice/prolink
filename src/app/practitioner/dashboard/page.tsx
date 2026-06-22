@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Calendar, ClipboardList, LogOut, UserCog, Star } from 'lucide-react'
+import { Calendar, ClipboardList, LogOut, UserCog, Star, Home } from 'lucide-react'
 import { signOut } from '@/app/auth/actions'
 
 export default async function PractitionerDashboardPage() {
@@ -53,11 +53,18 @@ export default async function PractitionerDashboardPage() {
           </div>
           <span className="font-bold text-xl text-foreground">ProLink 職人後台</span>
         </div>
-        <form action={signOut}>
-          <Button variant="ghost" size="sm" type="submit">
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </form>
+        <div className="flex items-center gap-1">
+          <Link href="/">
+            <Button variant="ghost" size="sm">
+              <Home className="w-4 h-4 mr-1.5" />回首頁
+            </Button>
+          </Link>
+          <form action={signOut}>
+            <Button variant="ghost" size="sm" type="submit">
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </form>
+        </div>
       </nav>
 
       <div className="px-4 py-6 max-w-lg mx-auto">
