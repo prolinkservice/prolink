@@ -12,15 +12,18 @@ async function getOwnPractitionerId(supabase: Awaited<ReturnType<typeof createSe
   return data.id
 }
 
-export async function updateBankAccount(formData: FormData) {
+export async function updateVerification(formData: FormData) {
   const supabase = await createServerSupabaseClient()
   const practitionerId = await getOwnPractitionerId(supabase)
 
   const bankName = formData.get('bankName') as string
   const bankAccount = formData.get('bankAccount') as string
   const passbookUrl = formData.get('passbookUrl') as string
+  const idFrontUrl = formData.get('idFrontUrl') as string
+  const idBackUrl = formData.get('idBackUrl') as string
 
-  const newStatus = passbookUrl ? 'pending' : 'not_submitted'
+  const newBankStatus = passbookUrl ? 'pending' : 'not_submitted'
+  const newIdStatus = idFrontUrl && idBackUrl ? 'pending' : 'not_submitted'
 
   await supabase
     .from('practitioners')
@@ -28,28 +31,10 @@ export async function updateBankAccount(formData: FormData) {
       bank_name: bankName,
       bank_account: bankAccount,
       passbook_url: passbookUrl || null,
-      bank_status: newStatus,
-    })
-    .eq('id', practitionerId)
-
-  revalidatePath('/practitioner/dashboard/profile')
-}
-
-export async function updateIdVerification(formData: FormData) {
-  const supabase = await createServerSupabaseClient()
-  const practitionerId = await getOwnPractitionerId(supabase)
-
-  const idFrontUrl = formData.get('idFrontUrl') as string
-  const idBackUrl = formData.get('idBackUrl') as string
-
-  const newStatus = idFrontUrl && idBackUrl ? 'pending' : 'not_submitted'
-
-  await supabase
-    .from('practitioners')
-    .update({
+      bank_status: newBankStatus,
       id_front_url: idFrontUrl || null,
       id_back_url: idBackUrl || null,
-      id_verification_status: newStatus,
+      id_verification_status: newIdStatus,
     })
     .eq('id', practitionerId)
 

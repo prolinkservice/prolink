@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, CreditCard, IdCard, MapPin, Link2, Sparkles } from 'lucide-react'
+import { ChevronLeft, ShieldCheck, MapPin, Link2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLayout'
-import { BankForm } from './bank/BankForm'
-import { IdForm } from './id/IdForm'
+import { VerificationForm } from './verification/VerificationForm'
 import { AddressForm } from './address/AddressForm'
 import { SocialForm } from './social/SocialForm'
 import { BrandForm } from './brand/BrandForm'
@@ -73,20 +72,17 @@ export default async function MemberProfilePage() {
       content: <BrandForm />,
     },
     {
-      key: 'bank',
-      icon: <CreditCard className={iconClass} />,
-      label: '銀行帳戶',
-      sublabel: statusSublabel(practitioner.bank_status),
-      href: '/practitioner/dashboard/profile/bank',
-      content: <BankForm />,
-    },
-    {
-      key: 'id',
-      icon: <IdCard className={iconClass} />,
-      label: '身份驗證',
-      sublabel: statusSublabel(practitioner.id_verification_status),
-      href: '/practitioner/dashboard/profile/id',
-      content: <IdForm />,
+      key: 'verification',
+      icon: <ShieldCheck className={iconClass} />,
+      label: '身份與收款資料',
+      sublabel: (
+        <span className="flex gap-2">
+          <span>銀行：{statusSublabel(practitioner.bank_status)}</span>
+          <span>身份：{statusSublabel(practitioner.id_verification_status)}</span>
+        </span>
+      ),
+      href: '/practitioner/dashboard/profile/verification',
+      content: <VerificationForm />,
     },
     {
       key: 'address',
