@@ -2,19 +2,23 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
-import { Plus, Trash2, User, MapPin, ClipboardList, CreditCard, Sparkles } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, ClipboardList, CreditCard, Sparkles, ChevronLeft } from 'lucide-react'
 
 type Service = { name: string; duration: number; price: number }
+
+const STEP_NAMES = ['基本資料', '服務地點', '服務項目', '收款資料']
 
 export default function PractitionerRegisterPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [step, setStep] = useState(1)
 
   const [form, setForm] = useState<{
     real_name: string
@@ -80,6 +84,47 @@ export default function PractitionerRegisterPage() {
     } finally {
       setGeocoding(false)
     }
+  }
+
+  function validateStep1(): string {
+    if (!form.real_name.trim()) return '請填寫真實姓名'
+    if (!form.bio.trim()) return '請填寫自我介紹'
+    return ''
+  }
+
+  function validateStep2(): string {
+    if (!form.service_mode) return '請選擇服務方式'
+    if ((form.service_mode === 'at_shop' || form.service_mode === 'both') && !form.shop_address.trim()) {
+      return '請填寫店面地址'
+    }
+    return ''
+  }
+
+  function validateStep3(): string {
+    if (services.length === 0) return '請至少新增一筆服務項目'
+    if (services.some(s => !s.name.trim() || s.price <= 0)) {
+      return '請填寫所有服務項目的名稱與價格'
+    }
+    return ''
+  }
+
+  function goNext() {
+    setError('')
+    let msg = ''
+    if (step === 1) msg = validateStep1()
+    else if (step === 2) msg = validateStep2()
+    else if (step === 3) msg = validateStep3()
+
+    if (msg) {
+      setError(msg)
+      return
+    }
+    setStep(s => s + 1)
+  }
+
+  function goBack() {
+    setError('')
+    setStep(s => s - 1)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -155,8 +200,49 @@ export default function PractitionerRegisterPage() {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">載入中...</div>
   }
 
+  const BackButton = (
+    <button
+      type="button"
+      aria-label="返回"
+      className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted active:scale-90 transition-transform shrink-0"
+    >
+      <ChevronLeft className="w-5 h-5 text-foreground" />
+    </button>
+  )
+
   return (
     <div className="min-h-screen bg-background px-4 py-6 max-w-lg mx-auto">
+      {/* Header：返回首頁 / 上一步 */}
+      <div className="flex items-center mb-4">
+        {step === 1 ? (
+          <Link href="/">{BackButton}</Link>
+        ) : (
+          <button
+            type="button"
+            aria-label="返回上一步"
+            onClick={goBack}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-muted active:scale-90 transition-transform shrink-0"
+          >
+            <ChevronLeft className="w-5 h-5 text-foreground" />
+          </button>
+        )}
+      </div>
+
+      {/* 進度條 */}
+      <div className="mb-4">
+        <p className="text-sm text-muted-foreground mb-2">
+          步驟 {step}／4・{STEP_NAMES[step - 1]}
+        </p>
+        <div className="flex gap-1.5">
+          {STEP_NAMES.map((_, idx) => (
+            <div
+              key={idx}
+              className={`h-1.5 flex-1 rounded-full ${idx + 1 <= step ? 'bg-primary' : 'bg-muted'}`}
+            />
+          ))}
+        </div>
+      </div>
+
       {/* 說明區塊 */}
       <div className="bg-gradient-to-br from-primary to-[#6FAE82] rounded-2xl p-5 text-white shadow-md mb-6">
         <div className="flex items-center gap-2 mb-2">
@@ -170,6 +256,7 @@ export default function PractitionerRegisterPage() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* 基本資料 */}
+        {step === 1 && (
         <Card className="rounded-2xl border border-border shadow-none">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -203,8 +290,10 @@ export default function PractitionerRegisterPage() {
             </div>
           </CardContent>
         </Card>
+        )}
 
         {/* 服務地點 */}
+        {step === 2 && (
         <Card className="rounded-2xl border border-border shadow-none">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -253,8 +342,10 @@ export default function PractitionerRegisterPage() {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* 服務項目 */}
+        {step === 3 && (
         <Card className="rounded-2xl border border-border shadow-none">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -301,8 +392,10 @@ export default function PractitionerRegisterPage() {
             ))}
           </CardContent>
         </Card>
+        )}
 
         {/* 銀行資料 */}
+        {step === 4 && (
         <Card className="rounded-2xl border border-border shadow-none">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -325,6 +418,7 @@ export default function PractitionerRegisterPage() {
             </div>
           </CardContent>
         </Card>
+        )}
 
         {error && (
           <p className="text-destructive text-sm text-center bg-destructive/5 border border-destructive/20 rounded-xl px-4 py-3">
@@ -332,9 +426,39 @@ export default function PractitionerRegisterPage() {
           </p>
         )}
 
-        <Button type="submit" className="w-full active:scale-95 transition-transform" size="lg" disabled={loading}>
-          {loading ? '送出中...' : '送出審核申請'}
-        </Button>
+        <div className="flex items-center gap-3">
+          {step > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 active:scale-95 transition-transform"
+              size="lg"
+              onClick={goBack}
+            >
+              ← 上一步
+            </Button>
+          )}
+
+          {step < 4 ? (
+            <Button
+              type="button"
+              className="flex-1 active:scale-95 transition-transform"
+              size="lg"
+              onClick={goNext}
+            >
+              下一步 →
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              className="flex-1 active:scale-95 transition-transform"
+              size="lg"
+              disabled={loading}
+            >
+              {loading ? '送出中...' : '送出審核申請'}
+            </Button>
+          )}
+        </div>
       </form>
     </div>
   )
