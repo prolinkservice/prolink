@@ -88,55 +88,55 @@ export default async function Home() {
   }))
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2">
+      <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-2 shadow-sm">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
           <span className="font-bold text-xl text-foreground">ProLink</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto flex-nowrap ml-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {user ? (
             <>
               {profile?.role === 'customer' && (
                 <>
-                  <Button asChild size="sm" variant="outline">
+                  <Button asChild size="sm" variant="outline" className="shrink-0">
                     <Link href="/my-bookings">我的預約</Link>
                   </Button>
-                  <Button asChild size="sm" variant="outline">
+                  <Button asChild size="sm" variant="outline" className="shrink-0">
                     <Link href="/account">我的帳戶</Link>
                   </Button>
-                  <Button asChild size="sm" variant="outline">
+                  <Button asChild size="sm" variant="outline" className="shrink-0">
                     <Link href="/practitioner/register">職人入駐</Link>
                   </Button>
                 </>
               )}
               {profile?.role === 'practitioner' && (
-                <Button asChild size="sm" variant="outline">
+                <Button asChild size="sm" variant="outline" className="shrink-0">
                   <Link href="/practitioner/dashboard">職人後台</Link>
                 </Button>
               )}
               {profile?.role === 'admin' && (
-                <Button asChild size="sm" variant="outline">
+                <Button asChild size="sm" variant="outline" className="shrink-0">
                   <Link href="/admin">管理後台</Link>
                 </Button>
               )}
-              <Avatar className="w-8 h-8">
+              <Avatar className="w-8 h-8 shrink-0">
                 <AvatarImage src={user.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-accent text-xs">
                   {user.user_metadata?.full_name?.[0] ?? user.email?.[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <form action={signOut}>
+              <form action={signOut} className="shrink-0">
                 <Button variant="ghost" size="sm" type="submit">
                   <LogOut className="w-4 h-4" />
                 </Button>
               </form>
             </>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <Button asChild size="sm">
                 <Link href="/auth">登入／註冊</Link>
               </Button>
