@@ -49,7 +49,10 @@ export async function createBooking(formData: FormData) {
     .select('id')
     .single()
 
-  if (error || !booking) redirect(`${backTo}&error=${encodeURIComponent('預約建立失敗，請再試一次')}`)
+  if (error || !booking) {
+    console.error(error)
+    redirect(`${backTo}&error=${encodeURIComponent(`預約建立失敗：${error?.message ?? '未知錯誤'}`)}`)
+  }
 
   // 標記時段為已預約
   await supabase
