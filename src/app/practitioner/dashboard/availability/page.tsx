@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
-import { ChevronLeft, ChevronRight, ArrowLeft, Copy, CircleMinus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowLeft, Copy, CircleMinus, X, Layers, CalendarDays, CalendarRange } from 'lucide-react'
 import Link from 'next/link'
 
 const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六']
@@ -34,6 +34,17 @@ function buildGridTimes(showEarlyMorning: boolean) {
   return times
 }
 
+function enumerateDates(from: string, to: string, weekdays: number[] | null) {
+  const dates: string[] = []
+  const cur = new Date(from + 'T00:00:00')
+  const end = new Date(to + 'T00:00:00')
+  while (cur <= end) {
+    if (!weekdays || weekdays.includes(cur.getDay())) dates.push(formatDate(cur))
+    cur.setDate(cur.getDate() + 1)
+  }
+  return dates
+}
+
 function addMinutes(time: string, minutes: number) {
   const [h, m] = time.split(':').map(Number)
   const total = h * 60 + m + minutes
@@ -55,6 +66,11 @@ export default function AvailabilityPage() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [panel, setPanel] = useState<null | 'copyMenu' | 'copyRange' | 'copyDate' | 'closeMenu' | 'closeRange'>(null)
+  const [rangeFrom, setRangeFrom] = useState('')
+  const [rangeTo, setRangeTo] = useState('')
+  const [rangeWeekdays, setRangeWeekdays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6])
+  const [singleDate, setSingleDate] = useState('')
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -130,22 +146,24 @@ export default function AvailabilityPage() {
     setBusy(false)
   }
 
-  async function copyToWeek() {
-    if (!practitionerId || busy) return
+  async function copyOpenPatternToDates(dates: string[]) {
+    if (!practitionerId) return
     const openTimes = gridTimes.filter((t) => slotByTime.has(t) && !slotByTime.get(t)?.is_booked)
+    const targetDates = dates.filter((d) => d !== selectedDate)
     if (openTimes.length === 0) { setErrorMsg('本日尚無開放時段可複製'); return }
+    if (targetDates.length === 0) { setErrorMsg('沒有有效的目標日期'); return }
 
     setBusy(true)
     setErrorMsg(null)
     const supabase = createBrowserSupabaseClient()
-    const otherDates = weekDays.map(formatDate).filter((d) => d !== selectedDate)
+    const sorted = [...targetDates].sort()
 
     const { data: existingSlots } = await supabase
       .from('availability_slots')
       .select('start_time')
       .eq('practitioner_id', practitionerId)
-      .gte('start_time', `${otherDates[0]}T00:00:00`)
-      .lte('start_time', `${otherDates[otherDates.length - 1]}T23:59:59`)
+      .gte('start_time', `${sorted[0]}T00:00:00`)
+      .lte('start_time', `${sorted[sorted.length - 1]}T23:59:59`)
 
     const existingKeySet = new Set(
       (existingSlots ?? []).map((s) => {
@@ -154,7 +172,7 @@ export default function AvailabilityPage() {
       })
     )
 
-    const rows = otherDates.flatMap((date) =>
+    const rows = targetDates.flatMap((date) =>
       openTimes
         .filter((time) => !existingKeySet.has(`${date}T${time}`))
         .map((time) => ({
@@ -171,23 +189,29 @@ export default function AvailabilityPage() {
     }
     await fetchSlots()
     setBusy(false)
+    setPanel(null)
   }
 
-  async function quickClose() {
-    if (!practitionerId || busy) return
-    const closable = slots.filter((s) => !s.is_booked)
-    if (closable.length === 0) return
-
+  async function closeSlotsInDates(dates: string[] | null) {
+    if (!practitionerId) return
     setBusy(true)
     setErrorMsg(null)
     const supabase = createBrowserSupabaseClient()
-    const { error } = await supabase
-      .from('availability_slots')
-      .delete()
-      .in('id', closable.map((s) => s.id))
-    if (error) setErrorMsg(`快速關閉失敗：${error.message}`)
+
+    let query = supabase.from('availability_slots').delete().eq('practitioner_id', practitionerId).eq('is_booked', false)
+    if (dates && dates.length > 0) {
+      const sorted = [...dates].sort()
+      query = query.gte('start_time', `${sorted[0]}T00:00:00`).lte('start_time', `${sorted[sorted.length - 1]}T23:59:59`)
+    }
+    const { error } = await query
+    if (error) setErrorMsg(`關閉失敗：${error.message}`)
     await fetchSlots()
     setBusy(false)
+    setPanel(null)
+  }
+
+  function toggleWeekday(day: number) {
+    setRangeWeekdays((prev) => prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day])
   }
 
   function prevWeek() {
@@ -295,14 +319,149 @@ export default function AvailabilityPage() {
 
         {/* 操作列 */}
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" disabled={busy} onClick={copyToWeek}>
+          <Button variant="outline" size="sm" disabled={busy} onClick={() => setPanel('copyMenu')}>
             <Copy className="w-4 h-4 mr-1.5" />複製本日
           </Button>
-          <Button variant="outline" size="sm" disabled={busy} onClick={quickClose} className="text-destructive border-destructive hover:bg-destructive/5">
+          <Button variant="outline" size="sm" disabled={busy} onClick={() => setPanel('closeMenu')} className="text-destructive border-destructive hover:bg-destructive/5">
             <CircleMinus className="w-4 h-4 mr-1.5" />快速關閉
           </Button>
         </div>
       </div>
+
+      {/* 複製本日 - 選單 */}
+      {panel === 'copyMenu' && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setPanel(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-xs overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setPanel('copyRange')} className="w-full flex items-center gap-3 px-5 py-4 hover:bg-muted/50 text-left">
+              <Layers className="w-4 h-4 text-primary" /><span className="text-sm font-medium">複製到區間日期</span>
+            </button>
+            <div className="border-t border-border" />
+            <button onClick={() => setPanel('copyDate')} className="w-full flex items-center gap-3 px-5 py-4 hover:bg-muted/50 text-left">
+              <CalendarDays className="w-4 h-4 text-primary" /><span className="text-sm font-medium">複製到指定日期</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 快速關閉 - 選單 */}
+      {panel === 'closeMenu' && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setPanel(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-xs overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => closeSlotsInDates([selectedDate])} className="w-full flex items-center gap-3 px-5 py-4 hover:bg-muted/50 text-left">
+              <CircleMinus className="w-4 h-4 text-destructive" /><span className="text-sm font-medium">本日關閉</span>
+            </button>
+            <div className="border-t border-border" />
+            <button onClick={() => setPanel('closeRange')} className="w-full flex items-center gap-3 px-5 py-4 hover:bg-muted/50 text-left">
+              <CalendarRange className="w-4 h-4 text-destructive" /><span className="text-sm font-medium">區間關閉</span>
+            </button>
+            <div className="border-t border-border" />
+            <button
+              onClick={() => { if (window.confirm('確定要關閉所有未來的開放時段嗎？此動作無法復原。')) closeSlotsInDates(null) }}
+              className="w-full flex items-center gap-3 px-5 py-4 hover:bg-muted/50 text-left"
+            >
+              <CalendarDays className="w-4 h-4 text-destructive" /><span className="text-sm font-medium">全部關閉</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 複製到區間日期 */}
+      {panel === 'copyRange' && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5">
+            <div className="flex items-center justify-between mb-4">
+              <span className="font-semibold text-sm">複製到區間日期</span>
+              <button onClick={() => setPanel(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">每次複製區間最多為 2 年。</p>
+            <div className="flex gap-2 mb-4">
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">從</label>
+                <input type="date" value={rangeFrom} onChange={(e) => setRangeFrom(e.target.value)} className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">到</label>
+                <input type="date" value={rangeTo} onChange={(e) => setRangeTo(e.target.value)} className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">重複星期</p>
+            <div className="flex gap-1.5 mb-4 flex-wrap">
+              {WEEKDAY_LABELS.map((label, day) => (
+                <button
+                  key={day}
+                  onClick={() => toggleWeekday(day)}
+                  className={`w-9 h-9 rounded-full text-xs font-medium border transition-colors ${
+                    rangeWeekdays.includes(day) ? 'bg-primary text-white border-primary' : 'border-border text-muted-foreground'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <Button
+              className="w-full"
+              size="sm"
+              disabled={busy || !rangeFrom || !rangeTo}
+              onClick={() => copyOpenPatternToDates(enumerateDates(rangeFrom, rangeTo, rangeWeekdays))}
+            >
+              確認複製
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 複製到指定日期 */}
+      {panel === 'copyDate' && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5">
+            <div className="flex items-center justify-between mb-4">
+              <span className="font-semibold text-sm">複製到指定日期</span>
+              <button onClick={() => setPanel(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
+            </div>
+            <label className="text-xs text-muted-foreground">日期</label>
+            <input type="date" value={singleDate} onChange={(e) => setSingleDate(e.target.value)} className="w-full mt-1 mb-4 rounded-md border border-input px-2 py-1.5 text-sm" />
+            <Button
+              className="w-full"
+              size="sm"
+              disabled={busy || !singleDate}
+              onClick={() => copyOpenPatternToDates([singleDate])}
+            >
+              確認複製
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 區間關閉 */}
+      {panel === 'closeRange' && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-5">
+            <div className="flex items-center justify-between mb-4">
+              <span className="font-semibold text-sm">區間關閉</span>
+              <button onClick={() => setPanel(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
+            </div>
+            <div className="flex gap-2 mb-4">
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">從</label>
+                <input type="date" value={rangeFrom} onChange={(e) => setRangeFrom(e.target.value)} className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs text-muted-foreground">到</label>
+                <input type="date" value={rangeTo} onChange={(e) => setRangeTo(e.target.value)} className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
+              </div>
+            </div>
+            <Button
+              className="w-full text-destructive border-destructive hover:bg-destructive/5"
+              variant="outline"
+              size="sm"
+              disabled={busy || !rangeFrom || !rangeTo}
+              onClick={() => closeSlotsInDates(enumerateDates(rangeFrom, rangeTo, null))}
+            >
+              確認關閉
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
