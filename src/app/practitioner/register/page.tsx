@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, ClipboardList, CreditCard, Sparkles } from 'lucide-react'
 
 type Service = { name: string; duration: number; price: number }
 
@@ -74,6 +74,9 @@ export default function PractitionerRegisterPage() {
         return { lat: loc.lat, lng: loc.lng }
       }
       return null
+    } catch (err: unknown) {
+      console.error('地址轉換失敗:', err)
+      return null
     } finally {
       setGeocoding(false)
     }
@@ -138,7 +141,11 @@ export default function PractitionerRegisterPage() {
 
       router.push('/practitioner/pending')
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : '送出失敗，請再試一次')
+      console.error('職人入駐送出失敗:', err)
+      const message = (err && typeof err === 'object' && 'message' in err)
+        ? String((err as { message: unknown }).message)
+        : '送出失敗，請再試一次'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -150,15 +157,28 @@ export default function PractitionerRegisterPage() {
 
   return (
     <div className="min-h-screen bg-background px-4 py-6 max-w-lg mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">職人入駐申請</h1>
-        <p className="text-muted-foreground text-sm mt-1">填寫完成後送出審核，通過後即可上架接單</p>
+      {/* 說明區塊 */}
+      <div className="bg-gradient-to-br from-primary to-[#6FAE82] rounded-2xl p-5 text-white shadow-md mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="w-5 h-5" />
+          <h1 className="text-xl font-bold">職人入駐申請</h1>
+        </div>
+        <p className="text-white/80 text-sm leading-relaxed">
+          填寫資料送出後，將由平台審核，通過後即可上架接單。請確保資料正確完整，以加快審核速度。
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* 基本資料 */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">基本資料</CardTitle></CardHeader>
+        <Card className="rounded-2xl border border-border shadow-none">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <User className="w-4 h-4 text-primary" />
+              </span>
+              基本資料
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label>真實姓名 *</Label>
@@ -185,8 +205,15 @@ export default function PractitionerRegisterPage() {
         </Card>
 
         {/* 服務地點 */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">服務地點</CardTitle></CardHeader>
+        <Card className="rounded-2xl border border-border shadow-none">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <MapPin className="w-4 h-4 text-primary" />
+              </span>
+              服務地點
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label>服務方式 *</Label>
@@ -200,9 +227,9 @@ export default function PractitionerRegisterPage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setForm(f => ({ ...f, service_mode: opt.value }))}
-                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-all active:scale-95 ${
                       form.service_mode === opt.value
-                        ? 'bg-primary text-white border-primary'
+                        ? 'bg-primary text-white border-primary shadow-sm'
                         : 'border-input text-foreground hover:border-primary'
                     }`}
                   >
@@ -228,29 +255,37 @@ export default function PractitionerRegisterPage() {
         </Card>
 
         {/* 服務項目 */}
-        <Card>
+        <Card className="rounded-2xl border border-border shadow-none">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">服務項目</CardTitle>
-              <Button type="button" variant="outline" size="sm" onClick={addService}>
+              <CardTitle className="text-base flex items-center gap-2">
+                <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <ClipboardList className="w-4 h-4 text-primary" />
+                </span>
+                服務項目
+              </CardTitle>
+              <Button type="button" variant="outline" size="sm" onClick={addService} className="active:scale-95 transition-transform">
                 <Plus className="w-3 h-3 mr-1" />新增
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             {services.map((s, i) => (
-              <div key={i} className="border border-border rounded-lg p-3 space-y-2">
+              <div key={i} className="bg-white border border-border rounded-xl p-4 space-y-3 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-muted-foreground">項目 {i + 1}</span>
+                  <span className="text-sm font-semibold text-foreground">項目 {i + 1}</span>
                   {services.length > 1 && (
-                    <button type="button" onClick={() => removeService(i)} className="text-destructive hover:opacity-70">
+                    <button type="button" onClick={() => removeService(i)} className="text-destructive hover:opacity-70 active:scale-90 transition-transform">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
                 </div>
-                <Input placeholder="服務名稱（例：全身按摩）" value={s.name}
-                  onChange={e => updateService(i, 'name', e.target.value)} required />
-                <div className="flex gap-2">
+                <div>
+                  <Label className="text-xs">服務名稱</Label>
+                  <Input className="mt-1" placeholder="例：全身按摩" value={s.name}
+                    onChange={e => updateService(i, 'name', e.target.value)} required />
+                </div>
+                <div className="flex gap-3">
                   <div className="flex-1">
                     <Label className="text-xs">時長（分鐘）</Label>
                     <Input type="number" className="mt-1" value={s.duration}
@@ -268,8 +303,15 @@ export default function PractitionerRegisterPage() {
         </Card>
 
         {/* 銀行資料 */}
-        <Card>
-          <CardHeader><CardTitle className="text-base">收款資料（選填）</CardTitle></CardHeader>
+        <Card className="rounded-2xl border border-border shadow-none">
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <CreditCard className="w-4 h-4 text-primary" />
+              </span>
+              收款資料（選填）
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label>銀行名稱</Label>
@@ -284,9 +326,13 @@ export default function PractitionerRegisterPage() {
           </CardContent>
         </Card>
 
-        {error && <p className="text-destructive text-sm text-center">{error}</p>}
+        {error && (
+          <p className="text-destructive text-sm text-center bg-destructive/5 border border-destructive/20 rounded-xl px-4 py-3">
+            {error}
+          </p>
+        )}
 
-        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+        <Button type="submit" className="w-full active:scale-95 transition-transform" size="lg" disabled={loading}>
           {loading ? '送出中...' : '送出審核申請'}
         </Button>
       </form>
