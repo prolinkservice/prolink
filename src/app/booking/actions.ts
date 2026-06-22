@@ -16,6 +16,12 @@ export async function createBooking(formData: FormData) {
   const paymentMethod = formData.get('paymentMethod') as string
   const customerAddress = formData.get('customerAddress') as string | null
 
+  const backTo = `/booking?slotId=${slotId}&practitionerId=${practitionerId}`
+
+  if (!serviceId) {
+    redirect(`${backTo}&error=${encodeURIComponent('請選擇服務項目，若此老師尚無服務項目請聯絡客服')}`)
+  }
+
   // 取得服務價格
   const { data: service } = await supabase
     .from('services')
@@ -23,7 +29,7 @@ export async function createBooking(formData: FormData) {
     .eq('id', serviceId)
     .single()
 
-  if (!service) redirect('/auth/error')
+  if (!service) redirect(`${backTo}&error=${encodeURIComponent('找不到此服務項目，請重新選擇')}`)
 
   // 建立預約
   const { data: booking, error } = await supabase
@@ -43,7 +49,7 @@ export async function createBooking(formData: FormData) {
     .select('id')
     .single()
 
-  if (error || !booking) redirect('/auth/error')
+  if (error || !booking) redirect(`${backTo}&error=${encodeURIComponent('預約建立失敗，請再試一次')}`)
 
   // 標記時段為已預約
   await supabase

@@ -38,9 +38,9 @@ const fmtTime = (iso: string) => {
 export default async function BookingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ slotId?: string; practitionerId?: string }>
+  searchParams: Promise<{ slotId?: string; practitionerId?: string; error?: string }>
 }) {
-  const { slotId, practitionerId } = await searchParams
+  const { slotId, practitionerId, error: errorMsg } = await searchParams
   if (!slotId || !practitionerId) notFound()
 
   const supabase = await createServerSupabaseClient()
@@ -87,6 +87,12 @@ export default async function BookingPage({
         <input type="hidden" name="practitionerId" value={practitionerId} />
 
         <div className="px-4 py-5 flex flex-col gap-5 pb-32 max-w-lg mx-auto">
+
+          {errorMsg && (
+            <div className="bg-destructive/5 border border-destructive/20 rounded-xl px-4 py-3 text-sm text-destructive">
+              {errorMsg}
+            </div>
+          )}
 
           {/* 預約摘要卡 */}
           <div className="bg-gradient-to-br from-primary to-[#6FAE82] rounded-2xl p-5 text-white shadow-md">
