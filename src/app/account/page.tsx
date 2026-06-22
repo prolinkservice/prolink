@@ -17,6 +17,8 @@ export default async function AccountPage() {
     .eq('id', user.id)
     .single()
 
+  const hasPasswordLogin = user.identities?.some(i => i.provider === 'email') ?? false
+
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-3 shadow-sm">
@@ -43,8 +45,16 @@ export default async function AccountPage() {
         <SettingsListGroup>
           <SettingsListItem icon={User} label="個人檔案" href="/account/profile" />
           <SettingsListItem icon={CreditCard} label="付款方式" sublabel="尚未設定" href="/account/payment" />
-          <SettingsListItem icon={Lock} label="更改密碼" href="/account/password" />
+          {hasPasswordLogin && (
+            <SettingsListItem icon={Lock} label="更改密碼" href="/account/password" />
+          )}
         </SettingsListGroup>
+
+        {!hasPasswordLogin && (
+          <p className="text-xs text-muted-foreground text-center px-4">
+            你使用 Google 帳號登入，密碼由 Google 管理
+          </p>
+        )}
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
@@ -17,6 +17,17 @@ export default function AccountPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    const supabase = createBrowserSupabaseClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push('/'); return }
+      const hasPasswordLogin = user.identities?.some(i => i.provider === 'email') ?? false
+      if (!hasPasswordLogin) { router.push('/account'); return }
+      setChecking(false)
+    })
+  }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -45,6 +56,10 @@ export default function AccountPasswordPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (checking) {
+    return <div className="min-h-screen flex items-center justify-center text-muted-foreground">載入中...</div>
   }
 
   return (
