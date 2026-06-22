@@ -12,6 +12,17 @@ async function getOwnPractitionerId(supabase: Awaited<ReturnType<typeof createSe
   return data.id
 }
 
+export async function updateAvatar(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/')
+
+  const avatarUrl = formData.get('avatarUrl') as string
+  await supabase.from('profiles').update({ avatar_url: avatarUrl || null }).eq('id', user.id)
+
+  revalidatePath('/practitioner/dashboard/profile')
+}
+
 export async function updateVerification(formData: FormData) {
   const supabase = await createServerSupabaseClient()
   const practitionerId = await getOwnPractitionerId(supabase)
