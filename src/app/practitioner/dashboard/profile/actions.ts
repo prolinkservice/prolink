@@ -41,25 +41,16 @@ export async function updateVerification(formData: FormData) {
   revalidatePath('/practitioner/dashboard/profile')
 }
 
-export async function revalidateAddress(formData: FormData) {
+export async function updateAddress(formData: FormData) {
   const supabase = await createServerSupabaseClient()
   const practitionerId = await getOwnPractitionerId(supabase)
+
   const address = formData.get('shopAddress') as string
+  const latRaw = formData.get('latitude') as string
+  const lngRaw = formData.get('longitude') as string
 
-  let latitude: number | null = null
-  let longitude: number | null = null
-
-  if (address) {
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-    )
-    const data = await res.json()
-    if (data.status === 'OK') {
-      const loc = data.results[0].geometry.location
-      latitude = loc.lat
-      longitude = loc.lng
-    }
-  }
+  const latitude = latRaw ? parseFloat(latRaw) : null
+  const longitude = lngRaw ? parseFloat(lngRaw) : null
 
   await supabase
     .from('practitioners')
