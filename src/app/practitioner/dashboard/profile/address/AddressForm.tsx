@@ -59,9 +59,12 @@ export function AddressForm() {
       if (result.status === 'OK') {
         const loc = result.results[0].geometry.location
         setCoords({ lat: loc.lat, lng: loc.lng })
-      } else {
+      } else if (result.status === 'ZERO_RESULTS') {
         setCoords(null)
         setGeocodeError('找不到這個地址，請確認輸入是否正確')
+      } else {
+        setCoords(null)
+        setGeocodeError(`地址查詢失敗（${result.status}）：${result.error_message ?? '請確認 Google Maps API 設定'}`)
       }
     } catch (err) {
       console.error(err)
