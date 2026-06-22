@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Calendar, ClipboardList, LogOut, UserCog } from 'lucide-react'
+import { Calendar, ClipboardList, LogOut, UserCog, Star } from 'lucide-react'
 import { signOut } from '@/app/auth/actions'
 
 export default async function PractitionerDashboardPage() {
@@ -119,6 +119,20 @@ export default async function PractitionerDashboardPage() {
                 <div>
                   <p className="font-semibold text-sm">會員中心</p>
                   <p className="text-xs text-muted-foreground">銀行帳戶、身份驗證、社群連結</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/practitioner/dashboard/reviews">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+                  <Star className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">我的評價</p>
+                  <p className="text-xs text-muted-foreground">查看學員對您的評價</p>
                 </div>
               </CardContent>
             </Card>

@@ -28,6 +28,10 @@ export default function PractitionerRegisterPage() {
     license_url: string
     bank_name: string
     bank_account: string
+    years_experience: string
+    certificate_name: string
+    specialty_tags: string
+    cover_image_url: string
   }>({
     real_name: '',
     bio: '',
@@ -36,6 +40,10 @@ export default function PractitionerRegisterPage() {
     license_url: '',
     bank_name: '',
     bank_account: '',
+    years_experience: '',
+    certificate_name: '',
+    specialty_tags: '',
+    cover_image_url: '',
   })
 
   const [services, setServices] = useState<Service[]>([
@@ -53,7 +61,7 @@ export default function PractitionerRegisterPage() {
 
       const { data: rejected } = await supabase
         .from('practitioners')
-        .select('id, bio, service_mode, shop_address, license_url, bank_name, bank_account')
+        .select('id, bio, service_mode, shop_address, license_url, bank_name, bank_account, years_experience, certificate_name, specialty_tags, cover_image_url')
         .eq('user_id', user.id)
         .eq('status', 'rejected')
         .maybeSingle()
@@ -76,6 +84,10 @@ export default function PractitionerRegisterPage() {
           license_url: rejected.license_url || '',
           bank_name: rejected.bank_name || '',
           bank_account: rejected.bank_account || '',
+          years_experience: rejected.years_experience !== null && rejected.years_experience !== undefined ? String(rejected.years_experience) : '',
+          certificate_name: rejected.certificate_name || '',
+          specialty_tags: (rejected.specialty_tags ?? []).join(', '),
+          cover_image_url: rejected.cover_image_url || '',
         }))
 
         const { data: oldServices } = await supabase
@@ -209,6 +221,10 @@ export default function PractitionerRegisterPage() {
           license_url: form.license_url || null,
           bank_name: form.bank_name || null,
           bank_account: form.bank_account || null,
+          years_experience: form.years_experience ? parseInt(form.years_experience) : null,
+          certificate_name: form.certificate_name || null,
+          specialty_tags: form.specialty_tags ? form.specialty_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
+          cover_image_url: form.cover_image_url || null,
           status: 'pending',
           rejection_reason: null,
         }).eq('id', existingPractitionerId)
@@ -231,6 +247,10 @@ export default function PractitionerRegisterPage() {
           license_url: form.license_url || null,
           bank_name: form.bank_name || null,
           bank_account: form.bank_account || null,
+          years_experience: form.years_experience ? parseInt(form.years_experience) : null,
+          certificate_name: form.certificate_name || null,
+          specialty_tags: form.specialty_tags ? form.specialty_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
+          cover_image_url: form.cover_image_url || null,
           status: 'pending',
         }).select().single()
 
@@ -353,10 +373,31 @@ export default function PractitionerRegisterPage() {
               />
             </div>
             <div>
+              <Label>執業年資（選填）</Label>
+              <Input type="number" className="mt-1" placeholder="例：5" value={form.years_experience}
+                onChange={e => setForm(f => ({ ...f, years_experience: e.target.value }))} min={0} />
+            </div>
+            <div>
+              <Label>證照名稱（選填）</Label>
+              <Input className="mt-1" placeholder="例：中醫推拿執照" value={form.certificate_name}
+                onChange={e => setForm(f => ({ ...f, certificate_name: e.target.value }))} />
+            </div>
+            <div>
               <Label>證照圖片網址（選填）</Label>
               <Input className="mt-1" placeholder="https://..." value={form.license_url}
                 onChange={e => setForm(f => ({ ...f, license_url: e.target.value }))} />
               <p className="text-xs text-muted-foreground mt-1">Demo 階段請貼上圖片連結</p>
+            </div>
+            <div>
+              <Label>專長標籤（選填，用逗號分隔）</Label>
+              <Input className="mt-1" placeholder="例：運動按摩, 深層組織按摩, 久坐族群調理" value={form.specialty_tags}
+                onChange={e => setForm(f => ({ ...f, specialty_tags: e.target.value }))} />
+            </div>
+            <div>
+              <Label>封面照網址（選填）</Label>
+              <Input className="mt-1" placeholder="https://..." value={form.cover_image_url}
+                onChange={e => setForm(f => ({ ...f, cover_image_url: e.target.value }))} />
+              <p className="text-xs text-muted-foreground mt-1">建議使用寬幅橫向照片，Demo 階段請貼上圖片連結</p>
             </div>
           </CardContent>
         </Card>

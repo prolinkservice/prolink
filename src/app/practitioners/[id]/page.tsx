@@ -1,4 +1,4 @@
-import { MapPin, Clock, ChevronLeft, Star, AtSign, Share2, Link2, Globe } from 'lucide-react'
+import { MapPin, Clock, ChevronLeft, Star, AtSign, Share2, Link2, Globe, Award, BadgeCheck, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -27,6 +27,10 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       service_mode,
       shop_address,
       status,
+      years_experience,
+      certificate_name,
+      specialty_tags,
+      cover_image_url,
       profiles ( display_name, avatar_url ),
       services ( id, name, description, duration_minutes, price ),
       availability_slots ( id, start_time, end_time, is_booked ),
@@ -80,6 +84,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
 
   const services = practitioner.services as { id: string; name: string; description: string | null; duration_minutes: number; price: number }[]
   const socialLinks = (practitioner.social_links as { platform: string; url: string }[]) ?? []
+  const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
   const PLATFORM_ICON: Record<string, typeof Globe> = {
     instagram: AtSign, facebook: Share2, line: Link2, other: Globe,
   }
@@ -97,8 +102,16 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       </div>
 
       {/* 老師基本資訊 */}
-      <div className="bg-gradient-to-br from-primary to-[#6FAE82] px-4 py-8 text-white">
-        <div className="flex gap-4 items-start">
+      <div
+        className={`relative px-4 py-8 text-white overflow-hidden ${
+          practitioner.cover_image_url ? 'bg-cover bg-center' : 'bg-gradient-to-br from-primary to-[#6FAE82]'
+        }`}
+        style={practitioner.cover_image_url ? { backgroundImage: `url(${practitioner.cover_image_url})` } : undefined}
+      >
+        {practitioner.cover_image_url && (
+          <div className="absolute inset-0 bg-black/30" />
+        )}
+        <div className="relative flex gap-4 items-start">
           <Avatar className="w-24 h-24 border-2 border-white/50">
             <AvatarImage src={avatar} />
             <AvatarFallback className="bg-white/20 text-white text-3xl font-bold">
@@ -112,6 +125,22 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
                 <Star className="w-4 h-4 fill-white text-white" />
                 <span className="font-semibold text-sm">{avgRating.toFixed(1)}</span>
                 <span className="text-white/70 text-sm">（{reviewList.length} 則評價）</span>
+              </div>
+            )}
+            {(practitioner.years_experience || practitioner.certificate_name) && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {practitioner.years_experience && (
+                  <Badge className="bg-white/20 text-white border-white/30 text-xs px-2.5 py-1 rounded-full">
+                    <Award className="w-3 h-3 mr-1" />
+                    {practitioner.years_experience} 年經驗
+                  </Badge>
+                )}
+                {practitioner.certificate_name && (
+                  <Badge className="bg-white/20 text-white border-white/30 text-xs px-2.5 py-1 rounded-full">
+                    <BadgeCheck className="w-3 h-3 mr-1" />
+                    {practitioner.certificate_name}
+                  </Badge>
+                )}
               </div>
             )}
             <div className="flex gap-1 mt-2">
@@ -156,6 +185,23 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
             )}
           </CardContent>
         </Card>
+
+        {/* 服務特色 */}
+        {specialtyTags.length > 0 && (
+          <Card>
+            <CardContent className="p-4">
+              <h2 className="font-bold text-lg mb-3">服務特色</h2>
+              <div className="flex flex-col gap-2">
+                {specialtyTags.map((tag, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-base text-muted-foreground">{tag}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* 服務項目 */}
         <div>

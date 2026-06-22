@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, CreditCard, IdCard, MapPin, Link2 } from 'lucide-react'
+import { ChevronLeft, CreditCard, IdCard, MapPin, Link2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLayout'
@@ -8,6 +8,7 @@ import { BankForm } from './bank/BankForm'
 import { IdForm } from './id/IdForm'
 import { AddressForm } from './address/AddressForm'
 import { SocialForm } from './social/SocialForm'
+import { BrandForm } from './brand/BrandForm'
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
   pending: { label: '審核中', className: 'text-amber-600' },
@@ -27,7 +28,7 @@ export default async function MemberProfilePage() {
 
   const { data: practitioner } = await supabase
     .from('practitioners')
-    .select('id, status, bank_status, id_verification_status, latitude, longitude, social_links')
+    .select('id, status, bank_status, id_verification_status, latitude, longitude, social_links, years_experience, certificate_name, specialty_tags, cover_image_url')
     .eq('user_id', user.id)
     .single()
 
@@ -35,8 +36,18 @@ export default async function MemberProfilePage() {
 
   const socialLinks = (practitioner.social_links as { platform: string; url: string }[]) ?? []
   const addressVerified = practitioner.latitude !== null && practitioner.longitude !== null
+  const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
+  const brandFilled = practitioner.years_experience || practitioner.certificate_name || specialtyTags.length > 0 || practitioner.cover_image_url
 
   const items: SettingsLayoutItem[] = [
+    {
+      key: 'brand',
+      icon: Sparkles,
+      label: '個人品牌',
+      sublabel: brandFilled ? <span className="text-green-600">已填寫</span> : <span className="text-amber-600">尚未填寫</span>,
+      href: '/practitioner/dashboard/profile/brand',
+      content: <BrandForm />,
+    },
     {
       key: 'bank',
       icon: CreditCard,

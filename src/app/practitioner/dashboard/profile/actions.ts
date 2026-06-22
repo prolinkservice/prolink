@@ -70,6 +70,28 @@ export async function revalidateAddress(formData: FormData) {
   revalidatePath('/practitioner/dashboard/profile')
 }
 
+export async function updateBrandInfo(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const yearsExperience = formData.get('yearsExperience') as string
+  const certificateName = formData.get('certificateName') as string
+  const specialtyTags = formData.get('specialtyTags') as string
+  const coverImageUrl = formData.get('coverImageUrl') as string
+
+  await supabase
+    .from('practitioners')
+    .update({
+      years_experience: yearsExperience ? parseInt(yearsExperience) : null,
+      certificate_name: certificateName || null,
+      specialty_tags: specialtyTags ? specialtyTags.split(',').map(s => s.trim()).filter(Boolean) : [],
+      cover_image_url: coverImageUrl || null,
+    })
+    .eq('id', practitionerId)
+
+  revalidatePath('/practitioner/dashboard/profile')
+}
+
 export async function addSocialLink(formData: FormData) {
   const supabase = await createServerSupabaseClient()
   const practitionerId = await getOwnPractitionerId(supabase)
