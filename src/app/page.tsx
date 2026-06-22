@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { signOut } from '@/app/auth/actions'
 import GoogleMap from '@/components/GoogleMap'
+import { parseCityDistrict } from '@/lib/address'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -33,8 +34,9 @@ export default async function Home() {
         longitude,
         status,
         specialty_tags,
+        years_experience,
         profiles ( display_name, avatar_url ),
-        services ( price )
+        services ( id, price )
       `)
       .eq('status', 'approved')
       .order('created_at', { ascending: false }),
@@ -54,7 +56,8 @@ export default async function Home() {
   }
 
   const list = (practitioners ?? []).map((p) => {
-    const prices = (p.services as { price: number }[]).map(s => s.price)
+    const services = p.services as { id: string; price: number }[]
+    const prices = services.map(s => s.price)
     const minPrice = prices.length ? Math.min(...prices) : 0
     const profileRaw = p.profiles as unknown
     const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
@@ -66,11 +69,13 @@ export default async function Home() {
       avatar: prof?.avatar_url ?? '',
       serviceMode: SERVICE_MODE_LABEL[p.service_mode] ?? [],
       price: minPrice,
+      serviceCount: services.length,
       lat: p.latitude as number | null,
       lng: p.longitude as number | null,
       avgRating,
       reviewCount: ratingEntry?.count ?? 0,
       specialtyTags: (p.specialty_tags as string[] | null) ?? [],
+      district: parseCityDistrict(p.shop_address as string | null),
     }
   })
 
@@ -180,32 +185,43 @@ export default async function Home() {
       <div className="px-4 pt-4">
         <h2 className="font-semibold text-base mb-3">精選老師</h2>
         <div className="flex gap-3 overflow-x-auto pb-2">
-          {featured.map((p) => (
+          {featured.map((p, i) => (
             <Link key={p.id} href={`/practitioners/${p.id}`} className="shrink-0">
-              <Card className="w-36 cursor-pointer hover:shadow-md active:scale-95 transition-all duration-150">
-                <CardContent className="p-3 flex flex-col items-center text-center">
-                  <Avatar className="w-16 h-16 mb-2">
+              <Card className="w-[180px] cursor-pointer hover:shadow-md active:scale-95 transition-all duration-150 rounded-2xl relative">
+                {i === 0 && (
+                  <div className="absolute top-2.5 left-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center z-10">
+                    <Star className="w-3 h-3 fill-white text-white" />
+                  </div>
+                )}
+                <CardContent className="px-3.5 pt-5 pb-4 flex flex-col items-center text-center">
+                  <Avatar className={`w-[76px] h-[76px] mb-3 border-[3px] ${i === 0 ? 'border-[#6FAE82]' : 'border-border'}`}>
                     <AvatarImage src={p.avatar} />
-                    <AvatarFallback className="bg-accent text-foreground text-xl font-semibold">{p.name[0]}</AvatarFallback>
+                    <AvatarFallback className="bg-accent text-foreground text-2xl font-semibold">{p.name[0]}</AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-semibold truncate w-full">{p.name}</span>
-                  {p.reviewCount > 0 && (
-                    <span className="flex items-center gap-0.5 text-xs text-amber-500 mt-0.5">
-                      <Star className="w-3 h-3 fill-amber-500" />
-                      {p.avgRating.toFixed(1)}
-                      <span className="text-muted-foreground">({p.reviewCount})</span>
+                  <span className="text-base font-semibold truncate w-full">{p.name}</span>
+                  <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1 h-4">
+                    {p.district && (
+                      <>
+                        <MapPin className="w-3 h-3 text-[#6FAE82]" />
+                        <span className="truncate">{p.district}</span>
+                      </>
+                    )}
+                  </div>
+                  <span className="text-sm text-foreground mt-1 truncate w-full">{p.specialtyTags[0] ?? ' '}</span>
+                  <span className="text-xs text-muted-foreground mb-3.5">{p.serviceCount} 個服務項目</span>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="flex items-center gap-1 text-sm font-semibold">
+                      {p.reviewCount > 0 ? (
+                        <>
+                          <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                          {p.avgRating.toFixed(1)}/5.0
+                        </>
+                      ) : (
+                        <span className="text-xs text-muted-foreground font-normal">尚無評價</span>
+                      )}
                     </span>
-                  )}
-                  <span className="text-primary text-sm font-bold mt-1">NT${p.price}</span>
-                  {p.specialtyTags.length > 0 && (
-                    <div className="flex flex-wrap justify-center gap-1 mt-1.5">
-                      {p.specialtyTags.slice(0, 2).map((tag) => (
-                        <span key={tag} className="text-[10px] bg-accent text-primary px-1.5 py-0.5 rounded-full truncate max-w-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                    <span className="text-xs font-medium text-primary border border-[#6FAE82] rounded-full px-3 py-1">查看</span>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
@@ -229,14 +245,21 @@ export default async function Home() {
                       <AvatarFallback className="bg-accent text-foreground text-xs font-semibold">{p.name[0]}</AvatarFallback>
                     </Avatar>
                     <span className="text-xs font-semibold truncate w-full">{p.name}</span>
-                    {p.reviewCount > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] text-amber-500 mt-0.5">
-                        <Star className="w-2.5 h-2.5 fill-amber-500" />
-                        {p.avgRating.toFixed(1)}
+                    <span className="flex items-center gap-0.5 text-[10px] text-amber-500 mt-0.5 h-3.5">
+                      {p.reviewCount > 0 && (
+                        <>
+                          <Star className="w-2.5 h-2.5 fill-amber-500" />
+                          {p.avgRating.toFixed(1)}
+                        </>
+                      )}
+                    </span>
+                    <span className="text-primary font-bold text-xs mt-0.5">NT${p.price}</span>
+                    {p.district && (
+                      <span className="flex items-center gap-0.5 text-muted-foreground text-[10px] mt-0.5 truncate w-full justify-center">
+                        <MapPin className="w-2.5 h-2.5 shrink-0" />
+                        <span className="truncate">{p.district}</span>
                       </span>
                     )}
-                    <span className="text-primary font-bold text-xs mt-0.5">NT${p.price}</span>
-                    <span className="text-muted-foreground text-[10px] mt-0.5">{p.serviceMode.join(' ')}</span>
                   </CardContent>
                 </Card>
               </Link>

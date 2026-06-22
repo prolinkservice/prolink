@@ -1,13 +1,13 @@
-import { MapPin, Clock, ChevronLeft, Star, AtSign, Share2, Link2, Globe, Award, BadgeCheck, CheckCircle2 } from 'lucide-react'
+import { MapPin, ChevronLeft, Star, Share2, MessageCircle, Award, BadgeCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { signInWithGoogle } from '@/app/auth/actions'
-import GoogleMap from '@/components/GoogleMap'
+import { parseCityDistrict } from '@/lib/address'
+import { PractitionerTabs } from './PractitionerTabs'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -44,7 +44,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       .single(),
     supabase
       .from('reviews')
-      .select('rating, comment, created_at, profiles ( display_name )')
+      .select('rating, comment, created_at, profiles ( display_name ), bookings ( services ( name, price ) )')
       .eq('practitioner_id', id)
       .order('created_at', { ascending: false }),
   ])
@@ -88,9 +88,22 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
   const services = practitioner.services as { id: string; name: string; description: string | null; duration_minutes: number; price: number }[]
   const socialLinks = (practitioner.social_links as { platform: string; url: string }[]) ?? []
   const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
-  const PLATFORM_ICON: Record<string, typeof Globe> = {
-    instagram: AtSign, facebook: Share2, line: Link2, other: Globe,
-  }
+  const district = parseCityDistrict(practitioner.shop_address as string | null)
+  const reviewsForTabs = reviewList.map((r) => {
+    const revProfRaw = r.profiles as unknown
+    const revProf = (Array.isArray(revProfRaw) ? revProfRaw[0] : revProfRaw) as { display_name: string | null } | null
+    const bookingRaw = r.bookings as unknown
+    const booking = (Array.isArray(bookingRaw) ? bookingRaw[0] : bookingRaw) as { services: unknown } | null
+    const serviceRaw = booking?.services as unknown
+    const service = (Array.isArray(serviceRaw) ? serviceRaw[0] : serviceRaw) as { name: string; price: number } | null
+    return {
+      rating: r.rating,
+      comment: r.comment,
+      reviewerName: revProf?.display_name ?? '匿名學員',
+      serviceName: service?.name ?? null,
+      servicePrice: service?.price ?? null,
+    }
+  })
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,136 +117,76 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         <span className="font-semibold text-lg">老師詳細資料</span>
       </div>
 
-      {/* 老師基本資訊 */}
+      {/* 封面照 */}
       <div
-        className={`relative px-4 py-8 text-white overflow-hidden ${
-          practitioner.cover_image_url ? 'bg-cover bg-center' : 'bg-gradient-to-br from-primary to-[#6FAE82]'
-        }`}
+        className={`relative h-40 ${practitioner.cover_image_url ? 'bg-cover bg-center' : 'bg-gradient-to-br from-primary to-[#6FAE82]'}`}
         style={practitioner.cover_image_url ? { backgroundImage: `url(${practitioner.cover_image_url})` } : undefined}
       >
-        {practitioner.cover_image_url && (
-          <div className="absolute inset-0 bg-black/30" />
-        )}
-        <div className="relative flex gap-4 items-start">
-          <Avatar className="w-24 h-24 border-2 border-white/50">
-            <AvatarImage src={avatar} />
-            <AvatarFallback className="bg-white/20 text-white text-3xl font-bold">
-              {name[0]}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{name}</h1>
-            {reviewList.length > 0 && (
-              <div className="flex items-center gap-1 mt-1">
-                <Star className="w-4 h-4 fill-white text-white" />
-                <span className="font-semibold text-sm">{avgRating.toFixed(1)}</span>
-                <span className="text-white/70 text-sm">（{reviewList.length} 則評價）</span>
-              </div>
-            )}
-            {(practitioner.years_experience || practitioner.certificate_name) && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {practitioner.years_experience && (
-                  <Badge className="bg-white/20 text-white border-white/30 text-xs px-2.5 py-1 rounded-full">
-                    <Award className="w-3 h-3 mr-1" />
-                    {practitioner.years_experience} 年經驗
-                  </Badge>
-                )}
-                {practitioner.certificate_name && (
-                  <Badge className="bg-white/20 text-white border-white/30 text-xs px-2.5 py-1 rounded-full">
-                    <BadgeCheck className="w-3 h-3 mr-1" />
-                    {practitioner.certificate_name}
-                  </Badge>
-                )}
-              </div>
-            )}
-            <div className="flex gap-1 mt-2">
-              {serviceMode.map((mode) => (
-                <Badge key={mode} className="bg-white/20 text-white border-white/30 text-sm px-3 py-1">
-                  {mode}
-                </Badge>
-              ))}
-            </div>
-            {socialLinks.length > 0 && (
-              <div className="flex gap-2 mt-3">
-                {socialLinks.map((link, i) => {
-                  const Icon = PLATFORM_ICON[link.platform] ?? Globe
-                  return (
-                    <a
-                      key={i}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 active:scale-90 transition-all"
-                    >
-                      <Icon className="w-4 h-4 text-white" />
-                    </a>
-                  )
-                })}
-              </div>
-            )}
+        <Avatar className="absolute left-4 -bottom-8 w-20 h-20 border-[3px] border-white shadow-sm">
+          <AvatarImage src={avatar} />
+          <AvatarFallback className="bg-accent text-foreground text-2xl font-bold">{name[0]}</AvatarFallback>
+        </Avatar>
+      </div>
+
+      {/* 老師基本資訊 */}
+      <div className="px-4 pt-10 pb-2">
+        <div className="flex items-start justify-between">
+          <h1 className="text-xl font-bold">{name}</h1>
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <Share2 className="w-4 h-4" />
+            <MessageCircle className="w-4 h-4" />
           </div>
+        </div>
+        {district && (
+          <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+            <MapPin className="w-3.5 h-3.5 text-[#6FAE82]" />
+            <span>{district}</span>
+          </div>
+        )}
+        {reviewList.length > 0 && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <span className="font-semibold text-sm">{avgRating.toFixed(1)}/5.0</span>
+            <span className="text-muted-foreground text-sm">（{reviewList.length} 則評價）</span>
+          </div>
+        )}
+        <div className="flex flex-wrap gap-1.5 mt-2.5">
+          {practitioner.years_experience && (
+            <Badge className="bg-accent text-primary border-none text-xs px-2.5 py-1 rounded-full">
+              <Award className="w-3 h-3 mr-1" />
+              {practitioner.years_experience} 年經驗
+            </Badge>
+          )}
+          {practitioner.certificate_name && (
+            <Badge className="bg-accent text-primary border-none text-xs px-2.5 py-1 rounded-full">
+              <BadgeCheck className="w-3 h-3 mr-1" />
+              {practitioner.certificate_name}
+            </Badge>
+          )}
+          {serviceMode.map((mode) => (
+            <Badge key={mode} variant="outline" className="text-xs px-2.5 py-1">
+              {mode}
+            </Badge>
+          ))}
         </div>
       </div>
 
+      <div className="px-4">
+        <PractitionerTabs
+          bio={practitioner.bio}
+          specialtyTags={specialtyTags}
+          socialLinks={socialLinks}
+          services={services}
+          reviews={reviewsForTabs}
+          avgRating={avgRating}
+          practitionerId={practitioner.id}
+          practitionerName={name}
+          lat={practitioner.latitude}
+          lng={practitioner.longitude}
+        />
+      </div>
+
       <div className="px-4 py-5 flex flex-col gap-5">
-        {/* 簡介 */}
-        <Card>
-          <CardContent className="p-4">
-            <p className="text-base text-muted-foreground leading-relaxed">{practitioner.bio ?? '尚未填寫簡介'}</p>
-            {practitioner.shop_address && (
-              <div className="flex items-center gap-1.5 mt-3 text-sm text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                <span>{practitioner.shop_address}</span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 地圖 */}
-        {practitioner.latitude != null && practitioner.longitude != null && (
-          <Card className="overflow-hidden">
-            <div className="h-[28rem]">
-              <GoogleMap practitioners={[{ id: practitioner.id, name, lat: practitioner.latitude, lng: practitioner.longitude }]} />
-            </div>
-          </Card>
-        )}
-
-        {/* 服務特色 */}
-        {specialtyTags.length > 0 && (
-          <Card>
-            <CardContent className="p-4">
-              <h2 className="font-bold text-lg mb-3">服務特色</h2>
-              <div className="flex flex-col gap-2">
-                {specialtyTags.map((tag, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                    <span className="text-base text-muted-foreground">{tag}</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 服務項目 */}
-        <div>
-          <h2 className="font-bold text-lg mb-3">服務項目</h2>
-          <div className="grid grid-cols-2 gap-3">
-            {services.map((service) => (
-              <Card key={service.id}>
-                <CardContent className="p-4">
-                  <p className="font-semibold text-base leading-snug">{service.name}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5 text-muted-foreground">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-sm">{service.duration_minutes} 分鐘</span>
-                  </div>
-                  <span className="text-primary font-bold text-lg mt-1.5 block">NT${service.price}</span>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
         {/* 可預約時段 */}
         <div>
           <h2 className="font-bold text-lg mb-3">可預約時段</h2>
@@ -270,37 +223,6 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
                       ))}
                     </div>
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-        {/* 評價 */}
-        <div>
-          <h2 className="font-bold text-lg mb-3">
-            學員評價 {reviewList.length > 0 && `（${reviewList.length}）`}
-          </h2>
-          {reviewList.length === 0 ? (
-            <p className="text-muted-foreground text-base">尚無評價</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {reviewList.map((r, i) => {
-                const revProfRaw = r.profiles as unknown
-                const revProf = (Array.isArray(revProfRaw) ? revProfRaw[0] : revProfRaw) as { display_name: string | null } | null
-                return (
-                  <Card key={i}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="font-semibold text-sm">{revProf?.display_name ?? '匿名學員'}</span>
-                        <div className="flex items-center gap-0.5">
-                          {Array.from({ length: 5 }).map((_, j) => (
-                            <Star key={j} className={`w-4 h-4 ${j < r.rating ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground'}`} />
-                          ))}
-                        </div>
-                      </div>
-                      {r.comment && <p className="text-sm text-muted-foreground leading-relaxed">{r.comment}</p>}
-                    </CardContent>
-                  </Card>
                 )
               })}
             </div>
