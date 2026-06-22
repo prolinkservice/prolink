@@ -164,7 +164,7 @@ export default async function Home() {
       </div>
 
       {/* Google Map */}
-      <div className="mx-4 rounded-xl border border-border overflow-hidden aspect-[4/3] sm:aspect-video">
+      <div className="mx-4 rounded-xl border border-border overflow-hidden h-72 sm:h-96">
         {mapPractitioners.length > 0 ? (
           <GoogleMap practitioners={mapPractitioners} />
         ) : (
