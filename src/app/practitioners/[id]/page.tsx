@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { signInWithGoogle } from '@/app/auth/actions'
+import GoogleMap from '@/components/GoogleMap'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -26,6 +27,8 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       bio,
       service_mode,
       shop_address,
+      latitude,
+      longitude,
       status,
       years_experience,
       certificate_name,
@@ -185,6 +188,15 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
             )}
           </CardContent>
         </Card>
+
+        {/* 地圖 */}
+        {practitioner.latitude != null && practitioner.longitude != null && (
+          <Card className="overflow-hidden">
+            <div className="h-56">
+              <GoogleMap practitioners={[{ id: practitioner.id, name, lat: practitioner.latitude, lng: practitioner.longitude }]} />
+            </div>
+          </Card>
+        )}
 
         {/* 服務特色 */}
         {specialtyTags.length > 0 && (
