@@ -32,6 +32,7 @@ export default function AvailabilityPage() {
   const [endTime, setEndTime] = useState('10:00')
   const [adding, setAdding] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [addError, setAddError] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -67,14 +68,20 @@ export default function AvailabilityPage() {
     if (!practitionerId) return
     if (startTime >= endTime) { alert('結束時間必須晚於開始時間'); return }
     setAdding(true)
+    setAddError(null)
     const supabase = createBrowserSupabaseClient()
-    await supabase.from('availability_slots').insert({
+    const { error } = await supabase.from('availability_slots').insert({
       practitioner_id: practitionerId,
       start_time: `${selectedDate}T${startTime}:00+08:00`,
       end_time: `${selectedDate}T${endTime}:00+08:00`,
       is_booked: false,
     })
-    await fetchSlots()
+    if (error) {
+      console.error(error)
+      setAddError(`新增失敗：${error.message}`)
+    } else {
+      await fetchSlots()
+    }
     setAdding(false)
   }
 
@@ -200,6 +207,7 @@ export default function AvailabilityPage() {
                 <Plus className="w-4 h-4 mr-1" />
                 {adding ? '新增中...' : '新增此時段'}
               </Button>
+              {addError && <p className="text-xs text-destructive mt-2">{addError}</p>}
             </CardContent>
           </Card>
         </div>
