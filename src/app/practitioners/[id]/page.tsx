@@ -191,8 +191,8 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
 
         {/* 地圖 */}
         {practitioner.latitude != null && practitioner.longitude != null && (
-          <Card className="overflow-hidden">
-            <div className="h-56">
+          <Card className="overflow-hidden max-w-md mx-auto w-full">
+            <div className="h-72">
               <GoogleMap practitioners={[{ id: practitioner.id, name, lat: practitioner.latitude, lng: practitioner.longitude }]} />
             </div>
           </Card>
