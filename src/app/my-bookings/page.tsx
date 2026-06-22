@@ -24,7 +24,7 @@ const STATUS_VARIANT: Record<string, 'default' | 'outline' | 'secondary' | 'dest
 }
 
 const PAYMENT_LABEL: Record<string, string> = {
-  deposit: '付定金',
+  deposit: '已付服務費',
   full_online: '線上全額',
   cash: '現場付現',
   transfer: '轉帳',

@@ -17,7 +17,7 @@ const fmt = (iso: string) => {
 
 const PAYMENT_LABEL: Record<string, string> = {
   full_online: '線上全額付款',
-  deposit: '付訂金（30%）',
+  deposit: '線上付平台服務費（10%）',
   cash: '現場付現',
   transfer: '轉帳',
 }
@@ -89,7 +89,7 @@ export default async function BookingSuccessPage({
             </div>
             {booking.deposit_amount && (
               <div className="flex justify-between text-orange-600">
-                <span>應付訂金</span>
+                <span>應付平台服務費</span>
                 <span className="font-bold">NT${booking.deposit_amount}</span>
               </div>
             )}

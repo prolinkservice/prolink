@@ -12,7 +12,7 @@ const SERVICE_MODE_LABEL: Record<string, string> = {
 
 const PAYMENT_OPTIONS = [
   { value: 'full_online', label: '線上全額付款', Icon: CreditCard, desc: '預約成功後立即付清' },
-  { value: 'deposit', label: '付訂金（30%）', Icon: ArrowRightLeft, desc: '先付訂金，尾款現場結清' },
+  { value: 'deposit', label: '線上付平台服務費（10%）', Icon: ArrowRightLeft, desc: '先線上付平台服務費，尾款現場結清' },
   { value: 'cash', label: '現場付現', Icon: Banknote, desc: '服務完成後現場付款' },
   { value: 'transfer', label: '轉帳', Icon: Banknote, desc: '預約成功後提供帳號' },
 ]

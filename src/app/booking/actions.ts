@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { calcCommission } from '@/lib/commission'
 
 export async function createBooking(formData: FormData) {
   const supabase = await createServerSupabaseClient()
@@ -37,7 +38,7 @@ export async function createBooking(formData: FormData) {
       payment_method: paymentMethod,
       payment_status: 'unpaid',
       total_amount: service.price,
-      deposit_amount: paymentMethod === 'deposit' ? Math.round(service.price * 0.3) : null,
+      deposit_amount: paymentMethod === 'deposit' ? calcCommission(service.price) : null,
     })
     .select('id')
     .single()
