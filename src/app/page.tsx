@@ -19,25 +19,26 @@ export default async function Home() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: profile } = user
-    ? await supabase.from('profiles').select('role').eq('id', user.id).single()
-    : { data: null }
-
-  const { data: practitioners } = await supabase
-    .from('practitioners')
-    .select(`
-      id,
-      service_mode,
-      shop_address,
-      latitude,
-      longitude,
-      status,
-      specialty_tags,
-      profiles ( display_name, avatar_url ),
-      services ( price )
-    `)
-    .eq('status', 'approved')
-    .order('created_at', { ascending: false })
+  const [{ data: profile }, { data: practitioners }] = await Promise.all([
+    user
+      ? supabase.from('profiles').select('role').eq('id', user.id).single()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from('practitioners')
+      .select(`
+        id,
+        service_mode,
+        shop_address,
+        latitude,
+        longitude,
+        status,
+        specialty_tags,
+        profiles ( display_name, avatar_url ),
+        services ( price )
+      `)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false }),
+  ])
 
   const practitionerIds = (practitioners ?? []).map((p) => p.id)
   const { data: allReviews } = practitionerIds.length

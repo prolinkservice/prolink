@@ -18,38 +18,38 @@ const SERVICE_MODE_LABEL: Record<string, string[]> = {
 export default async function PractitionerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const { data: practitioner } = await supabase
-    .from('practitioners')
-    .select(`
-      id,
-      bio,
-      service_mode,
-      shop_address,
-      latitude,
-      longitude,
-      status,
-      years_experience,
-      certificate_name,
-      specialty_tags,
-      cover_image_url,
-      profiles ( display_name, avatar_url ),
-      services ( id, name, description, duration_minutes, price ),
-      availability_slots ( id, start_time, end_time, is_booked ),
-      social_links
-    `)
-    .eq('id', id)
-    .eq('status', 'approved')
-    .single()
+  const [{ data: { user } }, { data: practitioner }, { data: reviews }] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from('practitioners')
+      .select(`
+        id,
+        bio,
+        service_mode,
+        shop_address,
+        latitude,
+        longitude,
+        status,
+        years_experience,
+        certificate_name,
+        specialty_tags,
+        cover_image_url,
+        profiles ( display_name, avatar_url ),
+        services ( id, name, description, duration_minutes, price ),
+        availability_slots ( id, start_time, end_time, is_booked ),
+        social_links
+      `)
+      .eq('id', id)
+      .eq('status', 'approved')
+      .single(),
+    supabase
+      .from('reviews')
+      .select('rating, comment, created_at, profiles ( display_name )')
+      .eq('practitioner_id', id)
+      .order('created_at', { ascending: false }),
+  ])
 
   if (!practitioner) notFound()
-
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('rating, comment, created_at, profiles ( display_name )')
-    .eq('practitioner_id', id)
-    .order('created_at', { ascending: false })
 
   const reviewList = reviews ?? []
   const avgRating = reviewList.length
