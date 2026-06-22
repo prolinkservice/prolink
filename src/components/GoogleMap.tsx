@@ -50,7 +50,7 @@ export default function GoogleMap({ practitioners, onSelect }: Props) {
           title: p.name,
           icon: {
             path: 'M12 0C7.802 0 4 3.403 4 7.602C4 11.8 7.469 16.812 12 24C16.531 16.812 20 11.8 20 7.602C20 3.403 16.198 0 12 0ZM12 11C10.343 11 9 9.657 9 8C9 6.343 10.343 5 12 5C13.657 5 15 6.343 15 8C15 9.657 13.657 11 12 11Z',
-            fillColor: '#E64545',
+            fillColor: '#1A1A1A',
             fillOpacity: 1,
             strokeColor: '#fff',
             strokeWeight: 2,
