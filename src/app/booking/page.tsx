@@ -12,7 +12,7 @@ const SERVICE_MODE_LABEL: Record<string, string> = {
 }
 
 const TAIL_PAYMENT_OPTIONS = [
-  { value: 'online', label: '線上付清尾款', Icon: CreditCard, desc: '服務費＋尾款一次線上付清' },
+  { value: 'full_online', label: '線上付清尾款', Icon: CreditCard, desc: '服務費＋尾款一次線上付清' },
   { value: 'cash', label: '現場付現結尾款', Icon: Banknote, desc: '服務完成後現場付清剩餘金額' },
   { value: 'transfer', label: '轉帳結尾款', Icon: Banknote, desc: '預約成功後提供帳號轉帳' },
 ]
