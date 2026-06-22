@@ -26,11 +26,21 @@ export default async function MemberProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/')
 
-  const { data: practitioner } = await supabase
+  const { data: practitioner, error: practitionerError } = await supabase
     .from('practitioners')
     .select('id, status, bank_status, id_verification_status, latitude, longitude, social_links, years_experience, certificate_name, specialty_tags, cover_image_url')
     .eq('user_id', user.id)
     .single()
+
+  if (practitionerError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 text-sm text-destructive max-w-md">
+          查詢錯誤：{practitionerError.message}
+        </div>
+      </div>
+    )
+  }
 
   if (!practitioner || practitioner.status !== 'approved') redirect('/')
 
