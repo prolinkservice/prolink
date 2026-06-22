@@ -49,10 +49,11 @@ export default async function MemberProfilePage() {
   const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
   const brandFilled = practitioner.years_experience || practitioner.certificate_name || specialtyTags.length > 0 || practitioner.cover_image_url
 
+  const iconClass = "w-4.5 h-4.5 text-primary"
   const items: SettingsLayoutItem[] = [
     {
       key: 'brand',
-      icon: Sparkles,
+      icon: <Sparkles className={iconClass} />,
       label: '個人品牌',
       sublabel: brandFilled ? <span className="text-green-600">已填寫</span> : <span className="text-amber-600">尚未填寫</span>,
       href: '/practitioner/dashboard/profile/brand',
@@ -60,7 +61,7 @@ export default async function MemberProfilePage() {
     },
     {
       key: 'bank',
-      icon: CreditCard,
+      icon: <CreditCard className={iconClass} />,
       label: '銀行帳戶',
       sublabel: statusSublabel(practitioner.bank_status),
       href: '/practitioner/dashboard/profile/bank',
@@ -68,7 +69,7 @@ export default async function MemberProfilePage() {
     },
     {
       key: 'id',
-      icon: IdCard,
+      icon: <IdCard className={iconClass} />,
       label: '身份驗證',
       sublabel: statusSublabel(practitioner.id_verification_status),
       href: '/practitioner/dashboard/profile/id',
@@ -76,7 +77,7 @@ export default async function MemberProfilePage() {
     },
     {
       key: 'address',
-      icon: MapPin,
+      icon: <MapPin className={iconClass} />,
       label: '店家地址',
       sublabel: addressVerified ? <span className="text-green-600">已驗證</span> : <span className="text-amber-600">尚未驗證</span>,
       href: '/practitioner/dashboard/profile/address',
@@ -84,7 +85,7 @@ export default async function MemberProfilePage() {
     },
     {
       key: 'social',
-      icon: Link2,
+      icon: <Link2 className={iconClass} />,
       label: '社群連結',
       sublabel: socialLinks.length > 0 ? `${socialLinks.length} 個連結` : '尚未新增',
       href: '/practitioner/dashboard/profile/social',

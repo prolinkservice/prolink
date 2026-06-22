@@ -2,12 +2,12 @@
 
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { ChevronRight, type LucideIcon } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface SettingsLayoutItem {
   key: string
-  icon: LucideIcon
+  icon: ReactNode
   label: string
   sublabel?: ReactNode
   href: string
@@ -33,7 +33,7 @@ export function SettingsLayout({ items }: SettingsLayoutProps) {
             className="flex items-center gap-3 px-4 py-3.5 bg-white hover:bg-muted/50 active:scale-[0.99] transition-all"
           >
             <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center shrink-0">
-              <item.icon className="w-4.5 h-4.5 text-primary" />
+              {item.icon}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground">{item.label}</p>
@@ -62,7 +62,7 @@ export function SettingsLayout({ items }: SettingsLayoutProps) {
                 )}
               >
                 <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center shrink-0">
-                  <item.icon className="w-4.5 h-4.5 text-primary" />
+                  {item.icon}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground">{item.label}</p>

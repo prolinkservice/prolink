@@ -22,17 +22,18 @@ export default async function AccountPage() {
 
   const hasPasswordLogin = user.identities?.some(i => i.provider === 'email') ?? false
 
+  const iconClass = "w-4.5 h-4.5 text-primary"
   const items: SettingsLayoutItem[] = [
     {
       key: 'profile',
-      icon: User,
+      icon: <User className={iconClass} />,
       label: '個人檔案',
       href: '/account/profile',
       content: <ProfileForm />,
     },
     {
       key: 'payment',
-      icon: CreditCard,
+      icon: <CreditCard className={iconClass} />,
       label: '付款方式',
       sublabel: '尚未設定',
       href: '/account/payment',
@@ -43,7 +44,7 @@ export default async function AccountPage() {
   if (hasPasswordLogin) {
     items.push({
       key: 'password',
-      icon: Lock,
+      icon: <Lock className={iconClass} />,
       label: '更改密碼',
       href: '/account/password',
       content: <PasswordForm />,
