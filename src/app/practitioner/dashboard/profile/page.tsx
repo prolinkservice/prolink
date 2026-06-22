@@ -11,13 +11,14 @@ import { SocialForm } from './social/SocialForm'
 import { BrandForm } from './brand/BrandForm'
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
+  not_submitted: { label: '未上傳', className: 'text-muted-foreground' },
   pending: { label: '審核中', className: 'text-amber-600' },
   approved: { label: '已通過', className: 'text-green-600' },
   rejected: { label: '已退回', className: 'text-destructive' },
 }
 
 function statusSublabel(status: string) {
-  const cfg = STATUS_LABEL[status] ?? STATUS_LABEL.pending
+  const cfg = STATUS_LABEL[status] ?? STATUS_LABEL.not_submitted
   return <span className={cfg.className}>{cfg.label}</span>
 }
 

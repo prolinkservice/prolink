@@ -18,10 +18,18 @@ export async function updateBankAccount(formData: FormData) {
 
   const bankName = formData.get('bankName') as string
   const bankAccount = formData.get('bankAccount') as string
+  const passbookUrl = formData.get('passbookUrl') as string
+
+  const newStatus = passbookUrl ? 'pending' : 'not_submitted'
 
   await supabase
     .from('practitioners')
-    .update({ bank_name: bankName, bank_account: bankAccount, bank_status: 'pending' })
+    .update({
+      bank_name: bankName,
+      bank_account: bankAccount,
+      passbook_url: passbookUrl || null,
+      bank_status: newStatus,
+    })
     .eq('id', practitionerId)
 
   revalidatePath('/practitioner/dashboard/profile')
@@ -34,9 +42,15 @@ export async function updateIdVerification(formData: FormData) {
   const idFrontUrl = formData.get('idFrontUrl') as string
   const idBackUrl = formData.get('idBackUrl') as string
 
+  const newStatus = idFrontUrl && idBackUrl ? 'pending' : 'not_submitted'
+
   await supabase
     .from('practitioners')
-    .update({ id_front_url: idFrontUrl, id_back_url: idBackUrl, id_verification_status: 'pending' })
+    .update({
+      id_front_url: idFrontUrl || null,
+      id_back_url: idBackUrl || null,
+      id_verification_status: newStatus,
+    })
     .eq('id', practitionerId)
 
   revalidatePath('/practitioner/dashboard/profile')

@@ -34,19 +34,56 @@ export default async function AdminPage() {
     .order('created_at', { ascending: false })
     .limit(10)
 
-  const { data: bankReviews } = await supabase
+  const { data: bankReviewsRaw } = await supabase
     .from('practitioners')
-    .select('id, bank_name, bank_account, profiles ( display_name )')
+    .select('id, bank_name, bank_account, passbook_url, profiles ( display_name )')
     .eq('status', 'approved')
     .eq('bank_status', 'pending')
     .not('bank_name', 'is', null)
 
-  const { data: idReviews } = await supabase
+  const bankReviews = bankReviewsRaw
+    ? await Promise.all(
+        bankReviewsRaw.map(async (b) => {
+          let passbookSignedUrl: string | null = null
+          if (b.passbook_url) {
+            const { data: signedData } = await supabase.storage
+              .from('verification-docs')
+              .createSignedUrl(b.passbook_url, 60 * 10)
+            passbookSignedUrl = signedData?.signedUrl ?? null
+          }
+          return { ...b, passbookSignedUrl }
+        })
+      )
+    : null
+
+  const { data: idReviewsRaw } = await supabase
     .from('practitioners')
     .select('id, id_front_url, id_back_url, profiles ( display_name )')
     .eq('status', 'approved')
     .eq('id_verification_status', 'pending')
     .not('id_front_url', 'is', null)
+
+  const idReviews = idReviewsRaw
+    ? await Promise.all(
+        idReviewsRaw.map(async (idv) => {
+          let idFrontSignedUrl: string | null = null
+          let idBackSignedUrl: string | null = null
+          if (idv.id_front_url) {
+            const { data: signedData } = await supabase.storage
+              .from('verification-docs')
+              .createSignedUrl(idv.id_front_url, 60 * 10)
+            idFrontSignedUrl = signedData?.signedUrl ?? null
+          }
+          if (idv.id_back_url) {
+            const { data: signedData } = await supabase.storage
+              .from('verification-docs')
+              .createSignedUrl(idv.id_back_url, 60 * 10)
+            idBackSignedUrl = signedData?.signedUrl ?? null
+          }
+          return { ...idv, idFrontSignedUrl, idBackSignedUrl }
+        })
+      )
+    : null
 
   return (
     <div className="min-h-screen bg-[#F8F7F5]">
@@ -283,6 +320,11 @@ export default async function AdminPage() {
                       <div>
                         <p className="font-semibold text-sm">{prof?.display_name ?? '未知'}</p>
                         <p className="text-xs text-muted-foreground">{b.bank_name}　{b.bank_account}</p>
+                        {b.passbookSignedUrl && (
+                          <a href={b.passbookSignedUrl} target="_blank" className="text-xs text-primary underline">
+                            查看存摺影本
+                          </a>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2 shrink-0">
@@ -326,8 +368,8 @@ export default async function AdminPage() {
                       <div>
                         <p className="font-semibold text-sm">{prof?.display_name ?? '未知'}</p>
                         <div className="flex gap-3 text-xs">
-                          {idv.id_front_url && <a href={idv.id_front_url} target="_blank" className="text-primary underline">正面照片</a>}
-                          {idv.id_back_url && <a href={idv.id_back_url} target="_blank" className="text-primary underline">反面照片</a>}
+                          {idv.idFrontSignedUrl && <a href={idv.idFrontSignedUrl} target="_blank" className="text-primary underline">正面照片</a>}
+                          {idv.idBackSignedUrl && <a href={idv.idBackSignedUrl} target="_blank" className="text-primary underline">反面照片</a>}
                         </div>
                       </div>
                     </div>

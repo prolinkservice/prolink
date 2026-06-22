@@ -1,22 +1,23 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { IdCard, CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { IdCard, CheckCircle2, Clock, XCircle, FileImage, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { addWatermarkToImage } from '@/lib/watermark'
 import { updateIdVerification } from '../actions'
 
 const STATUS_CONFIG: Record<string, { label: string; className: string; Icon: typeof CheckCircle2 }> = {
+  not_submitted: { label: '未上傳', className: 'text-muted-foreground bg-muted border-border', Icon: Clock },
   pending: { label: '審核中', className: 'text-amber-600 bg-amber-50 border-amber-200', Icon: Clock },
   approved: { label: '已通過', className: 'text-green-600 bg-green-50 border-green-200', Icon: CheckCircle2 },
   rejected: { label: '已退回', className: 'text-destructive bg-destructive/5 border-destructive/20', Icon: XCircle },
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.not_submitted
   const Icon = cfg.Icon
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border ${cfg.className}`}>
@@ -32,9 +33,19 @@ interface IdData {
   id_verification_status: string
 }
 
+type Side = 'front' | 'back'
+
 export function IdForm() {
   const [data, setData] = useState<IdData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [uploadingFront, setUploadingFront] = useState(false)
+  const [uploadingBack, setUploadingBack] = useState(false)
+  const [idFrontPath, setIdFrontPath] = useState<string | null>(null)
+  const [idBackPath, setIdBackPath] = useState<string | null>(null)
+  const [errorFront, setErrorFront] = useState<string | null>(null)
+  const [errorBack, setErrorBack] = useState<string | null>(null)
+  const frontInputRef = useRef<HTMLInputElement>(null)
+  const backInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -47,10 +58,47 @@ export function IdForm() {
         .eq('user_id', user.id)
         .single()
       setData(practitioner as IdData)
+      setIdFrontPath((practitioner as IdData | null)?.id_front_url ?? null)
+      setIdBackPath((practitioner as IdData | null)?.id_back_url ?? null)
       setLoading(false)
     }
     load()
   }, [])
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, side: Side) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const setUploading = side === 'front' ? setUploadingFront : setUploadingBack
+    const setPath = side === 'front' ? setIdFrontPath : setIdBackPath
+    const setError = side === 'front' ? setErrorFront : setErrorBack
+    const fileName = side === 'front' ? 'id_front' : 'id_back'
+
+    setUploading(true)
+    setError(null)
+    try {
+      const supabase = createBrowserSupabaseClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('尚未登入')
+
+      const watermarkedBlob = await addWatermarkToImage(file, '僅供 ProLink 審核用')
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `${user.id}/${fileName}.${ext}`
+
+      const { error } = await supabase.storage
+        .from('verification-docs')
+        .upload(path, watermarkedBlob, { upsert: true, contentType: file.type || 'image/jpeg' })
+
+      if (error) throw error
+
+      setPath(path)
+    } catch (err) {
+      console.error(err)
+      setError('上傳失敗，請再試一次')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   if (loading || !data) {
     return <p className="text-muted-foreground text-sm text-center py-8">載入中...</p>
@@ -69,17 +117,78 @@ export function IdForm() {
         <form action={updateIdVerification} className="flex flex-col gap-3">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div>
-              <Label>身分證正面照片網址</Label>
-              <Input name="idFrontUrl" defaultValue={data.id_front_url ?? ''} placeholder="https://..." className="mt-1" />
+              <Label>身分證正面照片</Label>
+              <div className="mt-1 flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploadingFront}
+                  onClick={() => frontInputRef.current?.click()}
+                  className="active:scale-95 transition-transform"
+                >
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                  {uploadingFront ? '上傳中...' : '選擇圖片'}
+                </Button>
+                <input
+                  ref={frontInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg"
+                  onChange={(e) => handleFileChange(e, 'front')}
+                  className="hidden"
+                />
+                {idFrontPath && !uploadingFront && (
+                  <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                    <FileImage className="w-3.5 h-3.5" />
+                    已上傳
+                  </span>
+                )}
+              </div>
+              {errorFront && <p className="text-xs text-destructive mt-1">{errorFront}</p>}
             </div>
             <div>
-              <Label>身分證反面照片網址</Label>
-              <Input name="idBackUrl" defaultValue={data.id_back_url ?? ''} placeholder="https://..." className="mt-1" />
+              <Label>身分證反面照片</Label>
+              <div className="mt-1 flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploadingBack}
+                  onClick={() => backInputRef.current?.click()}
+                  className="active:scale-95 transition-transform"
+                >
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                  {uploadingBack ? '上傳中...' : '選擇圖片'}
+                </Button>
+                <input
+                  ref={backInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg"
+                  onChange={(e) => handleFileChange(e, 'back')}
+                  className="hidden"
+                />
+                {idBackPath && !uploadingBack && (
+                  <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                    <FileImage className="w-3.5 h-3.5" />
+                    已上傳
+                  </span>
+                )}
+              </div>
+              {errorBack && <p className="text-xs text-destructive mt-1">{errorBack}</p>}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground -mt-1">Demo 階段請貼上圖片連結</p>
-          <Button type="submit" size="sm" className="self-start active:scale-95 transition-transform">
-            儲存並送審
+          <p className="text-xs text-muted-foreground -mt-1">上傳後會自動加上審核浮水印，僅供 ProLink 審核使用</p>
+
+          <input type="hidden" name="idFrontUrl" value={idFrontPath ?? ''} />
+          <input type="hidden" name="idBackUrl" value={idBackPath ?? ''} />
+
+          <Button
+            type="submit"
+            size="sm"
+            disabled={uploadingFront || uploadingBack}
+            className="self-start active:scale-95 transition-transform"
+          >
+            {uploadingFront || uploadingBack ? '上傳中...' : '儲存並送審'}
           </Button>
         </form>
       </CardContent>
