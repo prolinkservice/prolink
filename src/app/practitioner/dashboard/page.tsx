@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Calendar, ClipboardList, LogOut, UserCog, Star, Home } from 'lucide-react'
+import { Calendar, ClipboardList, LogOut, UserCog, Star, Home, ListChecks } from 'lucide-react'
 import { signOut } from '@/app/auth/actions'
 
 export default async function PractitionerDashboardPage() {
@@ -98,6 +98,20 @@ export default async function PractitionerDashboardPage() {
                 <div>
                   <p className="font-semibold text-sm">時段管理</p>
                   <p className="text-xs text-muted-foreground">新增或移除可預約時段</p>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/practitioner/dashboard/services">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
+                  <ListChecks className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">服務管理</p>
+                  <p className="text-xs text-muted-foreground">新增、編輯或刪除服務項目</p>
                 </div>
               </CardContent>
             </Card>
