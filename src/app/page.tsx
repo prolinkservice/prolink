@@ -1,4 +1,4 @@
-import { MapPin, Search, SlidersHorizontal, LogOut } from 'lucide-react'
+import { MapPin, Search, SlidersHorizontal, LogOut, Star } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,11 +38,26 @@ export default async function Home() {
     .eq('status', 'approved')
     .order('created_at', { ascending: false })
 
+  const practitionerIds = (practitioners ?? []).map((p) => p.id)
+  const { data: allReviews } = practitionerIds.length
+    ? await supabase.from('reviews').select('practitioner_id, rating').in('practitioner_id', practitionerIds)
+    : { data: [] }
+
+  const ratingMap = new Map<string, { sum: number; count: number }>()
+  for (const r of allReviews ?? []) {
+    const entry = ratingMap.get(r.practitioner_id) ?? { sum: 0, count: 0 }
+    entry.sum += r.rating
+    entry.count += 1
+    ratingMap.set(r.practitioner_id, entry)
+  }
+
   const list = (practitioners ?? []).map((p) => {
     const prices = (p.services as { price: number }[]).map(s => s.price)
     const minPrice = prices.length ? Math.min(...prices) : 0
     const profileRaw = p.profiles as unknown
     const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
+    const ratingEntry = ratingMap.get(p.id)
+    const avgRating = ratingEntry ? ratingEntry.sum / ratingEntry.count : 0
     return {
       id: p.id,
       name: prof?.display_name ?? '老師',
@@ -51,6 +66,8 @@ export default async function Home() {
       price: minPrice,
       lat: p.latitude as number | null,
       lng: p.longitude as number | null,
+      avgRating,
+      reviewCount: ratingEntry?.count ?? 0,
     }
   })
 
@@ -168,6 +185,13 @@ export default async function Home() {
                     <AvatarFallback className="bg-accent text-foreground text-xl font-semibold">{p.name[0]}</AvatarFallback>
                   </Avatar>
                   <span className="text-sm font-semibold truncate w-full">{p.name}</span>
+                  {p.reviewCount > 0 && (
+                    <span className="flex items-center gap-0.5 text-xs text-amber-500 mt-0.5">
+                      <Star className="w-3 h-3 fill-amber-500" />
+                      {p.avgRating.toFixed(1)}
+                      <span className="text-muted-foreground">({p.reviewCount})</span>
+                    </span>
+                  )}
                   <span className="text-primary text-sm font-bold mt-1">NT${p.price}</span>
                 </CardContent>
               </Card>
@@ -192,6 +216,12 @@ export default async function Home() {
                       <AvatarFallback className="bg-accent text-foreground text-xs font-semibold">{p.name[0]}</AvatarFallback>
                     </Avatar>
                     <span className="text-xs font-semibold truncate w-full">{p.name}</span>
+                    {p.reviewCount > 0 && (
+                      <span className="flex items-center gap-0.5 text-[10px] text-amber-500 mt-0.5">
+                        <Star className="w-2.5 h-2.5 fill-amber-500" />
+                        {p.avgRating.toFixed(1)}
+                      </span>
+                    )}
                     <span className="text-primary font-bold text-xs mt-0.5">NT${p.price}</span>
                     <span className="text-muted-foreground text-[10px] mt-0.5">{p.serviceMode.join(' ')}</span>
                   </CardContent>
