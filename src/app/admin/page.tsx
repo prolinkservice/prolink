@@ -19,11 +19,13 @@ export default async function AdminPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') redirect('/')
 
-  const { data: pending } = await supabase
+  const { data: pending, error: pendingError } = await supabase
     .from('practitioners')
     .select(`id, bio, service_mode, shop_address, license_url, bank_name, bank_account, created_at, profiles ( display_name )`)
     .eq('status', 'pending')
     .order('created_at', { ascending: true })
+
+  if (pendingError) console.error('admin pending query error:', pendingError)
 
   const { data: approved } = await supabase
     .from('practitioners')
@@ -94,6 +96,11 @@ export default async function AdminPage() {
 
         {/* 待審核 */}
         <section>
+          {pendingError && (
+            <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 mb-4 text-sm text-destructive">
+              查詢錯誤：{pendingError.message}
+            </div>
+          )}
           <div className="flex items-center gap-3 mb-4">
             <h2 className="font-bold text-xl text-foreground">待審核申請</h2>
             {(pending?.length ?? 0) > 0 && (
