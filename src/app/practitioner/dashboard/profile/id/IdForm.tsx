@@ -67,13 +67,15 @@ export function IdForm() {
       </CardHeader>
       <CardContent>
         <form action={updateIdVerification} className="flex flex-col gap-3">
-          <div>
-            <Label>身分證正面照片網址</Label>
-            <Input name="idFrontUrl" defaultValue={data.id_front_url ?? ''} placeholder="https://..." className="mt-1" />
-          </div>
-          <div>
-            <Label>身分證反面照片網址</Label>
-            <Input name="idBackUrl" defaultValue={data.id_back_url ?? ''} placeholder="https://..." className="mt-1" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <Label>身分證正面照片網址</Label>
+              <Input name="idFrontUrl" defaultValue={data.id_front_url ?? ''} placeholder="https://..." className="mt-1" />
+            </div>
+            <div>
+              <Label>身分證反面照片網址</Label>
+              <Input name="idBackUrl" defaultValue={data.id_back_url ?? ''} placeholder="https://..." className="mt-1" />
+            </div>
           </div>
           <p className="text-xs text-muted-foreground -mt-1">Demo 階段請貼上圖片連結</p>
           <Button type="submit" size="sm" className="self-start active:scale-95 transition-transform">

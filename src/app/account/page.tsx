@@ -60,8 +60,8 @@ export default async function AccountPage() {
         <span className="font-semibold text-lg">我的帳戶</span>
       </div>
 
-      <div className="px-4 py-6 max-w-lg lg:max-w-4xl mx-auto flex flex-col gap-5">
-        <div className="flex items-center gap-4 px-2">
+      <div className="px-4 py-6 max-w-lg lg:max-w-5xl mx-auto flex flex-col gap-5">
+        <div className="lg:hidden flex items-center gap-4 px-2">
           <Avatar size="lg">
             <AvatarImage src={profile?.avatar_url ?? undefined} />
             <AvatarFallback className="bg-accent text-foreground text-lg font-semibold">
@@ -74,7 +74,23 @@ export default async function AccountPage() {
           </div>
         </div>
 
-        <SettingsLayout items={items} />
+        <SettingsLayout
+          items={items}
+          header={
+            <div className="flex items-center gap-3">
+              <Avatar size="lg">
+                <AvatarImage src={profile?.avatar_url ?? undefined} />
+                <AvatarFallback className="bg-accent text-foreground text-lg font-semibold">
+                  {profile?.display_name?.[0] ?? user.email?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground truncate">{profile?.display_name ?? '會員'}</p>
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              </div>
+            </div>
+          }
+        />
 
         {!hasPasswordLogin && (
           <p className="text-xs text-muted-foreground text-center px-4">

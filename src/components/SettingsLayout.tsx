@@ -16,9 +16,10 @@ export interface SettingsLayoutItem {
 
 interface SettingsLayoutProps {
   items: SettingsLayoutItem[]
+  header?: ReactNode
 }
 
-export function SettingsLayout({ items }: SettingsLayoutProps) {
+export function SettingsLayout({ items, header }: SettingsLayoutProps) {
   const [activeKey, setActiveKey] = useState(items[0]?.key)
   const activeItem = items.find((item) => item.key === activeKey) ?? items[0]
 
@@ -48,7 +49,13 @@ export function SettingsLayout({ items }: SettingsLayoutProps) {
 
       {/* 桌面版：左右分欄 */}
       <div className="hidden lg:flex gap-6 items-start">
-        <div className="w-72 shrink-0 rounded-xl border border-border bg-white divide-y divide-border overflow-hidden">
+        <div className="w-72 shrink-0 rounded-xl border border-border bg-white overflow-hidden">
+          {header && (
+            <div className="px-4 py-4 border-b border-border">
+              {header}
+            </div>
+          )}
+          <div className="divide-y divide-border">
           {items.map((item) => {
             const isActive = item.key === activeItem?.key
             return (
@@ -74,6 +81,7 @@ export function SettingsLayout({ items }: SettingsLayoutProps) {
               </button>
             )
           })}
+          </div>
         </div>
 
         <div className="flex-1 bg-white rounded-2xl border border-border p-6 min-w-0">

@@ -50,13 +50,15 @@ export function BrandForm() {
       </CardHeader>
       <CardContent>
         <form action={updateBrandInfo} className="flex flex-col gap-3">
-          <div>
-            <Label>執業年資</Label>
-            <Input type="number" name="yearsExperience" defaultValue={data.years_experience ?? ''} placeholder="例：5" className="mt-1" min={0} />
-          </div>
-          <div>
-            <Label>證照名稱</Label>
-            <Input name="certificateName" defaultValue={data.certificate_name ?? ''} placeholder="例：中醫推拿執照" className="mt-1" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <Label>執業年資</Label>
+              <Input type="number" name="yearsExperience" defaultValue={data.years_experience ?? ''} placeholder="例：5" className="mt-1" min={0} />
+            </div>
+            <div>
+              <Label>證照名稱</Label>
+              <Input name="certificateName" defaultValue={data.certificate_name ?? ''} placeholder="例：中醫推拿執照" className="mt-1" />
+            </div>
           </div>
           <div>
             <Label>專長標籤（用逗號分隔）</Label>

@@ -67,13 +67,15 @@ export function BankForm() {
       </CardHeader>
       <CardContent>
         <form action={updateBankAccount} className="flex flex-col gap-3">
-          <div>
-            <Label>銀行名稱</Label>
-            <Input name="bankName" defaultValue={data.bank_name ?? ''} placeholder="例：台灣銀行" className="mt-1" />
-          </div>
-          <div>
-            <Label>銀行帳號</Label>
-            <Input name="bankAccount" defaultValue={data.bank_account ?? ''} placeholder="請輸入帳號" className="mt-1" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div>
+              <Label>銀行名稱</Label>
+              <Input name="bankName" defaultValue={data.bank_name ?? ''} placeholder="例：台灣銀行" className="mt-1" />
+            </div>
+            <div>
+              <Label>銀行帳號</Label>
+              <Input name="bankAccount" defaultValue={data.bank_account ?? ''} placeholder="請輸入帳號" className="mt-1" />
+            </div>
           </div>
           <Button type="submit" size="sm" className="self-start active:scale-95 transition-transform">
             儲存並送審

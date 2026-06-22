@@ -32,6 +32,12 @@ export default async function MemberProfilePage() {
     .eq('user_id', user.id)
     .single()
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('display_name')
+    .eq('id', user.id)
+    .single()
+
   if (practitionerError) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
@@ -48,6 +54,12 @@ export default async function MemberProfilePage() {
   const addressVerified = practitioner.latitude !== null && practitioner.longitude !== null
   const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
   const brandFilled = practitioner.years_experience || practitioner.certificate_name || specialtyTags.length > 0 || practitioner.cover_image_url
+
+  const verificationChecks = [
+    practitioner.bank_status === 'approved',
+    practitioner.id_verification_status === 'approved',
+  ]
+  const approvedCount = verificationChecks.filter(Boolean).length
 
   const iconClass = "w-4.5 h-4.5 text-primary"
   const items: SettingsLayoutItem[] = [
@@ -102,8 +114,18 @@ export default async function MemberProfilePage() {
         <span className="font-semibold text-lg">會員中心</span>
       </div>
 
-      <div className="px-4 py-6 max-w-lg lg:max-w-4xl mx-auto flex flex-col gap-5">
-        <SettingsLayout items={items} />
+      <div className="px-4 py-6 max-w-lg lg:max-w-5xl mx-auto flex flex-col gap-5">
+        <SettingsLayout
+          items={items}
+          header={
+            <div>
+              <p className="font-semibold text-foreground truncate">{profile?.display_name ?? '會員中心'}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {approvedCount}/{verificationChecks.length} 項目已通過審核
+              </p>
+            </div>
+          }
+        />
       </div>
     </div>
   )

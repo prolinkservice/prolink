@@ -66,28 +66,30 @@ export function PasswordForm({ onSaved }: { onSaved?: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div>
-        <Label htmlFor="newPassword">新密碼</Label>
-        <Input
-          id="newPassword"
-          type="password"
-          required
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="至少 6 個字元"
-          className="mt-1"
-        />
-      </div>
-      <div>
-        <Label htmlFor="confirmPassword">確認新密碼</Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          required
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="mt-1"
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="newPassword">新密碼</Label>
+          <Input
+            id="newPassword"
+            type="password"
+            required
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="至少 6 個字元"
+            className="mt-1"
+          />
+        </div>
+        <div>
+          <Label htmlFor="confirmPassword">確認新密碼</Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="mt-1"
+          />
+        </div>
       </div>
 
       {error && <p className="text-destructive text-sm">{error}</p>}
