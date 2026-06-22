@@ -81,6 +81,9 @@ export default async function Home() {
                     <Link href="/my-bookings">我的預約</Link>
                   </Button>
                   <Button asChild size="sm" variant="outline">
+                    <Link href="/account">我的帳戶</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline">
                     <Link href="/practitioner/register">職人入駐</Link>
                   </Button>
                 </>

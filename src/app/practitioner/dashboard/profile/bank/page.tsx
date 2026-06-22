@@ -1,0 +1,79 @@
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { ChevronLeft, CreditCard, CheckCircle2, Clock, XCircle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { updateBankAccount } from '../actions'
+
+const STATUS_CONFIG: Record<string, { label: string; className: string; Icon: typeof CheckCircle2 }> = {
+  pending: { label: '審核中', className: 'text-amber-600 bg-amber-50 border-amber-200', Icon: Clock },
+  approved: { label: '已通過', className: 'text-green-600 bg-green-50 border-green-200', Icon: CheckCircle2 },
+  rejected: { label: '已退回', className: 'text-destructive bg-destructive/5 border-destructive/20', Icon: XCircle },
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.pending
+  const Icon = cfg.Icon
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border ${cfg.className}`}>
+      <Icon className="w-3 h-3" />
+      {cfg.label}
+    </span>
+  )
+}
+
+export default async function BankAccountPage() {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/')
+
+  const { data: practitioner } = await supabase
+    .from('practitioners')
+    .select('bank_name, bank_account, bank_status')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!practitioner) redirect('/')
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-3 shadow-sm">
+        <Link href="/practitioner/dashboard/profile">
+          <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
+        </Link>
+        <span className="font-semibold text-lg">銀行帳戶</span>
+      </div>
+
+      <div className="px-4 py-6 max-w-lg mx-auto">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-primary" />
+              銀行帳戶
+            </CardTitle>
+            <StatusBadge status={practitioner.bank_status} />
+          </CardHeader>
+          <CardContent>
+            <form action={updateBankAccount} className="flex flex-col gap-3">
+              <div>
+                <Label>銀行名稱</Label>
+                <Input name="bankName" defaultValue={practitioner.bank_name ?? ''} placeholder="例：台灣銀行" className="mt-1" />
+              </div>
+              <div>
+                <Label>銀行帳號</Label>
+                <Input name="bankAccount" defaultValue={practitioner.bank_account ?? ''} placeholder="請輸入帳號" className="mt-1" />
+              </div>
+              <Button type="submit" size="sm" className="self-start active:scale-95 transition-transform">
+                儲存並送審
+              </Button>
+              <p className="text-xs text-muted-foreground">修改後將重新進入審核狀態</p>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
