@@ -44,11 +44,54 @@ export default function PractitionerRegisterPage() {
 
   const [geocoding, setGeocoding] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
+  const [existingPractitionerId, setExistingPractitionerId] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push(`/auth?next=${encodeURIComponent('/practitioner/register')}`); return }
+
+      const { data: rejected } = await supabase
+        .from('practitioners')
+        .select('id, bio, service_mode, shop_address, license_url, bank_name, bank_account')
+        .eq('user_id', user.id)
+        .eq('status', 'rejected')
+        .maybeSingle()
+
+      if (rejected) {
+        setExistingPractitionerId(rejected.id)
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('id', user.id)
+          .single()
+
+        setForm(f => ({
+          ...f,
+          real_name: profile?.display_name || f.real_name,
+          bio: rejected.bio || '',
+          service_mode: rejected.service_mode || 'at_shop',
+          shop_address: rejected.shop_address || '',
+          license_url: rejected.license_url || '',
+          bank_name: rejected.bank_name || '',
+          bank_account: rejected.bank_account || '',
+        }))
+
+        const { data: oldServices } = await supabase
+          .from('services')
+          .select('*')
+          .eq('practitioner_id', rejected.id)
+
+        if (oldServices && oldServices.length > 0) {
+          setServices(oldServices.map(s => ({
+            name: s.name,
+            duration: s.duration_minutes,
+            price: s.price,
+          })))
+        }
+      }
+
       setCheckingAuth(false)
     })
   }, [router])
@@ -153,27 +196,54 @@ export default function PractitionerRegisterPage() {
       // Update display_name in profiles
       await supabase.from('profiles').update({ display_name: form.real_name }).eq('id', user.id)
 
-      // Insert practitioner record
-      const { data: prac, error: pracErr } = await supabase.from('practitioners').insert({
-        user_id: user.id,
-        bio: form.bio,
-        service_mode: form.service_mode,
-        shop_address: form.shop_address || null,
-        latitude,
-        longitude,
-        license_url: form.license_url || null,
-        bank_name: form.bank_name || null,
-        bank_account: form.bank_account || null,
-        status: 'pending',
-      }).select().single()
+      let practitionerId: string
 
-      if (pracErr) throw pracErr
+      if (existingPractitionerId) {
+        // 補件重新申請：更新既有 practitioner 紀錄
+        const { error: updateErr } = await supabase.from('practitioners').update({
+          bio: form.bio,
+          service_mode: form.service_mode,
+          shop_address: form.shop_address || null,
+          latitude,
+          longitude,
+          license_url: form.license_url || null,
+          bank_name: form.bank_name || null,
+          bank_account: form.bank_account || null,
+          status: 'pending',
+          rejection_reason: null,
+        }).eq('id', existingPractitionerId)
+
+        if (updateErr) throw updateErr
+
+        practitionerId = existingPractitionerId
+
+        // 清除舊的服務項目，重新插入
+        await supabase.from('services').delete().eq('practitioner_id', practitionerId)
+      } else {
+        // Insert practitioner record
+        const { data: prac, error: pracErr } = await supabase.from('practitioners').insert({
+          user_id: user.id,
+          bio: form.bio,
+          service_mode: form.service_mode,
+          shop_address: form.shop_address || null,
+          latitude,
+          longitude,
+          license_url: form.license_url || null,
+          bank_name: form.bank_name || null,
+          bank_account: form.bank_account || null,
+          status: 'pending',
+        }).select().single()
+
+        if (pracErr) throw pracErr
+
+        practitionerId = prac.id
+      }
 
       // Insert services
       if (services.length > 0) {
         await supabase.from('services').insert(
           services.map(s => ({
-            practitioner_id: prac.id,
+            practitioner_id: practitionerId,
             name: s.name,
             duration_minutes: s.duration,
             price: s.price,

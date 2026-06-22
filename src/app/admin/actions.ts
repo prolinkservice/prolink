@@ -12,8 +12,9 @@ export async function approvePractitioner(formData: FormData) {
 
 export async function rejectPractitioner(formData: FormData) {
   const practitionerId = formData.get('practitionerId') as string
+  const reason = formData.get('reason') as string
   const supabase = await createServerSupabaseClient()
-  await supabase.from('practitioners').update({ status: 'rejected' }).eq('id', practitionerId)
+  await supabase.from('practitioners').update({ status: 'rejected', rejection_reason: reason || null }).eq('id', practitionerId)
   revalidatePath('/admin')
 }
 

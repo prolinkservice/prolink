@@ -205,9 +205,15 @@ export default async function AdminPage() {
                             核准上架
                           </Button>
                         </form>
-                        <form action={rejectPractitioner}>
+                        <form action={rejectPractitioner} className="space-y-2">
+                          <textarea
+                            name="reason"
+                            placeholder="請填寫退回原因（將顯示給職人）"
+                            required
+                            className="w-full bg-white border border-border rounded-xl px-3 py-2 text-sm resize-none min-h-[60px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                          />
                           <input type="hidden" name="practitionerId" value={p.id} />
-                          <Button type="submit" variant="outline" size="default" className="text-destructive border-destructive hover:bg-destructive/5 px-6">
+                          <Button type="submit" variant="outline" size="default" className="w-full text-destructive border-destructive hover:bg-destructive/5 px-6">
                             退回
                           </Button>
                         </form>
