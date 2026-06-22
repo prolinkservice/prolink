@@ -49,12 +49,13 @@ export default function GoogleMap({ practitioners, onSelect }: Props) {
           map,
           title: p.name,
           icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: '#FF6B6B',
+            path: 'M12 0C7.31 0 3.5 3.81 3.5 8.5c0 6.5 8.5 15.5 8.5 15.5s8.5-9 8.5-15.5C20.5 3.81 16.69 0 12 0zm0 11.5a3 3 0 110-6 3 3 0 010 6z',
+            fillColor: '#E64545',
             fillOpacity: 1,
             strokeColor: '#fff',
             strokeWeight: 2,
+            scale: 2,
+            anchor: new window.google.maps.Point(12, 24),
           },
         })
 

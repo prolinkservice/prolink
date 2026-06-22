@@ -153,6 +153,7 @@ export default async function Home() {
         </div>
       </div>
 
+      <div className="max-w-2xl mx-auto">
       {/* 篩選標籤 */}
       <div className="px-4 py-2.5 flex gap-2 overflow-x-auto">
         {['全部', '按摩', '瑜伽', '個人教練', '到店', '到府'].map((tag) => (
@@ -163,7 +164,7 @@ export default async function Home() {
       </div>
 
       {/* Google Map */}
-      <div className="mx-4 rounded-xl border border-border overflow-hidden h-48">
+      <div className="mx-4 rounded-xl border border-border overflow-hidden aspect-[4/3] sm:aspect-video">
         {mapPractitioners.length > 0 ? (
           <GoogleMap practitioners={mapPractitioners} />
         ) : (
@@ -241,6 +242,7 @@ export default async function Home() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   )
