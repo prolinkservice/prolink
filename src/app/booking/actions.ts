@@ -38,7 +38,7 @@ export async function createBooking(formData: FormData) {
       payment_method: paymentMethod,
       payment_status: 'unpaid',
       total_amount: service.price,
-      deposit_amount: paymentMethod === 'deposit' ? calcCommission(service.price) : null,
+      deposit_amount: calcCommission(service.price),
     })
     .select('id')
     .single()

@@ -24,10 +24,9 @@ const STATUS_VARIANT: Record<string, 'default' | 'outline' | 'secondary' | 'dest
 }
 
 const PAYMENT_LABEL: Record<string, string> = {
-  deposit: '客戶已付服務費',
-  full_online: '線上全額',
-  cash: '現場付現',
-  transfer: '轉帳',
+  online: '客戶線上付清尾款',
+  cash: '客戶現場付現結尾款',
+  transfer: '客戶轉帳結尾款',
 }
 
 type Booking = {

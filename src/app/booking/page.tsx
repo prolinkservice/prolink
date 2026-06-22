@@ -1,20 +1,20 @@
 import { notFound, redirect } from 'next/navigation'
-import { ChevronLeft, Clock, MapPin, CreditCard, Banknote, Building2, ArrowRightLeft, CheckCircle2, CalendarDays } from 'lucide-react'
+import { ChevronLeft, Clock, MapPin, CreditCard, Banknote, Building2, ShieldCheck, CheckCircle2, CalendarDays } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createBooking } from './actions'
+import { PLATFORM_COMMISSION_RATE } from '@/lib/commission'
 
 const SERVICE_MODE_LABEL: Record<string, string> = {
   at_shop: '到店服務',
   on_site: '到府服務',
 }
 
-const PAYMENT_OPTIONS = [
-  { value: 'full_online', label: '線上全額付款', Icon: CreditCard, desc: '預約成功後立即付清' },
-  { value: 'deposit', label: '線上付平台服務費（10%）', Icon: ArrowRightLeft, desc: '先線上付平台服務費，尾款現場結清' },
-  { value: 'cash', label: '現場付現', Icon: Banknote, desc: '服務完成後現場付款' },
-  { value: 'transfer', label: '轉帳', Icon: Banknote, desc: '預約成功後提供帳號' },
+const TAIL_PAYMENT_OPTIONS = [
+  { value: 'online', label: '線上付清尾款', Icon: CreditCard, desc: '服務費＋尾款一次線上付清' },
+  { value: 'cash', label: '現場付現結尾款', Icon: Banknote, desc: '服務完成後現場付清剩餘金額' },
+  { value: 'transfer', label: '轉帳結尾款', Icon: Banknote, desc: '預約成功後提供帳號轉帳' },
 ]
 
 const toTaipei = (iso: string) => new Date(new Date(iso).getTime() + 8 * 60 * 60 * 1000)
@@ -169,11 +169,19 @@ export default async function BookingPage({
             )}
           </section>
 
-          {/* 付款方式 */}
+          {/* 平台服務費說明 */}
+          <section className="bg-accent/40 border border-primary/20 rounded-xl px-4 py-3.5 flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-foreground leading-relaxed">
+              預約時需先線上支付<strong className="font-semibold">平台服務費</strong>（服務金額 {PLATFORM_COMMISSION_RATE * 100}%），保障客人與老師雙方權益；剩餘尾款請選擇下方方式結清。
+            </p>
+          </section>
+
+          {/* 尾款付款方式 */}
           <section>
-            <h2 className="font-semibold text-sm text-muted-foreground mb-2.5 px-1">付款方式</h2>
+            <h2 className="font-semibold text-sm text-muted-foreground mb-2.5 px-1">尾款付款方式</h2>
             <div className="flex flex-col gap-2">
-              {PAYMENT_OPTIONS.map(({ value, label, Icon, desc }, i) => (
+              {TAIL_PAYMENT_OPTIONS.map(({ value, label, Icon, desc }, i) => (
                 <label key={value} className="cursor-pointer">
                   <input type="radio" name="paymentMethod" value={value} defaultChecked={i === 0} className="sr-only peer" required />
                   <div className="bg-white rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 transition-all duration-150 active:scale-[0.98] shadow-sm">
