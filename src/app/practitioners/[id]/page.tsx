@@ -235,26 +235,23 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
                 const [, m, day] = date.split('-')
                 return (
                   <div key={date}>
-                    <p className="text-base font-bold mb-2.5">{m}/{day}（{wd}）</p>
-                    <div className="grid grid-cols-3 gap-2.5">
+                    <p className="text-sm font-bold mb-2">{m}/{day}（{wd}）</p>
+                    <div className="grid grid-cols-4 gap-1.5">
                       {dateSlots.map((slot) => (
                         slot.is_booked ? (
-                          <div key={slot.id} className="rounded-xl border border-border bg-muted/40 px-3 py-4 text-center opacity-40 cursor-not-allowed">
-                            <p className="text-base font-medium text-muted-foreground">{toTaipeiTime(slot.start_time)}</p>
-                            <p className="text-sm text-muted-foreground mt-1">已預約</p>
+                          <div key={slot.id} className="rounded-lg border border-border bg-muted/40 px-1.5 py-2 text-center opacity-40 cursor-not-allowed">
+                            <p className="text-xs font-medium text-muted-foreground">{toTaipeiTime(slot.start_time)}</p>
                           </div>
                         ) : user ? (
                           <Link key={slot.id} href={`/booking?slotId=${slot.id}&practitionerId=${practitioner.id}`}>
-                            <div className="rounded-xl border-2 border-primary/30 bg-primary/5 px-3 py-4 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
-                              <p className="text-base font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
-                              <p className="text-sm text-primary/70 group-hover:text-white/80 mt-1">點擊預約</p>
+                            <div className="rounded-lg border border-primary/30 bg-primary/5 px-1.5 py-2 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
+                              <p className="text-xs font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
                             </div>
                           </Link>
                         ) : (
                           <form key={slot.id} action={signInWithGoogle}>
-                            <button type="submit" className="w-full rounded-xl border-2 border-primary/30 bg-primary/5 px-3 py-4 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
-                              <p className="text-base font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
-                              <p className="text-sm text-primary/70 group-hover:text-white/80 mt-1">登入預約</p>
+                            <button type="submit" className="w-full rounded-lg border border-primary/30 bg-primary/5 px-1.5 py-2 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
+                              <p className="text-xs font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
                             </button>
                           </form>
                         )
