@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { approvePractitioner, rejectPractitioner, approveBank, rejectBank, approveId, rejectId } from './actions'
 import { signOut } from '@/app/auth/actions'
 import { Button } from '@/components/ui/button'
-import { LogOut, Clock, CheckCircle2, MapPin, CreditCard, FileText, User, Store, IdCard } from 'lucide-react'
+import { LogOut, Clock, CheckCircle2, MapPin, CreditCard, FileText, Store, IdCard, ChevronRight } from 'lucide-react'
+import { AdminReviewLayout, type AdminReviewItem } from './AdminReviewLayout'
 
 const SERVICE_MODE_LABEL: Record<string, string> = {
   at_shop: '到店', on_site: '到府', both: '到店 + 到府'
@@ -19,14 +20,6 @@ export default async function AdminPage() {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') redirect('/')
 
-  const { data: pending, error: pendingError } = await supabase
-    .from('practitioners')
-    .select(`id, bio, service_mode, shop_address, license_url, bank_name, bank_account, created_at, profiles ( display_name )`)
-    .eq('status', 'pending')
-    .order('created_at', { ascending: true })
-
-  if (pendingError) console.error('admin pending query error:', pendingError)
-
   const { data: approved } = await supabase
     .from('practitioners')
     .select('id, profiles ( display_name ), created_at')
@@ -34,56 +27,180 @@ export default async function AdminPage() {
     .order('created_at', { ascending: false })
     .limit(10)
 
-  const { data: bankReviewsRaw } = await supabase
+  const { data: reviewRaw, error: reviewError } = await supabase
     .from('practitioners')
-    .select('id, bank_name, bank_account, passbook_url, profiles ( display_name )')
-    .eq('status', 'approved')
-    .eq('bank_status', 'pending')
-    .not('bank_name', 'is', null)
+    .select(`
+      id, status, bio, service_mode, shop_address, license_url, created_at,
+      bank_name, bank_account, bank_status, passbook_url,
+      id_front_url, id_back_url, id_verification_status,
+      profiles ( display_name )
+    `)
+    .or('status.eq.pending,bank_status.eq.pending,id_verification_status.eq.pending')
+    .order('created_at', { ascending: true })
 
-  const bankReviews = bankReviewsRaw
+  if (reviewError) console.error('admin review query error:', reviewError)
+
+  const reviewList = reviewRaw
     ? await Promise.all(
-        bankReviewsRaw.map(async (b) => {
+        reviewRaw.map(async (r) => {
           let passbookSignedUrl: string | null = null
-          if (b.passbook_url) {
-            const { data: signedData } = await supabase.storage
-              .from('verification-docs')
-              .createSignedUrl(b.passbook_url, 60 * 10)
-            passbookSignedUrl = signedData?.signedUrl ?? null
-          }
-          return { ...b, passbookSignedUrl }
-        })
-      )
-    : null
-
-  const { data: idReviewsRaw } = await supabase
-    .from('practitioners')
-    .select('id, id_front_url, id_back_url, profiles ( display_name )')
-    .eq('status', 'approved')
-    .eq('id_verification_status', 'pending')
-    .not('id_front_url', 'is', null)
-
-  const idReviews = idReviewsRaw
-    ? await Promise.all(
-        idReviewsRaw.map(async (idv) => {
           let idFrontSignedUrl: string | null = null
           let idBackSignedUrl: string | null = null
-          if (idv.id_front_url) {
-            const { data: signedData } = await supabase.storage
-              .from('verification-docs')
-              .createSignedUrl(idv.id_front_url, 60 * 10)
-            idFrontSignedUrl = signedData?.signedUrl ?? null
+          if (r.passbook_url) {
+            const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(r.passbook_url, 60 * 10)
+            passbookSignedUrl = signed?.signedUrl ?? null
           }
-          if (idv.id_back_url) {
-            const { data: signedData } = await supabase.storage
-              .from('verification-docs')
-              .createSignedUrl(idv.id_back_url, 60 * 10)
-            idBackSignedUrl = signedData?.signedUrl ?? null
+          if (r.id_front_url) {
+            const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(r.id_front_url, 60 * 10)
+            idFrontSignedUrl = signed?.signedUrl ?? null
           }
-          return { ...idv, idFrontSignedUrl, idBackSignedUrl }
+          if (r.id_back_url) {
+            const { data: signed } = await supabase.storage.from('verification-docs').createSignedUrl(r.id_back_url, 60 * 10)
+            idBackSignedUrl = signed?.signedUrl ?? null
+          }
+          return { ...r, passbookSignedUrl, idFrontSignedUrl, idBackSignedUrl }
         })
       )
-    : null
+    : []
+
+  const reviewItems: AdminReviewItem[] = reviewList.map((r) => {
+    const profileRaw = r.profiles as unknown
+    const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
+    const name = prof?.display_name ?? '未知'
+
+    const regPending = r.status === 'pending'
+    const bankPending = r.bank_status === 'pending'
+    const idPending = r.id_verification_status === 'pending'
+
+    const subtitleParts: string[] = []
+    if (regPending) subtitleParts.push('入駐申請')
+    if (bankPending) subtitleParts.push('銀行帳戶')
+    if (idPending) subtitleParts.push('身份驗證')
+
+    return {
+      key: r.id,
+      title: name,
+      subtitle: subtitleParts.join('、'),
+      content: (
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <p className="font-bold text-lg text-foreground">{name}</p>
+            <p className="text-xs text-muted-foreground">
+              申請時間：{new Date(r.created_at).toLocaleString('zh-TW', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            </p>
+          </div>
+
+          {regPending && (
+            <div className="border-t border-border pt-5 first:border-t-0 first:pt-0">
+              <div className="flex items-center gap-2 mb-3">
+                <p className="font-semibold text-sm text-foreground">入駐申請</p>
+                <Badge variant="outline" className="border-amber-300 text-amber-600 bg-amber-50">待審核</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-[#F8F7F5] rounded-xl p-3.5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Store className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-xs font-medium text-muted-foreground">服務方式</span>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">{SERVICE_MODE_LABEL[r.service_mode]}</p>
+                </div>
+                {r.shop_address && (
+                  <div className="bg-[#F8F7F5] rounded-xl p-3.5">
+                    <div className="flex items-center gap-2 mb-1">
+                      <MapPin className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-xs font-medium text-muted-foreground">店面地址</span>
+                    </div>
+                    <p className="text-sm font-semibold text-foreground leading-snug">{r.shop_address}</p>
+                  </div>
+                )}
+                {r.license_url && (
+                  <div className="bg-[#F8F7F5] rounded-xl p-3.5">
+                    <div className="flex items-center gap-2 mb-1">
+                      <FileText className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-xs font-medium text-muted-foreground">證照</span>
+                    </div>
+                    <a href={r.license_url} target="_blank" className="text-sm font-semibold text-primary underline underline-offset-2">點此查看</a>
+                  </div>
+                )}
+              </div>
+              {r.bio && (
+                <div className="bg-[#F8F7F5] rounded-xl p-4 mb-4">
+                  <p className="text-xs font-medium text-muted-foreground mb-1.5">自我介紹</p>
+                  <p className="text-sm text-foreground leading-relaxed">{r.bio}</p>
+                </div>
+              )}
+              <div className="flex gap-3">
+                <form action={approvePractitioner} className="flex-1">
+                  <input type="hidden" name="practitionerId" value={r.id} />
+                  <Button type="submit" className="w-full" size="default">
+                    <CheckCircle2 className="w-4 h-4 mr-1.5" />核准上架
+                  </Button>
+                </form>
+                <form action={rejectPractitioner} className="space-y-2">
+                  <textarea
+                    name="reason"
+                    placeholder="請填寫退回原因（將顯示給職人）"
+                    required
+                    className="w-full bg-white border border-border rounded-xl px-3 py-2 text-sm resize-none min-h-[60px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <input type="hidden" name="practitionerId" value={r.id} />
+                  <Button type="submit" variant="outline" size="default" className="w-full text-destructive border-destructive hover:bg-destructive/5 px-6">退回</Button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {bankPending && (
+            <div className="border-t border-border pt-5 first:border-t-0 first:pt-0">
+              <div className="flex items-center gap-2 mb-3">
+                <CreditCard className="w-4 h-4 text-primary" />
+                <p className="font-semibold text-sm text-foreground">銀行帳戶</p>
+                <Badge variant="outline" className="border-amber-300 text-amber-600 bg-amber-50">待審核</Badge>
+              </div>
+              <p className="text-sm text-foreground mb-1">{r.bank_name}　{r.bank_account}</p>
+              {r.passbookSignedUrl && (
+                <a href={r.passbookSignedUrl} target="_blank" className="text-xs text-primary underline">查看存摺影本</a>
+              )}
+              <div className="flex gap-2 mt-3">
+                <form action={approveBank}>
+                  <input type="hidden" name="practitionerId" value={r.id} />
+                  <Button type="submit" size="sm">核准</Button>
+                </form>
+                <form action={rejectBank}>
+                  <input type="hidden" name="practitionerId" value={r.id} />
+                  <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">退回</Button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {idPending && (
+            <div className="border-t border-border pt-5 first:border-t-0 first:pt-0">
+              <div className="flex items-center gap-2 mb-3">
+                <IdCard className="w-4 h-4 text-primary" />
+                <p className="font-semibold text-sm text-foreground">身份驗證</p>
+                <Badge variant="outline" className="border-amber-300 text-amber-600 bg-amber-50">待審核</Badge>
+              </div>
+              <div className="flex gap-3 text-xs mb-3">
+                {r.idFrontSignedUrl && <a href={r.idFrontSignedUrl} target="_blank" className="text-primary underline">正面照片</a>}
+                {r.idBackSignedUrl && <a href={r.idBackSignedUrl} target="_blank" className="text-primary underline">反面照片</a>}
+              </div>
+              <div className="flex gap-2">
+                <form action={approveId}>
+                  <input type="hidden" name="practitionerId" value={r.id} />
+                  <Button type="submit" size="sm">核准</Button>
+                </form>
+                <form action={rejectId}>
+                  <input type="hidden" name="practitionerId" value={r.id} />
+                  <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">退回</Button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
+      ),
+    }
+  })
 
   return (
     <div className="min-h-screen bg-[#F8F7F5]">
@@ -116,8 +233,8 @@ export default async function AdminPage() {
               <Clock className="w-6 h-6 text-amber-500" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-foreground">{pending?.length ?? 0}</p>
-              <p className="text-sm text-muted-foreground">待審核申請</p>
+              <p className="text-2xl font-bold text-foreground">{reviewItems.length}</p>
+              <p className="text-sm text-muted-foreground">待審核項目</p>
             </div>
           </div>
           <div className="bg-white rounded-2xl border border-border p-5 flex items-center gap-4">
@@ -131,135 +248,27 @@ export default async function AdminPage() {
           </div>
         </div>
 
-        {/* 待審核 */}
+        {/* 職人待審區 */}
         <section>
-          {pendingError && (
+          {reviewError && (
             <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 mb-4 text-sm text-destructive">
-              查詢錯誤：{pendingError.message}
+              查詢錯誤：{reviewError.message}
             </div>
           )}
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="font-bold text-xl text-foreground">待審核申請</h2>
-            {(pending?.length ?? 0) > 0 && (
-              <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">
-                {pending!.length}
-              </span>
+            <h2 className="font-bold text-xl text-foreground">職人待審區</h2>
+            {reviewItems.length > 0 && (
+              <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">{reviewItems.length}</span>
             )}
           </div>
 
-          {!pending || pending.length === 0 ? (
+          {reviewItems.length === 0 ? (
             <div className="bg-white rounded-2xl border border-border p-10 text-center">
               <CheckCircle2 className="w-10 h-10 text-green-400 mx-auto mb-3" />
-              <p className="text-muted-foreground text-sm">目前沒有待審核的申請</p>
+              <p className="text-muted-foreground text-sm">目前沒有待審核的項目</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {pending.map(p => {
-                const profileRaw = p.profiles as unknown
-                const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
-                return (
-                  <div key={p.id} className="bg-white rounded-2xl border border-border overflow-hidden">
-                    {/* 頂部色條 */}
-                    <div className="h-1 bg-gradient-to-r from-primary to-[#6FAE82]" />
-
-                    <div className="p-6">
-                      {/* 標頭 */}
-                      <div className="flex items-start justify-between mb-5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 rounded-full bg-accent flex items-center justify-center">
-                            <User className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-bold text-base text-foreground">{prof?.display_name ?? '未知'}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              申請時間：{new Date(p.created_at).toLocaleString('zh-TW', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="border-amber-300 text-amber-600 bg-amber-50">
-                          待審核
-                        </Badge>
-                      </div>
-
-                      {/* 資料區塊 */}
-                      <div className="grid grid-cols-2 gap-3 mb-5">
-                        <div className="bg-[#F8F7F5] rounded-xl p-3.5">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Store className="w-3.5 h-3.5 text-primary" />
-                            <span className="text-xs font-medium text-muted-foreground">服務方式</span>
-                          </div>
-                          <p className="text-sm font-semibold text-foreground">{SERVICE_MODE_LABEL[p.service_mode]}</p>
-                        </div>
-
-                        {p.shop_address && (
-                          <div className="bg-[#F8F7F5] rounded-xl p-3.5">
-                            <div className="flex items-center gap-2 mb-1">
-                              <MapPin className="w-3.5 h-3.5 text-primary" />
-                              <span className="text-xs font-medium text-muted-foreground">店面地址</span>
-                            </div>
-                            <p className="text-sm font-semibold text-foreground leading-snug">{p.shop_address}</p>
-                          </div>
-                        )}
-
-                        {p.bank_name && (
-                          <div className="bg-[#F8F7F5] rounded-xl p-3.5">
-                            <div className="flex items-center gap-2 mb-1">
-                              <CreditCard className="w-3.5 h-3.5 text-primary" />
-                              <span className="text-xs font-medium text-muted-foreground">收款資料</span>
-                            </div>
-                            <p className="text-sm font-semibold text-foreground">{p.bank_name}</p>
-                            <p className="text-xs text-muted-foreground">{p.bank_account}</p>
-                          </div>
-                        )}
-
-                        {p.license_url && (
-                          <div className="bg-[#F8F7F5] rounded-xl p-3.5">
-                            <div className="flex items-center gap-2 mb-1">
-                              <FileText className="w-3.5 h-3.5 text-primary" />
-                              <span className="text-xs font-medium text-muted-foreground">證照</span>
-                            </div>
-                            <a href={p.license_url} target="_blank" className="text-sm font-semibold text-primary underline underline-offset-2">
-                              點此查看
-                            </a>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* 自我介紹 */}
-                      {p.bio && (
-                        <div className="bg-[#F8F7F5] rounded-xl p-4 mb-5">
-                          <p className="text-xs font-medium text-muted-foreground mb-1.5">自我介紹</p>
-                          <p className="text-sm text-foreground leading-relaxed">{p.bio}</p>
-                        </div>
-                      )}
-
-                      {/* 操作按鈕 */}
-                      <div className="flex gap-3">
-                        <form action={approvePractitioner} className="flex-1">
-                          <input type="hidden" name="practitionerId" value={p.id} />
-                          <Button type="submit" className="w-full" size="default">
-                            <CheckCircle2 className="w-4 h-4 mr-1.5" />
-                            核准上架
-                          </Button>
-                        </form>
-                        <form action={rejectPractitioner} className="space-y-2">
-                          <textarea
-                            name="reason"
-                            placeholder="請填寫退回原因（將顯示給職人）"
-                            required
-                            className="w-full bg-white border border-border rounded-xl px-3 py-2 text-sm resize-none min-h-[60px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                          />
-                          <input type="hidden" name="practitionerId" value={p.id} />
-                          <Button type="submit" variant="outline" size="default" className="w-full text-destructive border-destructive hover:bg-destructive/5 px-6">
-                            退回
-                          </Button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+            <AdminReviewLayout items={reviewItems} />
           )}
         </section>
 
@@ -275,7 +284,11 @@ export default async function AdminPage() {
                   const profileRaw = p.profiles as unknown
                   const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
                   return (
-                    <div key={p.id} className="flex items-center gap-4 px-6 py-4 hover:bg-[#F8F7F5] transition-colors">
+                    <Link
+                      key={p.id}
+                      href={`/admin/practitioner/${p.id}`}
+                      className="flex items-center gap-4 px-6 py-4 hover:bg-[#F8F7F5] transition-colors"
+                    >
                       <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-sm font-bold text-primary shrink-0">
                         {idx + 1}
                       </div>
@@ -288,106 +301,13 @@ export default async function AdminPage() {
                           {new Date(p.created_at).toLocaleDateString('zh-TW')} 上架
                         </span>
                       </div>
-                    </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                    </Link>
                   )
                 })}
               </div>
             )}
           </div>
-        </section>
-
-        {/* 銀行帳戶審核 */}
-        <section>
-          <div className="flex items-center gap-3 mb-4">
-            <h2 className="font-bold text-xl text-foreground">銀行帳戶待審</h2>
-            {(bankReviews?.length ?? 0) > 0 && (
-              <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">{bankReviews!.length}</span>
-            )}
-          </div>
-          {!bankReviews || bankReviews.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-border p-8 text-center text-muted-foreground text-sm">目前沒有待審核的銀行資料</div>
-          ) : (
-            <div className="space-y-3">
-              {bankReviews.map(b => {
-                const profileRaw = b.profiles as unknown
-                const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
-                return (
-                  <div key={b.id} className="bg-white rounded-2xl border border-border p-5 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
-                        <CreditCard className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm">{prof?.display_name ?? '未知'}</p>
-                        <p className="text-xs text-muted-foreground">{b.bank_name}　{b.bank_account}</p>
-                        {b.passbookSignedUrl && (
-                          <a href={b.passbookSignedUrl} target="_blank" className="text-xs text-primary underline">
-                            查看存摺影本
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <form action={approveBank}>
-                        <input type="hidden" name="practitionerId" value={b.id} />
-                        <Button type="submit" size="sm">核准</Button>
-                      </form>
-                      <form action={rejectBank}>
-                        <input type="hidden" name="practitionerId" value={b.id} />
-                        <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">退回</Button>
-                      </form>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* 身份驗證審核 */}
-        <section>
-          <div className="flex items-center gap-3 mb-4">
-            <h2 className="font-bold text-xl text-foreground">身份驗證待審</h2>
-            {(idReviews?.length ?? 0) > 0 && (
-              <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-full">{idReviews!.length}</span>
-            )}
-          </div>
-          {!idReviews || idReviews.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-border p-8 text-center text-muted-foreground text-sm">目前沒有待審核的身份資料</div>
-          ) : (
-            <div className="space-y-3">
-              {idReviews.map(idv => {
-                const profileRaw = idv.profiles as unknown
-                const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
-                return (
-                  <div key={idv.id} className="bg-white rounded-2xl border border-border p-5 flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center shrink-0">
-                        <IdCard className="w-4 h-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm">{prof?.display_name ?? '未知'}</p>
-                        <div className="flex gap-3 text-xs">
-                          {idv.idFrontSignedUrl && <a href={idv.idFrontSignedUrl} target="_blank" className="text-primary underline">正面照片</a>}
-                          {idv.idBackSignedUrl && <a href={idv.idBackSignedUrl} target="_blank" className="text-primary underline">反面照片</a>}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <form action={approveId}>
-                        <input type="hidden" name="practitionerId" value={idv.id} />
-                        <Button type="submit" size="sm">核准</Button>
-                      </form>
-                      <form action={rejectId}>
-                        <input type="hidden" name="practitionerId" value={idv.id} />
-                        <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">退回</Button>
-                      </form>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
         </section>
       </div>
     </div>
