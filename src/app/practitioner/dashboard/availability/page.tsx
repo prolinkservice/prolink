@@ -1,21 +1,45 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
-import { ChevronLeft, ChevronRight, Plus, Trash2, ArrowLeft } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowLeft, Copy, CircleMinus } from 'lucide-react'
 import Link from 'next/link'
 
-const HOURS = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`)
+const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六']
+const SLOT_MINUTES = 30
 
 function formatDate(d: Date) {
   return d.toISOString().split('T')[0]
 }
 
-function getDaysInMonth(year: number, month: number) {
-  return new Date(year, month + 1, 0).getDate()
+function startOfWeek(d: Date) {
+  const date = new Date(d)
+  const day = date.getDay()
+  const diff = day === 0 ? -6 : 1 - day // 週一為起點
+  date.setDate(date.getDate() + diff)
+  date.setHours(0, 0, 0, 0)
+  return date
+}
+
+function buildGridTimes(showEarlyMorning: boolean) {
+  const startHour = showEarlyMorning ? 0 : 6
+  const times: string[] = []
+  for (let h = startHour; h < 24; h++) {
+    for (let m = 0; m < 60; m += SLOT_MINUTES) {
+      times.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+    }
+  }
+  return times
+}
+
+function addMinutes(time: string, minutes: number) {
+  const [h, m] = time.split(':').map(Number)
+  const total = h * 60 + m + minutes
+  const nh = Math.floor(total / 60) % 24
+  const nm = total % 60
+  return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`
 }
 
 type Slot = { id: string; start_time: string; end_time: string; is_booked: boolean }
@@ -24,15 +48,13 @@ export default function AvailabilityPage() {
   const router = useRouter()
   const [practitionerId, setPractitionerId] = useState<string | null>(null)
   const [today] = useState(new Date())
-  const [viewYear, setViewYear] = useState(today.getFullYear())
-  const [viewMonth, setViewMonth] = useState(today.getMonth())
+  const [weekStart, setWeekStart] = useState(startOfWeek(today))
   const [selectedDate, setSelectedDate] = useState(formatDate(today))
   const [slots, setSlots] = useState<Slot[]>([])
-  const [startTime, setStartTime] = useState('09:00')
-  const [endTime, setEndTime] = useState('10:00')
-  const [adding, setAdding] = useState(false)
+  const [showEarlyMorning, setShowEarlyMorning] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [addError, setAddError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -64,47 +86,129 @@ export default function AvailabilityPage() {
 
   useEffect(() => { fetchSlots() }, [fetchSlots])
 
-  async function addSlot() {
-    if (!practitionerId) return
-    if (startTime >= endTime) { alert('結束時間必須晚於開始時間'); return }
-    setAdding(true)
-    setAddError(null)
-    const supabase = createBrowserSupabaseClient()
-    const { error } = await supabase.from('availability_slots').insert({
-      practitioner_id: practitionerId,
-      start_time: `${selectedDate}T${startTime}:00+08:00`,
-      end_time: `${selectedDate}T${endTime}:00+08:00`,
-      is_booked: false,
-    })
-    if (error) {
-      console.error(error)
-      setAddError(`新增失敗：${error.message}`)
-    } else {
-      await fetchSlots()
+  const gridTimes = useMemo(() => buildGridTimes(showEarlyMorning), [showEarlyMorning])
+
+  const slotByTime = useMemo(() => {
+    const map = new Map<string, Slot>()
+    for (const slot of slots) {
+      const t = new Date(slot.start_time).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })
+      map.set(t, slot)
     }
-    setAdding(false)
-  }
+    return map
+  }, [slots])
 
-  async function deleteSlot(id: string) {
+  const weekDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart)
+      d.setDate(d.getDate() + i)
+      return d
+    })
+  }, [weekStart])
+
+  async function toggleCell(time: string) {
+    if (!practitionerId || busy) return
+    const existing = slotByTime.get(time)
+    if (existing?.is_booked) return
+
+    setBusy(true)
+    setErrorMsg(null)
     const supabase = createBrowserSupabaseClient()
-    await supabase.from('availability_slots').delete().eq('id', id)
+
+    if (existing) {
+      const { error } = await supabase.from('availability_slots').delete().eq('id', existing.id)
+      if (error) setErrorMsg(`關閉失敗：${error.message}`)
+    } else {
+      const { error } = await supabase.from('availability_slots').insert({
+        practitioner_id: practitionerId,
+        start_time: `${selectedDate}T${time}:00+08:00`,
+        end_time: `${selectedDate}T${addMinutes(time, SLOT_MINUTES)}:00+08:00`,
+        is_booked: false,
+      })
+      if (error) setErrorMsg(`開放失敗：${error.message}`)
+    }
     await fetchSlots()
+    setBusy(false)
   }
 
-  function prevMonth() {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11) }
-    else setViewMonth(m => m - 1)
-  }
-  function nextMonth() {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0) }
-    else setViewMonth(m => m + 1)
+  async function copyToWeek() {
+    if (!practitionerId || busy) return
+    const openTimes = gridTimes.filter((t) => slotByTime.has(t) && !slotByTime.get(t)?.is_booked)
+    if (openTimes.length === 0) { setErrorMsg('本日尚無開放時段可複製'); return }
+
+    setBusy(true)
+    setErrorMsg(null)
+    const supabase = createBrowserSupabaseClient()
+    const otherDates = weekDays.map(formatDate).filter((d) => d !== selectedDate)
+
+    const { data: existingSlots } = await supabase
+      .from('availability_slots')
+      .select('start_time')
+      .eq('practitioner_id', practitionerId)
+      .gte('start_time', `${otherDates[0]}T00:00:00`)
+      .lte('start_time', `${otherDates[otherDates.length - 1]}T23:59:59`)
+
+    const existingKeySet = new Set(
+      (existingSlots ?? []).map((s) => {
+        const d = new Date(s.start_time)
+        return `${formatDate(d)}T${d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })}`
+      })
+    )
+
+    const rows = otherDates.flatMap((date) =>
+      openTimes
+        .filter((time) => !existingKeySet.has(`${date}T${time}`))
+        .map((time) => ({
+          practitioner_id: practitionerId,
+          start_time: `${date}T${time}:00+08:00`,
+          end_time: `${date}T${addMinutes(time, SLOT_MINUTES)}:00+08:00`,
+          is_booked: false,
+        }))
+    )
+
+    if (rows.length > 0) {
+      const { error } = await supabase.from('availability_slots').insert(rows)
+      if (error) setErrorMsg(`複製失敗：${error.message}`)
+    }
+    await fetchSlots()
+    setBusy(false)
   }
 
-  const daysInMonth = getDaysInMonth(viewYear, viewMonth)
-  const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay()
-  const monthLabel = new Date(viewYear, viewMonth).toLocaleDateString('zh-TW', { year: 'numeric', month: 'long' })
+  async function quickClose() {
+    if (!practitionerId || busy) return
+    const closable = slots.filter((s) => !s.is_booked)
+    if (closable.length === 0) return
+
+    setBusy(true)
+    setErrorMsg(null)
+    const supabase = createBrowserSupabaseClient()
+    const { error } = await supabase
+      .from('availability_slots')
+      .delete()
+      .in('id', closable.map((s) => s.id))
+    if (error) setErrorMsg(`快速關閉失敗：${error.message}`)
+    await fetchSlots()
+    setBusy(false)
+  }
+
+  function prevWeek() {
+    const d = new Date(weekStart)
+    d.setDate(d.getDate() - 7)
+    setWeekStart(d)
+  }
+  function nextWeek() {
+    const d = new Date(weekStart)
+    d.setDate(d.getDate() + 7)
+    setWeekStart(d)
+  }
+  function goToday() {
+    setWeekStart(startOfWeek(today))
+    setSelectedDate(formatDate(today))
+  }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">載入中...</div>
+
+  const selectedDateObj = new Date(selectedDate + 'T00:00:00')
+  const monthLabel = selectedDateObj.toLocaleDateString('zh-TW', { month: 'long' })
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,101 +219,88 @@ export default function AvailabilityPage() {
         <span className="font-semibold">時段管理</span>
       </nav>
 
-      <div className="px-4 py-4 max-w-lg mx-auto space-y-4">
-        {/* 月曆 */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <Button variant="ghost" size="icon" onClick={prevMonth}><ChevronLeft className="w-4 h-4" /></Button>
-              <span className="font-semibold text-sm">{monthLabel}</span>
-              <Button variant="ghost" size="icon" onClick={nextMonth}><ChevronRight className="w-4 h-4" /></Button>
-            </div>
-            <div className="grid grid-cols-7 text-center mb-1">
-              {['日', '一', '二', '三', '四', '五', '六'].map(d => (
-                <span key={d} className="text-xs text-muted-foreground py-1">{d}</span>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 text-center gap-y-1">
-              {Array.from({ length: firstDayOfWeek }).map((_, i) => <span key={`e-${i}`} />)}
-              {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-                const isSelected = dateStr === selectedDate
-                const isToday = dateStr === formatDate(today)
-                return (
-                  <button
-                    key={day}
-                    onClick={() => setSelectedDate(dateStr)}
-                    className={`w-8 h-8 mx-auto rounded-full text-sm transition-colors ${
-                      isSelected ? 'bg-primary text-white' :
-                      isToday ? 'border border-primary text-primary' :
-                      'hover:bg-accent'
-                    }`}
-                  >
-                    {day}
-                  </button>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="px-4 py-4 max-w-lg mx-auto space-y-3">
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
+          📍 點擊時間即可開放/關閉預約。紅色：開放、灰色：關閉。
+        </p>
 
-        {/* 選定日期的時段 */}
-        <div>
-          <h2 className="font-semibold text-sm mb-2">
-            {new Date(selectedDate + 'T00:00:00').toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' })} 的時段
-          </h2>
-
-          {slots.length === 0 ? (
-            <p className="text-muted-foreground text-sm text-center py-4">尚無時段，請新增</p>
-          ) : (
-            <div className="space-y-2 mb-3">
-              {slots.map(slot => {
-                const start = new Date(slot.start_time).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })
-                const end = new Date(slot.end_time).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false })
-                return (
-                  <div key={slot.id} className="flex items-center justify-between bg-white border border-border rounded-lg px-4 py-2.5">
-                    <span className="text-sm font-medium">{start} – {end}</span>
-                    {slot.is_booked ? (
-                      <span className="text-xs text-primary font-medium">已預約</span>
-                    ) : (
-                      <button onClick={() => deleteSlot(slot.id)} className="text-muted-foreground hover:text-destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
+        {/* 週日期條 */}
+        <div className="bg-white border border-border rounded-xl p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="w-7 h-7" onClick={prevWeek}><ChevronLeft className="w-4 h-4" /></Button>
+              <span className="font-semibold text-sm">{monthLabel}{selectedDateObj.getDate()}日, {selectedDateObj.getFullYear()}</span>
+              <Button variant="ghost" size="icon" className="w-7 h-7" onClick={nextWeek}><ChevronRight className="w-4 h-4" /></Button>
             </div>
-          )}
-
-          {/* 新增時段 */}
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-sm font-medium mb-3">新增時段</p>
-              <div className="flex gap-2 items-center mb-3">
-                <select
-                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={startTime}
-                  onChange={e => setStartTime(e.target.value)}
-                >
-                  {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
-                <span className="text-muted-foreground text-sm">到</span>
-                <select
-                  className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={endTime}
-                  onChange={e => setEndTime(e.target.value)}
-                >
-                  {HOURS.map(h => <option key={h} value={h}>{h}</option>)}
-                </select>
-              </div>
-              <Button className="w-full" size="sm" onClick={addSlot} disabled={adding}>
-                <Plus className="w-4 h-4 mr-1" />
-                {adding ? '新增中...' : '新增此時段'}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setShowEarlyMorning((v) => !v)}>
+                {showEarlyMorning ? '隱藏凌晨' : '顯示凌晨'}
               </Button>
-              {addError && <p className="text-xs text-destructive mt-2">{addError}</p>}
-            </CardContent>
-          </Card>
+              <Button variant="outline" size="sm" className="text-xs h-7" onClick={goToday}>今天</Button>
+            </div>
+          </div>
+          <div className="grid grid-cols-7 text-center gap-1">
+            {weekDays.map((d) => {
+              const dateStr = formatDate(d)
+              const isSelected = dateStr === selectedDate
+              const isWeekend = d.getDay() === 0 || d.getDay() === 6
+              return (
+                <button
+                  key={dateStr}
+                  onClick={() => setSelectedDate(dateStr)}
+                  className="flex flex-col items-center gap-1 py-1"
+                >
+                  <span className={`text-xs ${isWeekend ? 'text-destructive' : 'text-muted-foreground'}`}>
+                    {WEEKDAY_LABELS[d.getDay()]}
+                  </span>
+                  <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium transition-colors ${
+                    isSelected ? 'bg-primary text-white' : isWeekend ? 'text-destructive' : 'text-foreground'
+                  }`}>
+                    {d.getDate()}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 時間格子 */}
+        <div className="bg-white border border-border rounded-xl p-3 max-h-[480px] overflow-y-auto">
+          <div className="grid grid-cols-3 gap-2">
+            {gridTimes.map((time) => {
+              const slot = slotByTime.get(time)
+              const isOpen = !!slot
+              const isBooked = !!slot?.is_booked
+              return (
+                <button
+                  key={time}
+                  onClick={() => toggleCell(time)}
+                  disabled={busy || isBooked}
+                  className={`rounded-lg border px-2 py-2 text-sm font-medium transition-colors ${
+                    isBooked
+                      ? 'border-primary/40 bg-primary/10 text-primary cursor-not-allowed'
+                      : isOpen
+                      ? 'border-destructive text-destructive bg-destructive/5'
+                      : 'border-border text-muted-foreground bg-muted/40'
+                  }`}
+                >
+                  {time}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
+
+        {/* 操作列 */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" size="sm" disabled={busy} onClick={copyToWeek}>
+            <Copy className="w-4 h-4 mr-1.5" />複製本日
+          </Button>
+          <Button variant="outline" size="sm" disabled={busy} onClick={quickClose} className="text-destructive border-destructive hover:bg-destructive/5">
+            <CircleMinus className="w-4 h-4 mr-1.5" />快速關閉
+          </Button>
         </div>
       </div>
     </div>
