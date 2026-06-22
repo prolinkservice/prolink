@@ -39,7 +39,7 @@ type Booking = {
   availability_slots: { start_time: string; end_time: string } | null
   practitioners: { profiles: { display_name: string | null } | null } | null
   services: { name: string; price: number } | null
-  reviews: { id: string }[] | null
+  reviews: { id: string } | { id: string }[] | null
 }
 
 export default function MyBookingsPage() {
@@ -154,7 +154,7 @@ export default function MyBookingsPage() {
                     </div>
 
                     {b.status === 'completed' && (
-                      (b.reviews?.length ?? 0) > 0 ? (
+                      (Array.isArray(b.reviews) ? b.reviews.length > 0 : !!b.reviews) ? (
                         <p className="text-xs text-primary font-medium mt-3">已評價，謝謝你的回饋！</p>
                       ) : (
                         <Button asChild size="sm" className="w-full mt-3 active:scale-95 transition-transform">
