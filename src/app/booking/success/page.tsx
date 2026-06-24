@@ -33,7 +33,7 @@ export default async function BookingSuccessPage({
     ? await supabase
         .from('bookings')
         .select(`
-          id, total_amount, payment_method, deposit_amount,
+          id, total_amount, payment_method, deposit_amount, payment_status,
           services ( name ),
           availability_slots ( start_time, end_time ),
           practitioners ( profiles ( display_name ) )
@@ -96,12 +96,17 @@ export default async function BookingSuccessPage({
         </Card>
       )}
 
-      {/* Demo 假付款提示 */}
-      <Card className="w-full max-w-sm bg-amber-50 border-amber-200 mb-6">
-        <CardContent className="p-3 text-xs text-amber-700 text-center">
-          🎭 Demo 模式：此為假付款流程，不會實際扣款
-        </CardContent>
-      </Card>
+      {booking && (
+        <Card className={`w-full max-w-sm mb-6 ${booking.payment_status === 'unpaid' ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+          <CardContent className="p-3 text-xs text-center">
+            {booking.payment_status === 'unpaid' ? (
+              <span className="text-amber-700">⚠️ 尚未確認付款結果，若已完成付款請稍候片刻</span>
+            ) : (
+              <span className="text-green-700">✅ 平台服務費已付款成功（測試環境）</span>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Link href="/">
         <Button className="w-full max-w-sm" size="lg">回到首頁</Button>

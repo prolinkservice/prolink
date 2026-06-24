@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { calcCommission } from '@/lib/commission'
+import { genMerchantTradeNo } from '@/lib/ecpay'
 
 export async function createBooking(formData: FormData) {
   const supabase = await createServerSupabaseClient()
@@ -60,5 +61,12 @@ export async function createBooking(formData: FormData) {
     .update({ is_booked: true })
     .eq('id', slotId)
 
-  redirect(`/booking/success?bookingId=${booking.id}`)
+  // 產生綠界訂單編號，導向付款頁
+  const merchantTradeNo = genMerchantTradeNo(booking.id)
+  await supabase
+    .from('bookings')
+    .update({ merchant_trade_no: merchantTradeNo })
+    .eq('id', booking.id)
+
+  redirect(`/booking/pay?bookingId=${booking.id}`)
 }
