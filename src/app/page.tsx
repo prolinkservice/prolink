@@ -212,7 +212,7 @@ export default async function Home({
         )}
       </div>
 
-      <HomeFeed list={list} featured={featured} />
+      <HomeFeed list={list} featured={featured} searchActive={!!q} />
       </div>
     </div>
   )

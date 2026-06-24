@@ -22,11 +22,14 @@ export type Practitioner = {
   district: string | null
 }
 
-export function HomeFeed({ list, featured }: { list: Practitioner[]; featured: Practitioner[] }) {
+export function HomeFeed({ list, featured, searchActive }: { list: Practitioner[]; featured: Practitioner[]; searchActive?: boolean }) {
   const [selected, setSelected] = useState<string | null>(null)
 
   const filteredFeatured = selected ? featured.filter(p => p.categories.includes(selected)) : featured
   const filteredList = selected ? list.filter(p => p.categories.includes(selected)) : list
+  const emptyReason = list.length === 0 && searchActive
+    ? '找不到符合的老師，換個關鍵字試試'
+    : '這個分類目前還沒有老師上架'
 
   return (
     <>
@@ -59,7 +62,7 @@ export function HomeFeed({ list, featured }: { list: Practitioner[]; featured: P
       <div className="px-4 pt-4">
         <h2 className="font-heading font-semibold text-base mb-3">精選老師</h2>
         {filteredFeatured.length === 0 ? (
-          <p className="text-muted-foreground text-sm py-4">這個分類目前還沒有老師上架</p>
+          <p className="text-muted-foreground text-sm py-4">{emptyReason}</p>
         ) : (
           <div className="flex gap-3 overflow-x-auto pb-2">
             {filteredFeatured.map((p, i) => (
@@ -111,7 +114,7 @@ export function HomeFeed({ list, featured }: { list: Practitioner[]; featured: P
       <div className="px-4 pt-3 pb-6">
         <h2 className="font-heading font-semibold text-sm mb-2">附近老師</h2>
         {filteredList.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-8">這個分類目前還沒有老師上架</p>
+          <p className="text-muted-foreground text-sm text-center py-8">{emptyReason}</p>
         ) : (
           <div className="grid grid-cols-4 gap-2">
             {filteredList.map((p) => (
