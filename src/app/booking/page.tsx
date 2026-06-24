@@ -71,7 +71,7 @@ export default async function BookingPage({
   const hasOnSite = practitioner.service_mode === 'on_site' || practitioner.service_mode === 'both'
 
   return (
-    <div className="min-h-screen bg-[#F7F4F0]">
+    <div className="min-h-screen bg-[#F7F1E8]">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-3 shadow-sm">
         <Link href={`/practitioners/${practitionerId}`}>
@@ -95,7 +95,7 @@ export default async function BookingPage({
           )}
 
           {/* 預約摘要卡 */}
-          <div className="bg-gradient-to-br from-primary to-[#6FAE82] rounded-2xl p-5 text-white shadow-md">
+          <div className="bg-gradient-to-br from-primary to-[#E0935D] rounded-2xl p-5 text-white shadow-md">
             <p className="text-white/70 text-xs font-medium uppercase tracking-widest mb-3">預約資訊</p>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold shrink-0">

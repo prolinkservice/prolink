@@ -334,7 +334,7 @@ export default function PractitionerRegisterPage() {
       </div>
 
       {/* 說明區塊 */}
-      <div className="bg-gradient-to-br from-primary to-[#6FAE82] rounded-2xl p-5 text-white shadow-md mb-6">
+      <div className="bg-gradient-to-br from-primary to-[#E0935D] rounded-2xl p-5 text-white shadow-md mb-6">
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="w-5 h-5" />
           <h1 className="text-xl font-bold">職人入駐申請</h1>

@@ -1,4 +1,4 @@
-import { MapPin, Search, SlidersHorizontal, LogOut, Star } from 'lucide-react'
+import { MapPin, Search, SlidersHorizontal, LogOut, Star, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -145,11 +145,42 @@ export default async function Home() {
         </div>
       </nav>
 
-      {/* Hero + Search */}
-      <div className="bg-gradient-to-br from-primary to-[#6FAE82] px-4 py-8 text-white">
-        <h1 className="text-xl font-bold mb-0.5">找到你的專屬健康老師</h1>
-        <p className="text-white/80 text-sm mb-4">按摩・瑜伽・個人教練，一鍵預約到府或到店</p>
-        <div className="flex gap-2">
+      {/* Hero */}
+      <div className="relative bg-secondary px-5 pt-9 pb-7 overflow-hidden">
+        {/* 便條紙貼紙 */}
+        <svg className="absolute top-4 left-3 w-12 h-14 -rotate-[8deg]" viewBox="0 0 64 78">
+          <rect x="2" y="2" width="60" height="74" rx="3" fill="white" stroke="#3D2F26" strokeWidth="1.5" />
+          <circle cx="14" cy="2" r="3" fill="white" stroke="#3D2F26" strokeWidth="1.2" />
+          <circle cx="32" cy="2" r="3" fill="white" stroke="#3D2F26" strokeWidth="1.2" />
+          <circle cx="50" cy="2" r="3" fill="white" stroke="#3D2F26" strokeWidth="1.2" />
+          <rect x="10" y="20" width="8" height="8" rx="1.5" fill="none" stroke="#C96F35" strokeWidth="1.5" />
+          <path d="M11.5 24l1.5 1.5l3-3.5" fill="none" stroke="#C96F35" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M24 24h28" stroke="#3D2F26" strokeWidth="1.3" strokeLinecap="round" />
+          <rect x="10" y="36" width="8" height="8" rx="1.5" fill="none" stroke="#C96F35" strokeWidth="1.5" />
+          <path d="M11.5 40l1.5 1.5l3-3.5" fill="none" stroke="#C96F35" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M24 40h28" stroke="#3D2F26" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+        {/* 30秒完成貼紙 */}
+        <span className="absolute top-4 right-4 flex items-center gap-1.5 rounded-tl-2xl rounded-tr-2xl rounded-bl-2xl bg-foreground text-background text-xs font-medium px-3.5 py-2.5 rotate-[4deg]">
+          <Clock className="w-3.5 h-3.5 text-[#F5C9A0]" />30 秒完成
+        </span>
+        {/* 愛心貼紙 */}
+        <svg className="absolute top-[88px] left-2 w-9 h-9 -rotate-[10deg]" viewBox="0 0 54 54">
+          <path d="M27 46C18 40 6 31 6 19C6 11 12 6 19 6C23 6 26 8 27 11C28 8 31 6 35 6C42 6 48 11 48 19C48 31 36 40 27 46Z" fill="#F5C9A0" stroke="#3D2F26" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+        {/* 星星貼紙 */}
+        <svg className="absolute top-[96px] right-3 w-8 h-8 rotate-[12deg]" viewBox="0 0 50 50">
+          <path d="M25 3 L30 18 L46 18 L33 28 L38 44 L25 34 L12 44 L17 28 L4 18 L20 18 Z" fill="#FAC775" stroke="#3D2F26" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+
+        <div className="relative text-center pt-9">
+          <p className="text-xs font-medium tracking-wide text-primary mb-2">高雄 · 按摩 · 瑜伽 · 個人教練</p>
+          <h1 className="font-heading font-bold text-[28px] leading-tight text-foreground">不用等LINE<br />直接約老師</h1>
+        </div>
+
+        <p className="relative text-center text-sm text-muted-foreground mt-7 mb-4">一鍵預約・到府或到店・平台保障雙方權益</p>
+
+        <div className="relative flex gap-2 max-w-md mx-auto">
           <div className="flex-1 relative">
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input placeholder="搜尋地區或捷運站" className="pl-9 bg-white text-foreground" />
@@ -157,16 +188,24 @@ export default async function Home() {
           <Button variant="secondary" size="icon"><Search className="w-4 h-4" /></Button>
           <Button variant="secondary" size="icon"><SlidersHorizontal className="w-4 h-4" /></Button>
         </div>
+
+        {/* 平台保障貼紙 */}
+        <span className="absolute bottom-3 left-0 bg-foreground text-background text-[11px] font-medium pl-4 pr-3 py-1.5 rounded-r-2xl">
+          平台保障
+        </span>
       </div>
 
       <div className="max-w-2xl mx-auto">
-      {/* 篩選標籤 */}
-      <div className="px-4 py-2.5 flex gap-2 overflow-x-auto">
-        {['全部', '按摩', '瑜伽', '個人教練', '到店', '到府'].map((tag) => (
-          <Badge key={tag} variant={tag === '全部' ? 'default' : 'outline'} className="cursor-pointer whitespace-nowrap text-xs">
-            {tag}
-          </Badge>
-        ))}
+      {/* 困擾篩選標籤 */}
+      <div className="px-4 py-3">
+        <p className="text-xs text-muted-foreground mb-2">想解決什麼困擾？</p>
+        <div className="flex gap-2 overflow-x-auto">
+          {['肩頸痠痛', '運動傷害', '產後修復', '放鬆紓壓'].map((tag, i) => (
+            <Badge key={tag} variant={i === 0 ? 'default' : 'outline'} className="cursor-pointer whitespace-nowrap text-xs shrink-0">
+              {tag}
+            </Badge>
+          ))}
+        </div>
       </div>
 
       {/* Google Map */}
@@ -183,7 +222,7 @@ export default async function Home() {
 
       {/* 精選老師橫捲 */}
       <div className="px-4 pt-4">
-        <h2 className="font-semibold text-base mb-3">精選老師</h2>
+        <h2 className="font-heading font-semibold text-base mb-3">精選老師</h2>
         <div className="flex gap-3 overflow-x-auto pb-2">
           {featured.map((p, i) => (
             <Link key={p.id} href={`/practitioners/${p.id}`} className="shrink-0">
@@ -194,7 +233,7 @@ export default async function Home() {
                   </div>
                 )}
                 <CardContent className="px-3.5 pt-5 pb-4 flex flex-col items-center text-center">
-                  <Avatar className={`w-[76px] h-[76px] mb-3 border-[3px] ${i === 0 ? 'border-[#6FAE82]' : 'border-border'}`}>
+                  <Avatar className={`w-[76px] h-[76px] mb-3 border-[3px] ${i === 0 ? 'border-[#E0935D]' : 'border-border'}`}>
                     <AvatarImage src={p.avatar} />
                     <AvatarFallback className="bg-accent text-foreground text-2xl font-semibold">{p.name[0]}</AvatarFallback>
                   </Avatar>
@@ -202,7 +241,7 @@ export default async function Home() {
                   <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1 h-4">
                     {p.district && (
                       <>
-                        <MapPin className="w-3 h-3 text-[#6FAE82]" />
+                        <MapPin className="w-3 h-3 text-[#E0935D]" />
                         <span className="truncate">{p.district}</span>
                       </>
                     )}
@@ -220,7 +259,7 @@ export default async function Home() {
                         <span className="text-xs text-muted-foreground font-normal">尚無評價</span>
                       )}
                     </span>
-                    <span className="text-xs font-medium text-primary border border-[#6FAE82] rounded-full px-3 py-1">查看</span>
+                    <span className="text-xs font-medium text-primary border border-[#E0935D] rounded-full px-3 py-1">查看</span>
                   </div>
                 </CardContent>
               </Card>
@@ -231,7 +270,7 @@ export default async function Home() {
 
       {/* 附近所有老師 */}
       <div className="px-4 pt-3 pb-6">
-        <h2 className="font-semibold text-sm mb-2">附近老師</h2>
+        <h2 className="font-heading font-semibold text-sm mb-2">附近老師</h2>
         {list.length === 0 ? (
           <p className="text-muted-foreground text-sm text-center py-8">目前尚無老師上架</p>
         ) : (

@@ -119,7 +119,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
 
       {/* 封面照 */}
       <div
-        className={`relative h-40 ${practitioner.cover_image_url ? 'bg-cover bg-center' : 'bg-gradient-to-br from-primary to-[#6FAE82]'}`}
+        className={`relative h-40 ${practitioner.cover_image_url ? 'bg-cover bg-center' : 'bg-gradient-to-br from-primary to-[#E0935D]'}`}
         style={practitioner.cover_image_url ? { backgroundImage: `url(${practitioner.cover_image_url})` } : undefined}
       >
         <Avatar className="absolute left-4 -bottom-8 w-20 h-20 border-[3px] border-white shadow-sm">
@@ -139,7 +139,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         </div>
         {district && (
           <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-            <MapPin className="w-3.5 h-3.5 text-[#6FAE82]" />
+            <MapPin className="w-3.5 h-3.5 text-[#E0935D]" />
             <span>{district}</span>
           </div>
         )}
