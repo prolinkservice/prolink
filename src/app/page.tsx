@@ -201,12 +201,11 @@ export default async function Home({
 
       <div className="max-w-2xl mx-auto">
       {/* Google Map */}
-      <div className="mx-4 rounded-xl border border-border overflow-hidden h-72 sm:h-96">
-        {mapPractitioners.length > 0 ? (
-          <GoogleMap practitioners={mapPractitioners} />
-        ) : (
-          <div className="h-full flex items-center justify-center text-muted-foreground text-xs gap-2">
-            <MapPin className="w-4 h-4" />
+      <div className="relative mx-4 rounded-xl border border-border overflow-hidden h-72 sm:h-96">
+        <GoogleMap practitioners={mapPractitioners} />
+        {mapPractitioners.length === 0 && (
+          <div className="absolute top-2 left-2 bg-white/95 border border-border rounded-lg px-3 py-1.5 flex items-center gap-1.5 text-muted-foreground text-xs shadow-sm">
+            <MapPin className="w-3.5 h-3.5" />
             尚無老師位置資料
           </div>
         )}
