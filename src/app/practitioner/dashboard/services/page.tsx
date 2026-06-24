@@ -9,8 +9,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { ArrowLeft, Plus, Trash2, Pencil, X } from 'lucide-react'
 import Link from 'next/link'
+import { SERVICE_CATEGORIES } from '@/lib/categories'
 
-type Service = { id: string; name: string; duration_minutes: number; price: number; description: string | null }
+type Service = { id: string; name: string; duration_minutes: number; price: number; description: string | null; category: string | null }
 
 export default function ServicesPage() {
   const router = useRouter()
@@ -26,6 +27,7 @@ export default function ServicesPage() {
   const [duration, setDuration] = useState('60')
   const [price, setPrice] = useState('')
   const [description, setDescription] = useState('')
+  const [category, setCategory] = useState(SERVICE_CATEGORIES[0].value)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -47,7 +49,7 @@ export default function ServicesPage() {
     const supabase = createBrowserSupabaseClient()
     const { data } = await supabase
       .from('services')
-      .select('id, name, duration_minutes, price, description')
+      .select('id, name, duration_minutes, price, description, category')
       .eq('practitioner_id', practitionerId)
       .order('duration_minutes')
     setServices(data ?? [])
@@ -61,6 +63,7 @@ export default function ServicesPage() {
     setDuration('60')
     setPrice('')
     setDescription('')
+    setCategory(SERVICE_CATEGORIES[0].value)
     setShowForm(false)
   }
 
@@ -70,6 +73,7 @@ export default function ServicesPage() {
     setDuration(String(service.duration_minutes))
     setPrice(String(service.price))
     setDescription(service.description ?? '')
+    setCategory(service.category ?? SERVICE_CATEGORIES[0].value)
     setShowForm(true)
   }
 
@@ -84,6 +88,7 @@ export default function ServicesPage() {
       duration_minutes: parseInt(duration) || 60,
       price: parseInt(price) || 0,
       description: description.trim() || null,
+      category,
     }
 
     const { error } = editingId
@@ -130,7 +135,12 @@ export default function ServicesPage() {
               <Card key={s.id}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div>
-                    <p className="font-semibold text-sm">{s.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{s.name}</p>
+                      {s.category && (
+                        <span className="text-[11px] bg-accent text-accent-foreground px-2 py-0.5 rounded-full">{s.category}</span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground mt-0.5">{s.duration_minutes} 分鐘・NT${s.price}</p>
                     {s.description && <p className="text-xs text-muted-foreground mt-1">{s.description}</p>}
                   </div>
@@ -160,6 +170,18 @@ export default function ServicesPage() {
               <div>
                 <Label>服務名稱</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="例：運動按摩" className="mt-1" />
+              </div>
+              <div>
+                <Label>服務分類</Label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+                >
+                  {SERVICE_CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>{c.value}</option>
+                  ))}
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>

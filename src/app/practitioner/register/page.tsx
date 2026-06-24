@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { Plus, Trash2, User, MapPin, ClipboardList, CreditCard, Sparkles, ChevronLeft } from 'lucide-react'
+import { SERVICE_CATEGORIES } from '@/lib/categories'
 
-type Service = { name: string; duration: number; price: number }
+type Service = { name: string; duration: number; price: number; category: string }
 
 const STEP_NAMES = ['基本資料', '服務地點', '服務項目', '收款資料']
 
@@ -47,7 +48,7 @@ export default function PractitionerRegisterPage() {
   })
 
   const [services, setServices] = useState<Service[]>([
-    { name: '', duration: 60, price: 0 },
+    { name: '', duration: 60, price: 0, category: SERVICE_CATEGORIES[0].value },
   ])
 
   const [geocoding, setGeocoding] = useState(false)
@@ -100,6 +101,7 @@ export default function PractitionerRegisterPage() {
             name: s.name,
             duration: s.duration_minutes,
             price: s.price,
+            category: s.category ?? SERVICE_CATEGORIES[0].value,
           })))
         }
       }
@@ -113,7 +115,7 @@ export default function PractitionerRegisterPage() {
   }
 
   function addService() {
-    setServices(prev => [...prev, { name: '', duration: 60, price: 0 }])
+    setServices(prev => [...prev, { name: '', duration: 60, price: 0, category: SERVICE_CATEGORIES[0].value }])
   }
 
   function removeService(i: number) {
@@ -267,6 +269,7 @@ export default function PractitionerRegisterPage() {
             name: s.name,
             duration_minutes: s.duration,
             price: s.price,
+            category: s.category,
           }))
         )
       }
@@ -486,6 +489,18 @@ export default function PractitionerRegisterPage() {
                   <Label className="text-xs">服務名稱</Label>
                   <Input className="mt-1" placeholder="例：全身按摩" value={s.name}
                     onChange={e => updateService(i, 'name', e.target.value)} required />
+                </div>
+                <div>
+                  <Label className="text-xs">服務分類</Label>
+                  <select
+                    value={s.category}
+                    onChange={e => updateService(i, 'category', e.target.value)}
+                    className="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+                  >
+                    {SERVICE_CATEGORIES.map(c => (
+                      <option key={c.value} value={c.value}>{c.value}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="flex gap-3">
                   <div className="flex-1">

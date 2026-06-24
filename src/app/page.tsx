@@ -1,14 +1,13 @@
-import { MapPin, Search, SlidersHorizontal, LogOut, Star, Clock } from 'lucide-react'
+import { MapPin, Search, SlidersHorizontal, LogOut, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { signOut } from '@/app/auth/actions'
 import GoogleMap from '@/components/GoogleMap'
 import { parseCityDistrict } from '@/lib/address'
+import { HomeFeed } from './HomeFeed'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -36,7 +35,7 @@ export default async function Home() {
         specialty_tags,
         years_experience,
         profiles ( display_name, avatar_url ),
-        services ( id, price )
+        services ( id, price, category )
       `)
       .eq('status', 'approved')
       .order('created_at', { ascending: false }),
@@ -56,7 +55,7 @@ export default async function Home() {
   }
 
   const list = (practitioners ?? []).map((p) => {
-    const services = p.services as { id: string; price: number }[]
+    const services = p.services as { id: string; price: number; category: string | null }[]
     const prices = services.map(s => s.price)
     const minPrice = prices.length ? Math.min(...prices) : 0
     const profileRaw = p.profiles as unknown
@@ -70,6 +69,7 @@ export default async function Home() {
       serviceMode: SERVICE_MODE_LABEL[p.service_mode] ?? [],
       price: minPrice,
       serviceCount: services.length,
+      categories: [...new Set(services.map(s => s.category).filter((c): c is string => !!c))],
       lat: p.latitude as number | null,
       lng: p.longitude as number | null,
       avgRating,
@@ -196,18 +196,6 @@ export default async function Home() {
       </div>
 
       <div className="max-w-2xl mx-auto">
-      {/* 困擾篩選標籤 */}
-      <div className="px-4 py-3">
-        <p className="text-xs text-muted-foreground mb-2">想解決什麼困擾？</p>
-        <div className="flex gap-2 overflow-x-auto">
-          {['肩頸痠痛', '運動傷害', '產後修復', '放鬆紓壓'].map((tag, i) => (
-            <Badge key={tag} variant={i === 0 ? 'default' : 'outline'} className="cursor-pointer whitespace-nowrap text-xs shrink-0">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </div>
-
       {/* Google Map */}
       <div className="mx-4 rounded-xl border border-border overflow-hidden h-72 sm:h-96">
         {mapPractitioners.length > 0 ? (
@@ -220,92 +208,7 @@ export default async function Home() {
         )}
       </div>
 
-      {/* 精選老師橫捲 */}
-      <div className="px-4 pt-4">
-        <h2 className="font-heading font-semibold text-base mb-3">精選老師</h2>
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {featured.map((p, i) => (
-            <Link key={p.id} href={`/practitioners/${p.id}`} className="shrink-0">
-              <Card className="w-[180px] cursor-pointer hover:shadow-md active:scale-95 transition-all duration-150 rounded-2xl relative">
-                {i === 0 && (
-                  <div className="absolute top-2.5 left-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center z-10">
-                    <Star className="w-3 h-3 fill-white text-white" />
-                  </div>
-                )}
-                <CardContent className="px-3.5 pt-5 pb-4 flex flex-col items-center text-center">
-                  <Avatar className={`w-[76px] h-[76px] mb-3 border-[3px] ${i === 0 ? 'border-[#E0935D]' : 'border-border'}`}>
-                    <AvatarImage src={p.avatar} />
-                    <AvatarFallback className="bg-accent text-foreground text-2xl font-semibold">{p.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-base font-semibold truncate w-full">{p.name}</span>
-                  <div className="flex items-center justify-center gap-1 text-xs text-muted-foreground mt-1 h-4">
-                    {p.district && (
-                      <>
-                        <MapPin className="w-3 h-3 text-[#E0935D]" />
-                        <span className="truncate">{p.district}</span>
-                      </>
-                    )}
-                  </div>
-                  <span className="text-sm text-foreground mt-1 truncate w-full">{p.specialtyTags[0] ?? ' '}</span>
-                  <span className="text-xs text-muted-foreground mb-3.5">{p.serviceCount} 個服務項目</span>
-                  <div className="flex items-center justify-between w-full">
-                    <span className="flex items-center gap-1 text-sm font-semibold">
-                      {p.reviewCount > 0 ? (
-                        <>
-                          <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                          {p.avgRating.toFixed(1)}/5.0
-                        </>
-                      ) : (
-                        <span className="text-xs text-muted-foreground font-normal">尚無評價</span>
-                      )}
-                    </span>
-                    <span className="text-xs font-medium text-primary border border-[#E0935D] rounded-full px-3 py-1">查看</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* 附近所有老師 */}
-      <div className="px-4 pt-3 pb-6">
-        <h2 className="font-heading font-semibold text-sm mb-2">附近老師</h2>
-        {list.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-8">目前尚無老師上架</p>
-        ) : (
-          <div className="grid grid-cols-4 gap-2">
-            {list.map((p) => (
-              <Link key={p.id} href={`/practitioners/${p.id}`}>
-                <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                  <CardContent className="p-2 flex flex-col items-center text-center">
-                    <Avatar className="w-9 h-9 mb-1">
-                      <AvatarImage src={p.avatar} />
-                      <AvatarFallback className="bg-accent text-foreground text-xs font-semibold">{p.name[0]}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs font-semibold truncate w-full">{p.name}</span>
-                    <span className="flex items-center gap-0.5 text-[10px] text-amber-500 mt-0.5 h-3.5">
-                      {p.reviewCount > 0 && (
-                        <>
-                          <Star className="w-2.5 h-2.5 fill-amber-500" />
-                          {p.avgRating.toFixed(1)}
-                        </>
-                      )}
-                    </span>
-                    <span className="text-primary font-bold text-xs mt-0.5">NT${p.price}</span>
-                    {p.district && (
-                      <span className="flex items-center gap-0.5 text-muted-foreground text-[10px] mt-0.5 truncate w-full justify-center">
-                        <MapPin className="w-2.5 h-2.5 shrink-0" />
-                        <span className="truncate">{p.district}</span>
-                      </span>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      <HomeFeed list={list} featured={featured} />
       </div>
     </div>
   )
