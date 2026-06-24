@@ -1,13 +1,13 @@
-import { MapPin, Search, SlidersHorizontal, LogOut, Clock } from 'lucide-react'
+import { MapPin, LogOut, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { signOut } from '@/app/auth/actions'
 import GoogleMap from '@/components/GoogleMap'
 import { parseCityDistrict } from '@/lib/address'
 import { HomeFeed } from './HomeFeed'
+import { SearchBox } from './SearchBox'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -15,7 +15,12 @@ const SERVICE_MODE_LABEL: Record<string, string[]> = {
   both: ['到店', '到府'],
 }
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>
+}) {
+  const { q } = await searchParams
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -54,7 +59,11 @@ export default async function Home() {
     ratingMap.set(r.practitioner_id, entry)
   }
 
-  const list = (practitioners ?? []).map((p) => {
+  const filteredPractitioners = q
+    ? (practitioners ?? []).filter((p) => (p.shop_address as string | null)?.includes(q))
+    : (practitioners ?? [])
+
+  const list = filteredPractitioners.map((p) => {
     const services = p.services as { id: string; price: number; category: string | null }[]
     const prices = services.map(s => s.price)
     const minPrice = prices.length ? Math.min(...prices) : 0
@@ -181,12 +190,7 @@ export default async function Home() {
         <p className="relative text-center text-sm text-muted-foreground mt-7 mb-4">一鍵預約・到府或到店・平台保障雙方權益</p>
 
         <div className="relative flex gap-2 max-w-md mx-auto">
-          <div className="flex-1 relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="搜尋地區或捷運站" className="pl-9 bg-white text-foreground" />
-          </div>
-          <Button variant="secondary" size="icon"><Search className="w-4 h-4" /></Button>
-          <Button variant="secondary" size="icon"><SlidersHorizontal className="w-4 h-4" /></Button>
+          <SearchBox />
         </div>
 
         {/* 平台保障貼紙 */}
