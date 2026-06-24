@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { buildCheckoutParams, ECPAY_CHECKOUT_URL } from '@/lib/ecpay'
+import { AutoSubmitForm } from './AutoSubmitForm'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
@@ -44,16 +45,7 @@ export default async function BookingPayPage({
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
       <p className="text-muted-foreground text-sm">正在前往付款頁面，請稍候...</p>
-      <form id="ecpay-form" method="POST" action={ECPAY_CHECKOUT_URL}>
-        {Object.entries(params).map(([key, value]) => (
-          <input key={key} type="hidden" name={key} value={value} />
-        ))}
-      </form>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `document.getElementById('ecpay-form').submit();`,
-        }}
-      />
+      <AutoSubmitForm action={ECPAY_CHECKOUT_URL} params={params} />
     </div>
   )
 }
