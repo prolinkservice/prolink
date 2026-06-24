@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { LocateFixed } from 'lucide-react'
 
 type Practitioner = {
   id: string
@@ -24,6 +25,13 @@ declare global {
 
 export default function GoogleMap({ practitioners, onSelect }: Props) {
   const ref = useRef<HTMLDivElement>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapRef = useRef<any>(null)
+  type PulsingOverlay = { setMap: (m: unknown) => void; setPosition: (p: { lat: number; lng: number }) => void }
+  const overlayClassRef = useRef<(new (pos: { lat: number; lng: number }) => PulsingOverlay) | null>(null)
+  const userOverlayRef = useRef<PulsingOverlay | null>(null)
+  const [locating, setLocating] = useState(false)
+  const [locateError, setLocateError] = useState<string | null>(null)
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
@@ -42,6 +50,7 @@ export default function GoogleMap({ practitioners, onSelect }: Props) {
         streetViewControl: false,
         fullscreenControl: false,
       })
+      mapRef.current = map
 
       practitioners.forEach(p => {
         const marker = new window.google.maps.Marker({
@@ -68,6 +77,60 @@ export default function GoogleMap({ practitioners, onSelect }: Props) {
           onSelect?.(p.id)
         })
       })
+
+      class PulsingDotOverlay extends window.google.maps.OverlayView {
+        private div: HTMLDivElement | null = null
+        private position: { lat: number; lng: number }
+
+        constructor(position: { lat: number; lng: number }) {
+          super()
+          this.position = position
+        }
+
+        onAdd() {
+          const div = document.createElement('div')
+          div.style.position = 'absolute'
+          div.innerHTML = `
+            <div style="position:relative;width:16px;height:16px;transform:translate(-50%,-50%)">
+              <div style="position:absolute;inset:0;border-radius:50%;background:#378ADD;opacity:0.6;animation:prolink-pulse 1.6s ease-out infinite"></div>
+              <div style="position:absolute;inset:3px;border-radius:50%;background:#378ADD;border:2px solid white;box-shadow:0 0 2px rgba(0,0,0,0.4)"></div>
+            </div>
+          `
+          this.div = div
+          this.getPanes()?.overlayMouseTarget.appendChild(div)
+        }
+
+        draw() {
+          if (!this.div) return
+          const point = this.getProjection()?.fromLatLngToDivPixel(
+            new window.google.maps.LatLng(this.position.lat, this.position.lng)
+          )
+          if (point) {
+            this.div.style.left = `${point.x}px`
+            this.div.style.top = `${point.y}px`
+          }
+        }
+
+        onRemove() {
+          this.div?.parentNode?.removeChild(this.div)
+          this.div = null
+        }
+
+        setPosition(pos: { lat: number; lng: number }) {
+          this.position = pos
+          this.draw()
+        }
+      }
+
+      if (!document.getElementById('prolink-pulse-style')) {
+        const style = document.createElement('style')
+        style.id = 'prolink-pulse-style'
+        style.textContent = `@keyframes prolink-pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(2.6); opacity: 0; } }`
+        document.head.appendChild(style)
+      }
+
+      userOverlayRef.current = null
+      overlayClassRef.current = PulsingDotOverlay as unknown as new (pos: { lat: number; lng: number }) => PulsingOverlay
     }
 
     if (window.google?.maps) {
@@ -81,5 +144,58 @@ export default function GoogleMap({ practitioners, onSelect }: Props) {
     }
   }, [practitioners, onSelect])
 
-  return <div ref={ref} className="w-full h-full rounded-xl" />
+  function locateMe() {
+    if (!navigator.geolocation) {
+      setLocateError('此瀏覽器不支援定位')
+      return
+    }
+    setLocating(true)
+    setLocateError(null)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        const map = mapRef.current
+        if (map) {
+          map.panTo(coords)
+          map.setZoom(15)
+          const PulsingDotOverlay = overlayClassRef.current
+          if (PulsingDotOverlay) {
+            if (userOverlayRef.current) {
+              userOverlayRef.current.setPosition(coords)
+            } else {
+              const overlay = new PulsingDotOverlay(coords)
+              overlay.setMap(map)
+              userOverlayRef.current = overlay
+            }
+          }
+        }
+        setLocating(false)
+      },
+      () => {
+        setLocateError('無法取得目前位置，請確認已允許定位權限')
+        setLocating(false)
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    )
+  }
+
+  return (
+    <div className="relative w-full h-full">
+      <div ref={ref} className="w-full h-full rounded-xl" />
+      <button
+        type="button"
+        onClick={locateMe}
+        disabled={locating}
+        aria-label="定位目前位置"
+        className="absolute bottom-3 right-3 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center hover:bg-accent active:scale-90 transition-all disabled:opacity-60"
+      >
+        <LocateFixed className={`w-4.5 h-4.5 text-foreground ${locating ? 'animate-pulse' : ''}`} />
+      </button>
+      {locateError && (
+        <div className="absolute bottom-14 right-3 bg-white border border-border rounded-lg px-3 py-1.5 text-xs text-destructive shadow-sm max-w-[200px]">
+          {locateError}
+        </div>
+      )}
+    </div>
+  )
 }
