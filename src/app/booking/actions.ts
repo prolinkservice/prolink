@@ -32,10 +32,12 @@ export async function createBooking(formData: FormData) {
 
   if (!service) redirect(`${backTo}&error=${encodeURIComponent('找不到此服務項目，請重新選擇')}`)
 
-  // 建立預約
+  // 建立預約（訂單編號跟著一起寫入，避免事後 UPDATE 被 RLS 擋掉）
+  const bookingId = crypto.randomUUID()
   const { data: booking, error } = await supabase
     .from('bookings')
     .insert({
+      id: bookingId,
       customer_id: user.id,
       practitioner_id: practitionerId,
       service_id: serviceId,
@@ -46,6 +48,7 @@ export async function createBooking(formData: FormData) {
       payment_status: 'unpaid',
       total_amount: service.price,
       deposit_amount: calcCommission(service.price),
+      merchant_trade_no: genMerchantTradeNo(bookingId),
     })
     .select('id')
     .single()
@@ -60,13 +63,6 @@ export async function createBooking(formData: FormData) {
     .from('availability_slots')
     .update({ is_booked: true })
     .eq('id', slotId)
-
-  // 產生綠界訂單編號，導向付款頁
-  const merchantTradeNo = genMerchantTradeNo(booking.id)
-  await supabase
-    .from('bookings')
-    .update({ merchant_trade_no: merchantTradeNo })
-    .eq('id', booking.id)
 
   redirect(`/booking/pay?bookingId=${booking.id}`)
 }
