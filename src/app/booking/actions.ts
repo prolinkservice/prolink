@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { calcCommission } from '@/lib/commission'
 import { genMerchantTradeNo } from '@/lib/ecpay'
+import { notifyPractitioner } from '@/lib/notifications'
 
 export async function createBooking(formData: FormData) {
   const supabase = await createServerSupabaseClient()
@@ -63,6 +64,13 @@ export async function createBooking(formData: FormData) {
     .from('availability_slots')
     .update({ is_booked: true })
     .eq('id', slotId)
+
+  await notifyPractitioner(supabase, practitionerId, {
+    type: 'new_booking',
+    title: '收到新預約',
+    body: '有客人剛預約了你的服務，點此查看詳情',
+    link: '/practitioner/dashboard/bookings',
+  })
 
   redirect(`/booking/pay?bookingId=${booking.id}`)
 }

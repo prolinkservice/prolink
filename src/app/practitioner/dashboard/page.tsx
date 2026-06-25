@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Calendar, ClipboardList, LogOut, UserCog, Star, Home, ListChecks } from 'lucide-react'
+import { Calendar, ClipboardList, LogOut, UserCog, Star, Home, ListChecks, Bell } from 'lucide-react'
 import { signOut } from '@/app/auth/actions'
 
 export default async function PractitionerDashboardPage() {
@@ -22,9 +22,9 @@ export default async function PractitionerDashboardPage() {
     redirect('/practitioner/pending')
   }
 
-  // 今日預約數、待確認預約數
+  // 今日預約數、待確認預約數、未讀通知數
   const today = new Date().toISOString().split('T')[0]
-  const [{ count: todayCount }, { count: pendingCount }] = await Promise.all([
+  const [{ count: todayCount }, { count: pendingCount }, { count: unreadCount }] = await Promise.all([
     supabase
       .from('bookings')
       .select('*', { count: 'exact', head: true })
@@ -35,6 +35,11 @@ export default async function PractitionerDashboardPage() {
       .select('*', { count: 'exact', head: true })
       .eq('practitioner_id', practitioner.id)
       .eq('status', 'pending'),
+    supabase
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('is_read', false),
   ])
 
   return (
@@ -47,6 +52,14 @@ export default async function PractitionerDashboardPage() {
           <span className="font-bold text-xl text-foreground">ProLink 職人後台</span>
         </div>
         <div className="flex items-center gap-1">
+          <Link href="/practitioner/dashboard/notifications">
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="w-4 h-4" />
+              {!!unreadCount && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-destructive" />
+              )}
+            </Button>
+          </Link>
           <Link href="/">
             <Button variant="ghost" size="sm">
               <Home className="w-4 h-4 mr-1.5" />回首頁
