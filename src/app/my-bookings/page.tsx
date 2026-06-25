@@ -37,7 +37,7 @@ type Booking = {
   customer_address: string | null
   created_at: string
   availability_slots: { start_time: string; end_time: string } | null
-  practitioners: { profiles: { display_name: string | null } | null } | null
+  practitioners: { id: string; profiles: { display_name: string | null } | null } | null
   services: { name: string; price: number } | null
   reviews: { id: string } | { id: string }[] | null
 }
@@ -47,6 +47,7 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [notes, setNotes] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -58,7 +59,7 @@ export default function MyBookingsPage() {
         .select(`
           id, status, payment_method, service_mode, customer_address, created_at,
           availability_slots ( start_time, end_time ),
-          practitioners ( profiles ( display_name ) ),
+          practitioners ( id, profiles ( display_name ) ),
           services ( name, price ),
           reviews ( id )
         `)
@@ -68,8 +69,28 @@ export default function MyBookingsPage() {
       if (filter !== 'all') query = query.eq('status', filter)
 
       const { data } = await query
-      setBookings((data as unknown as Booking[]) ?? [])
+      const list = (data as unknown as Booking[]) ?? []
+      setBookings(list)
       setLoading(false)
+
+      const practitionerIds = Array.from(new Set(
+        list.map(b => {
+          const pract = Array.isArray(b.practitioners) ? b.practitioners[0] : b.practitioners
+          return pract?.id
+        }).filter((id): id is string => !!id)
+      ))
+      if (practitionerIds.length > 0) {
+        const { data: noteRows } = await supabase
+          .from('client_notes')
+          .select('practitioner_id, note')
+          .eq('customer_id', user.id)
+          .in('practitioner_id', practitionerIds)
+        const map: Record<string, string> = {}
+        for (const row of noteRows ?? []) {
+          if (row.note) map[row.practitioner_id] = row.note
+        }
+        setNotes(map)
+      }
     })
   }, [router, filter])
 
@@ -133,6 +154,7 @@ export default function MyBookingsPage() {
               const profRaw = practRaw?.profiles
               const prof = Array.isArray(profRaw) ? profRaw[0] : profRaw
               const service = Array.isArray(b.services) ? b.services[0] : b.services
+              const note = practRaw?.id ? notes[practRaw.id] : undefined
 
               return (
                 <Card key={b.id}>
@@ -152,6 +174,13 @@ export default function MyBookingsPage() {
                       <p>付款：{PAYMENT_LABEL[b.payment_method] ?? b.payment_method}｜{b.service_mode === 'on_site' ? '到府' : '到店'}</p>
                       {b.customer_address && <p>地址：{b.customer_address}</p>}
                     </div>
+
+                    {note && (
+                      <div className="mt-3 p-2 rounded-md bg-muted/50 border border-border">
+                        <p className="text-xs font-medium text-foreground mb-0.5">老師的體質紀錄</p>
+                        <p className="text-xs text-muted-foreground whitespace-pre-wrap">{note}</p>
+                      </div>
+                    )}
 
                     {b.status === 'completed' && (
                       (Array.isArray(b.reviews) ? b.reviews.length > 0 : !!b.reviews) ? (
