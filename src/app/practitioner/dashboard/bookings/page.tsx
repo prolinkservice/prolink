@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { ClientNoteEditor } from './ClientNoteEditor'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '待確認',
@@ -31,6 +32,7 @@ const PAYMENT_LABEL: Record<string, string> = {
 
 type Booking = {
   id: string
+  customer_id: string
   status: string
   payment_method: string
   service_mode: string
@@ -69,7 +71,7 @@ export default function PractitionerBookingsPage() {
     let query = supabase
       .from('bookings')
       .select(`
-        id, status, payment_method, service_mode, customer_address, created_at,
+        id, customer_id, status, payment_method, service_mode, customer_address, created_at,
         availability_slots ( start_time, end_time ),
         profiles ( display_name ),
         services ( name, price )
@@ -169,6 +171,8 @@ export default function PractitionerBookingsPage() {
                     {b.status === 'confirmed' && (
                       <Button size="sm" variant="outline" className="w-full" onClick={() => updateStatus(b.id, 'completed')}>標記完成</Button>
                     )}
+
+                    <ClientNoteEditor customerId={b.customer_id} />
                   </CardContent>
                 </Card>
               )
