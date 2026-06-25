@@ -34,6 +34,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         certificates,
         specialty_tags,
         cover_image_url,
+        brand_color,
         profiles ( display_name, avatar_url ),
         services ( id, name, description, duration_minutes, price ),
         availability_slots ( id, start_time, end_time, is_booked ),
@@ -90,6 +91,8 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
   const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
   const certificates = (practitioner.certificates as { name: string; year: number | null }[]) ?? []
   const district = parseCityDistrict(practitioner.shop_address as string | null)
+  // 老師自訂品牌主色：只套用在這個公開頁面內的封面疊色與預約按鈕，不動全站 CSS 變數
+  const brandColor = (practitioner.brand_color as string | null) || '#4A7C59'
   const reviewsForTabs = reviewList.map((r) => {
     const revProfRaw = r.profiles as unknown
     const revProf = (Array.isArray(revProfRaw) ? revProfRaw[0] : revProfRaw) as { display_name: string | null } | null
@@ -118,10 +121,16 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         <span className="font-semibold text-lg">老師詳細資料</span>
       </div>
 
-      {/* 封面照 */}
+      {/* 封面照：無封面照時用老師自訂品牌主色疊加漸層，有封面照則用品牌主色做半透明疊色 */}
       <div
-        className={`relative h-40 ${practitioner.cover_image_url ? 'bg-cover bg-center' : 'bg-gradient-to-br from-primary to-[#E0935D]'}`}
-        style={practitioner.cover_image_url ? { backgroundImage: `url(${practitioner.cover_image_url})` } : undefined}
+        className="relative h-40 bg-cover bg-center"
+        style={
+          practitioner.cover_image_url
+            ? {
+                backgroundImage: `linear-gradient(to bottom right, ${brandColor}99, ${brandColor}4D), url(${practitioner.cover_image_url})`,
+              }
+            : { backgroundImage: `linear-gradient(to bottom right, ${brandColor}, #E0935D)` }
+        }
       >
         <Avatar className="absolute left-4 -bottom-8 w-20 h-20 border-[3px] border-white shadow-sm">
           <AvatarImage src={avatar} />
@@ -237,7 +246,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
           <p className="text-center text-base text-muted-foreground">請點選上方時段開始預約</p>
         ) : (
           <form action={signInWithGoogle}>
-            <Button className="w-full" size="lg" type="submit">登入以預約</Button>
+            <Button className="w-full" size="lg" type="submit" style={{ backgroundColor: brandColor }}>登入以預約</Button>
           </form>
         )}
       </div>

@@ -23,7 +23,16 @@ interface BrandData {
   certificates: CertificateEntry[] | null
   specialty_tags: string[] | null
   cover_image_url: string | null
+  brand_color: string | null
 }
+
+const PRESET_COLORS = [
+  { label: '抹茶森林綠（預設）', value: '#4A7C59' },
+  { label: '暖杏橙', value: '#D98E4A' },
+  { label: '珊瑚紅', value: '#E0735D' },
+  { label: '霧藍', value: '#5A7D9A' },
+  { label: '紫丁香', value: '#8B6FA8' },
+]
 
 export function BrandForm() {
   const [data, setData] = useState<BrandData | null>(null)
@@ -39,6 +48,7 @@ export function BrandForm() {
   const [avatarError, setAvatarError] = useState<string | null>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [certificates, setCertificates] = useState<CertificateEntry[]>([])
+  const [brandColor, setBrandColor] = useState('#4A7C59')
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -47,12 +57,13 @@ export function BrandForm() {
       if (!user) return
       const { data: practitioner } = await supabase
         .from('practitioners')
-        .select('years_experience, certificates, specialty_tags, cover_image_url')
+        .select('years_experience, certificates, specialty_tags, cover_image_url, brand_color')
         .eq('user_id', user.id)
         .single()
       setData(practitioner as BrandData)
       const certs = (practitioner?.certificates as CertificateEntry[]) ?? []
       setCertificates(certs.length > 0 ? certs : [{ name: '', year: null }])
+      setBrandColor(practitioner?.brand_color ?? '#4A7C59')
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -286,6 +297,33 @@ export function BrandForm() {
             <Label>封面照網址</Label>
             <Input name="coverImageUrl" defaultValue={data.cover_image_url ?? ''} placeholder="https://..." className="mt-1" />
             <p className="text-xs text-muted-foreground mt-1">建議使用寬幅橫向照片，Demo 階段請貼上圖片連結</p>
+          </div>
+          <div>
+            <Label>品牌主色</Label>
+            <p className="text-xs text-muted-foreground mt-1 mb-2">套用於您公開頁面的封面疊色與預約按鈕，不影響其他老師或全站樣式</p>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {PRESET_COLORS.map(preset => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  title={preset.label}
+                  onClick={() => setBrandColor(preset.value)}
+                  className={`w-8 h-8 rounded-full border-2 transition-transform active:scale-90 ${
+                    brandColor.toLowerCase() === preset.value.toLowerCase() ? 'border-foreground' : 'border-transparent'
+                  }`}
+                  style={{ backgroundColor: preset.value }}
+                />
+              ))}
+              <input
+                type="color"
+                value={brandColor}
+                onChange={e => setBrandColor(e.target.value)}
+                className="w-8 h-8 rounded-full border-2 border-input cursor-pointer p-0 overflow-hidden"
+                title="自訂顏色"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">目前選擇：{brandColor}</p>
+            <input type="hidden" name="brandColor" value={brandColor} />
           </div>
           <Button type="submit" size="sm" className="self-start active:scale-95 transition-transform">
             儲存

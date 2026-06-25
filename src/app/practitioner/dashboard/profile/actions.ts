@@ -71,6 +71,8 @@ export async function updateAddress(formData: FormData) {
   revalidatePath('/practitioner/dashboard/profile')
 }
 
+const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
+
 export async function updateBrandInfo(formData: FormData) {
   const supabase = await createServerSupabaseClient()
   const practitionerId = await getOwnPractitionerId(supabase)
@@ -79,6 +81,7 @@ export async function updateBrandInfo(formData: FormData) {
   const certificatesRaw = formData.get('certificates') as string
   const specialtyTags = formData.get('specialtyTags') as string
   const coverImageUrl = formData.get('coverImageUrl') as string
+  const brandColor = formData.get('brandColor') as string
 
   let certificates: { name: string; year: number | null }[] = []
   try {
@@ -96,10 +99,13 @@ export async function updateBrandInfo(formData: FormData) {
       certificate_name: certificates[0]?.name || null,
       specialty_tags: specialtyTags ? specialtyTags.split(',').map(s => s.trim()).filter(Boolean) : [],
       cover_image_url: coverImageUrl || null,
+      // 只接受合法的 6 位數 hex 色碼，避免寫入不合法字串造成公開頁面套用 inline style 出錯
+      ...(brandColor && HEX_COLOR_PATTERN.test(brandColor) ? { brand_color: brandColor } : {}),
     })
     .eq('id', practitionerId)
 
   revalidatePath('/practitioner/dashboard/profile')
+  revalidatePath('/practitioners/[id]', 'page')
 }
 
 export async function addSocialLink(formData: FormData) {
