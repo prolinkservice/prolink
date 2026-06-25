@@ -206,8 +206,8 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
             <div className="flex flex-col gap-5">
               {Object.entries(groupedSlots).map(([date, dateSlots]) => {
                 const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-                const wd = weekdays[new Date(date + 'T00:00:00+08:00').getDay()]
-                const [, m, day] = date.split('-')
+                const [y, m, day] = date.split('-')
+                const wd = weekdays[new Date(Date.UTC(Number(y), Number(m) - 1, Number(day))).getUTCDay()]
                 return (
                   <div key={date}>
                     <p className="text-sm font-bold mb-2">{m}/{day}（{wd}）</p>
