@@ -12,6 +12,7 @@ import { Plus, Trash2, User, MapPin, ClipboardList, CreditCard, Sparkles, Chevro
 import { SERVICE_CATEGORIES } from '@/lib/categories'
 
 type Service = { name: string; duration: number; price: number; category: string }
+type CertificateEntry = { name: string; year: number | null }
 
 const STEP_NAMES = ['基本資料', '服務地點', '服務項目', '收款資料']
 
@@ -30,7 +31,6 @@ export default function PractitionerRegisterPage() {
     bank_name: string
     bank_account: string
     years_experience: string
-    certificate_name: string
     specialty_tags: string
     cover_image_url: string
   }>({
@@ -42,7 +42,6 @@ export default function PractitionerRegisterPage() {
     bank_name: '',
     bank_account: '',
     years_experience: '',
-    certificate_name: '',
     specialty_tags: '',
     cover_image_url: '',
   })
@@ -50,6 +49,24 @@ export default function PractitionerRegisterPage() {
   const [services, setServices] = useState<Service[]>([
     { name: '', duration: 60, price: 0, category: SERVICE_CATEGORIES[0].value },
   ])
+
+  const [certificates, setCertificates] = useState<CertificateEntry[]>([{ name: '', year: null }])
+
+  function updateCertificate(i: number, field: keyof CertificateEntry, value: string) {
+    setCertificates(prev => prev.map((c, idx) => {
+      if (idx !== i) return c
+      if (field === 'year') return { ...c, year: value ? parseInt(value) : null }
+      return { ...c, name: value }
+    }))
+  }
+
+  function addCertificate() {
+    setCertificates(prev => [...prev, { name: '', year: null }])
+  }
+
+  function removeCertificate(i: number) {
+    setCertificates(prev => prev.filter((_, idx) => idx !== i))
+  }
 
   const [geocoding, setGeocoding] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
@@ -62,7 +79,7 @@ export default function PractitionerRegisterPage() {
 
       const { data: rejected } = await supabase
         .from('practitioners')
-        .select('id, bio, service_mode, shop_address, license_url, bank_name, bank_account, years_experience, certificate_name, specialty_tags, cover_image_url')
+        .select('id, bio, service_mode, shop_address, license_url, bank_name, bank_account, years_experience, certificates, specialty_tags, cover_image_url')
         .eq('user_id', user.id)
         .eq('status', 'rejected')
         .maybeSingle()
@@ -86,10 +103,12 @@ export default function PractitionerRegisterPage() {
           bank_name: rejected.bank_name || '',
           bank_account: rejected.bank_account || '',
           years_experience: rejected.years_experience !== null && rejected.years_experience !== undefined ? String(rejected.years_experience) : '',
-          certificate_name: rejected.certificate_name || '',
           specialty_tags: (rejected.specialty_tags ?? []).join(', '),
           cover_image_url: rejected.cover_image_url || '',
         }))
+
+        const rejectedCerts = (rejected.certificates as CertificateEntry[]) ?? []
+        if (rejectedCerts.length > 0) setCertificates(rejectedCerts)
 
         const { data: oldServices } = await supabase
           .from('services')
@@ -224,7 +243,8 @@ export default function PractitionerRegisterPage() {
           bank_name: form.bank_name || null,
           bank_account: form.bank_account || null,
           years_experience: form.years_experience ? parseInt(form.years_experience) : null,
-          certificate_name: form.certificate_name || null,
+          certificates: certificates.filter(c => c.name.trim()),
+          certificate_name: certificates.find(c => c.name.trim())?.name || null,
           specialty_tags: form.specialty_tags ? form.specialty_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
           cover_image_url: form.cover_image_url || null,
           status: 'pending',
@@ -250,7 +270,8 @@ export default function PractitionerRegisterPage() {
           bank_name: form.bank_name || null,
           bank_account: form.bank_account || null,
           years_experience: form.years_experience ? parseInt(form.years_experience) : null,
-          certificate_name: form.certificate_name || null,
+          certificates: certificates.filter(c => c.name.trim()),
+          certificate_name: certificates.find(c => c.name.trim())?.name || null,
           specialty_tags: form.specialty_tags ? form.specialty_tags.split(',').map(s => s.trim()).filter(Boolean) : [],
           cover_image_url: form.cover_image_url || null,
           status: 'pending',
@@ -381,9 +402,38 @@ export default function PractitionerRegisterPage() {
                 onChange={e => setForm(f => ({ ...f, years_experience: e.target.value }))} min={0} />
             </div>
             <div>
-              <Label>證照名稱（選填）</Label>
-              <Input className="mt-1" placeholder="例：中醫推拿執照" value={form.certificate_name}
-                onChange={e => setForm(f => ({ ...f, certificate_name: e.target.value }))} />
+              <Label>經歷／相關證照（選填）</Label>
+              <div className="flex flex-col gap-2 mt-1">
+                {certificates.map((cert, i) => (
+                  <div key={i} className="flex gap-2 items-start">
+                    <Input
+                      value={cert.name}
+                      onChange={e => updateCertificate(i, 'name', e.target.value)}
+                      placeholder="例：中醫推拿執照"
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      value={cert.year ?? ''}
+                      onChange={e => updateCertificate(i, 'year', e.target.value)}
+                      placeholder="年份（選填）"
+                      className="w-32"
+                    />
+                    {certificates.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeCertificate(i)}
+                        className="text-destructive hover:opacity-70 active:scale-90 transition-transform shrink-0 mt-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <Button type="button" variant="outline" size="sm" onClick={addCertificate} className="self-start active:scale-95 transition-transform">
+                  <Plus className="w-3 h-3 mr-1" />新增一筆
+                </Button>
+              </div>
             </div>
             <div>
               <Label>證照圖片網址（選填）</Label>

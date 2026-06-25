@@ -37,7 +37,7 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
         id, bio, service_mode, shop_address, status, created_at,
         bank_name, bank_account, bank_status,
         id_verification_status,
-        years_experience, certificate_name, specialty_tags, cover_image_url, social_links,
+        years_experience, certificates, specialty_tags, cover_image_url, social_links,
         profiles ( display_name, avatar_url ),
         services ( id, name, description, duration_minutes, price )
       `)
@@ -56,6 +56,7 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
   const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
   const services = (practitioner.services as { id: string; name: string; description: string | null; duration_minutes: number; price: number }[]) ?? []
   const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
+  const certificates = (practitioner.certificates as { name: string; year: number | null }[]) ?? []
   const socialLinks = (practitioner.social_links as { platform: string; url: string }[]) ?? []
   const reviewList = reviews ?? []
 
@@ -112,13 +113,19 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
                 <p className="text-sm font-semibold text-foreground">{practitioner.years_experience} 年</p>
               </div>
             )}
-            {practitioner.certificate_name && (
-              <div className="bg-[#F8F7F5] rounded-xl p-3.5">
+            {certificates.filter(c => c.name?.trim()).length > 0 && (
+              <div className="bg-[#F8F7F5] rounded-xl p-3.5 col-span-2">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Sparkles className="w-3.5 h-3.5 text-primary" />
-                  <span className="text-xs font-medium text-muted-foreground">證照</span>
+                  <span className="text-xs font-medium text-muted-foreground">經歷／相關證照</span>
                 </div>
-                <p className="text-sm font-semibold text-foreground">{practitioner.certificate_name}</p>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {certificates.filter(c => c.name?.trim()).map((cert, i) => (
+                    <span key={i} className="text-sm font-semibold text-foreground bg-white border border-border rounded-full px-2.5 py-1">
+                      {cert.name}{cert.year ? `（${cert.year}）` : ''}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </div>

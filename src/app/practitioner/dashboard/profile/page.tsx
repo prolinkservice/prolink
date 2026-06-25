@@ -32,7 +32,7 @@ export default async function MemberProfilePage() {
   ] = await Promise.all([
     supabase
       .from('practitioners')
-      .select('id, status, bank_status, id_verification_status, latitude, longitude, social_links, years_experience, certificate_name, specialty_tags, cover_image_url')
+      .select('id, status, bank_status, id_verification_status, latitude, longitude, social_links, years_experience, certificates, specialty_tags, cover_image_url')
       .eq('user_id', user.id)
       .single(),
     supabase.from('profiles').select('display_name').eq('id', user.id).single(),
@@ -53,7 +53,8 @@ export default async function MemberProfilePage() {
   const socialLinks = (practitioner.social_links as { platform: string; url: string }[]) ?? []
   const addressVerified = practitioner.latitude !== null && practitioner.longitude !== null
   const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
-  const brandFilled = practitioner.years_experience || practitioner.certificate_name || specialtyTags.length > 0 || practitioner.cover_image_url
+  const certificates = (practitioner.certificates as { name: string; year: number | null }[]) ?? []
+  const brandFilled = practitioner.years_experience || certificates.length > 0 || specialtyTags.length > 0 || practitioner.cover_image_url
 
   const verificationChecks = [
     practitioner.bank_status === 'approved',

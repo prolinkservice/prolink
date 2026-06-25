@@ -31,7 +31,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         longitude,
         status,
         years_experience,
-        certificate_name,
+        certificates,
         specialty_tags,
         cover_image_url,
         profiles ( display_name, avatar_url ),
@@ -88,6 +88,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
   const services = practitioner.services as { id: string; name: string; description: string | null; duration_minutes: number; price: number }[]
   const socialLinks = (practitioner.social_links as { platform: string; url: string }[]) ?? []
   const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
+  const certificates = (practitioner.certificates as { name: string; year: number | null }[]) ?? []
   const district = parseCityDistrict(practitioner.shop_address as string | null)
   const reviewsForTabs = reviewList.map((r) => {
     const revProfRaw = r.profiles as unknown
@@ -157,12 +158,12 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
               {practitioner.years_experience} 年經驗
             </Badge>
           )}
-          {practitioner.certificate_name && (
-            <Badge className="bg-accent text-primary border-none text-xs px-2.5 py-1 rounded-full">
+          {certificates.filter(c => c.name?.trim()).map((cert, i) => (
+            <Badge key={i} className="bg-accent text-primary border-none text-xs px-2.5 py-1 rounded-full">
               <BadgeCheck className="w-3 h-3 mr-1" />
-              {practitioner.certificate_name}
+              {cert.name}{cert.year ? `（${cert.year}）` : ''}
             </Badge>
-          )}
+          ))}
           {serviceMode.map((mode) => (
             <Badge key={mode} variant="outline" className="text-xs px-2.5 py-1">
               {mode}

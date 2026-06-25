@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Sparkles, Upload } from 'lucide-react'
+import { Sparkles, Upload, Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,9 +13,14 @@ import { updateDisplayName } from '@/lib/profile-actions'
 
 const NAME_CHANGE_COOLDOWN_DAYS = 7
 
+export interface CertificateEntry {
+  name: string
+  year: number | null
+}
+
 interface BrandData {
   years_experience: number | null
-  certificate_name: string | null
+  certificates: CertificateEntry[] | null
   specialty_tags: string[] | null
   cover_image_url: string | null
 }
@@ -33,6 +38,7 @@ export function BrandForm() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [avatarError, setAvatarError] = useState<string | null>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
+  const [certificates, setCertificates] = useState<CertificateEntry[]>([])
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -41,10 +47,12 @@ export function BrandForm() {
       if (!user) return
       const { data: practitioner } = await supabase
         .from('practitioners')
-        .select('years_experience, certificate_name, specialty_tags, cover_image_url')
+        .select('years_experience, certificates, specialty_tags, cover_image_url')
         .eq('user_id', user.id)
         .single()
       setData(practitioner as BrandData)
+      const certs = (practitioner?.certificates as CertificateEntry[]) ?? []
+      setCertificates(certs.length > 0 ? certs : [{ name: '', year: null }])
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -120,6 +128,24 @@ export function BrandForm() {
     } finally {
       setNameSaving(false)
     }
+  }
+
+  function updateCertificate(i: number, field: keyof CertificateEntry, value: string) {
+    setCertificates(prev => prev.map((c, idx) => {
+      if (idx !== i) return c
+      if (field === 'year') {
+        return { ...c, year: value ? parseInt(value) : null }
+      }
+      return { ...c, name: value }
+    }))
+  }
+
+  function addCertificate() {
+    setCertificates(prev => [...prev, { name: '', year: null }])
+  }
+
+  function removeCertificate(i: number) {
+    setCertificates(prev => prev.filter((_, idx) => idx !== i))
   }
 
   if (loading || !data) {
@@ -213,15 +239,44 @@ export function BrandForm() {
       </CardHeader>
       <CardContent>
         <form action={updateBrandInfo} className="flex flex-col gap-3">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
-              <Label>執業年資</Label>
-              <Input type="number" name="yearsExperience" defaultValue={data.years_experience ?? ''} placeholder="例：5" className="mt-1" min={0} />
+          <div>
+            <Label>執業年資</Label>
+            <Input type="number" name="yearsExperience" defaultValue={data.years_experience ?? ''} placeholder="例：5" className="mt-1" min={0} />
+          </div>
+          <div>
+            <Label>經歷／相關證照</Label>
+            <div className="flex flex-col gap-2 mt-1">
+              {certificates.map((cert, i) => (
+                <div key={i} className="flex gap-2 items-start">
+                  <Input
+                    value={cert.name}
+                    onChange={e => updateCertificate(i, 'name', e.target.value)}
+                    placeholder="例：中醫推拿執照"
+                    className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    value={cert.year ?? ''}
+                    onChange={e => updateCertificate(i, 'year', e.target.value)}
+                    placeholder="年份（選填）"
+                    className="w-32"
+                  />
+                  {certificates.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeCertificate(i)}
+                      className="text-destructive hover:opacity-70 active:scale-90 transition-transform shrink-0 mt-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={addCertificate} className="self-start active:scale-95 transition-transform">
+                <Plus className="w-3 h-3 mr-1" />新增一筆
+              </Button>
             </div>
-            <div>
-              <Label>證照名稱</Label>
-              <Input name="certificateName" defaultValue={data.certificate_name ?? ''} placeholder="例：中醫推拿執照" className="mt-1" />
-            </div>
+            <input type="hidden" name="certificates" value={JSON.stringify(certificates.filter(c => c.name.trim()))} />
           </div>
           <div>
             <Label>專長標籤（用逗號分隔）</Label>

@@ -76,15 +76,24 @@ export async function updateBrandInfo(formData: FormData) {
   const practitionerId = await getOwnPractitionerId(supabase)
 
   const yearsExperience = formData.get('yearsExperience') as string
-  const certificateName = formData.get('certificateName') as string
+  const certificatesRaw = formData.get('certificates') as string
   const specialtyTags = formData.get('specialtyTags') as string
   const coverImageUrl = formData.get('coverImageUrl') as string
+
+  let certificates: { name: string; year: number | null }[] = []
+  try {
+    certificates = certificatesRaw ? JSON.parse(certificatesRaw) : []
+  } catch {
+    certificates = []
+  }
 
   await supabase
     .from('practitioners')
     .update({
       years_experience: yearsExperience ? parseInt(yearsExperience) : null,
-      certificate_name: certificateName || null,
+      certificates,
+      // certificate_name 舊欄位同步保留第一筆名稱，避免其他尚未更新的程式碼讀到空值
+      certificate_name: certificates[0]?.name || null,
       specialty_tags: specialtyTags ? specialtyTags.split(',').map(s => s.trim()).filter(Boolean) : [],
       cover_image_url: coverImageUrl || null,
     })
