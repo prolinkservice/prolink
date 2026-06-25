@@ -109,11 +109,13 @@ export default async function Home({
         <div className="flex items-center gap-2 overflow-x-auto flex-nowrap ml-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {user ? (
             <>
+              {/* 「我的預約」對所有登入用戶都顯示：職人本人同時也可能是消費者（同一帳號先當會員再升級職人），
+                  不能因為 role 是 practitioner 就完全隱藏消費者視角的功能入口 */}
+              <Button asChild size="sm" variant="outline" className="shrink-0">
+                <Link href="/my-bookings">我的預約</Link>
+              </Button>
               {profile?.role === 'customer' && (
                 <>
-                  <Button asChild size="sm" variant="outline" className="shrink-0">
-                    <Link href="/my-bookings">我的預約</Link>
-                  </Button>
                   <Button asChild size="sm" variant="outline" className="shrink-0">
                     <Link href="/account">我的帳戶</Link>
                   </Button>
