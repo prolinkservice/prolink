@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { ShareSection } from './ShareSection'
 
 const toTaipei = (iso: string) => new Date(new Date(iso).getTime() + 8 * 60 * 60 * 1000)
 
@@ -36,7 +37,7 @@ export default async function BookingSuccessPage({
           id, total_amount, payment_method, deposit_amount, payment_status,
           services ( name ),
           availability_slots ( start_time, end_time ),
-          practitioners ( profiles ( display_name ) )
+          practitioners ( id, profiles ( display_name ) )
         `)
         .eq('id', bookingId)
         .single()
@@ -47,9 +48,12 @@ export default async function BookingSuccessPage({
   const serviceRaw = booking?.services as unknown
   const service = (Array.isArray(serviceRaw) ? serviceRaw[0] : serviceRaw) as { name: string } | null
   const practRaw = booking?.practitioners as unknown
-  const pract = (Array.isArray(practRaw) ? practRaw[0] : practRaw) as { profiles: unknown } | null
+  const pract = (Array.isArray(practRaw) ? practRaw[0] : practRaw) as { id: string; profiles: unknown } | null
   const profileRaw = pract?.profiles as unknown
   const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null } | null
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://prolink-delta.vercel.app'
+  const practitionerUrl = pract ? `${siteUrl}/practitioners/${pract.id}` : siteUrl
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-12">
@@ -106,6 +110,10 @@ export default async function BookingSuccessPage({
             )}
           </CardContent>
         </Card>
+      )}
+
+      {booking && pract && (
+        <ShareSection practitionerName={profile?.display_name ?? '老師'} practitionerUrl={practitionerUrl} />
       )}
 
       <Link href="/">
