@@ -236,7 +236,7 @@ export default function AvailabilityPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-3 shadow-sm">
+      <nav className="lg:hidden sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-3 shadow-sm">
         <Link href="/practitioner/dashboard">
           <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
         </Link>

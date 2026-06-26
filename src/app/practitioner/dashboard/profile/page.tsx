@@ -105,7 +105,7 @@ export default async function MemberProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-3 shadow-sm">
+      <div className="lg:hidden sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-3 shadow-sm">
         <Link href="/practitioner/dashboard">
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>

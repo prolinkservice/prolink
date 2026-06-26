@@ -54,8 +54,9 @@ export default async function PractitionerDashboardPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
+    <div className="min-h-screen lg:min-h-0 bg-background">
+      {/* 手機版專用頂部導覽，桌面版由 layout 共用頂部導覽取代 */}
+      <nav className="lg:hidden sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
@@ -84,43 +85,38 @@ export default async function PractitionerDashboardPage() {
         </div>
       </nav>
 
-      <div className="px-4 py-6 max-w-lg lg:max-w-5xl mx-auto">
-        <div className="lg:flex lg:gap-6 lg:items-start">
-          {/* 左側：歡迎詞 + 統計（桌面版 sticky） */}
-          <div className="lg:w-72 lg:shrink-0 lg:sticky lg:top-20">
-            <p className="text-muted-foreground text-sm mb-1">歡迎回來</p>
-            <h1 className="text-2xl font-bold text-foreground mb-6">{profile?.display_name ?? '老師'}</h1>
+      <div className="px-4 py-6 lg:px-0 lg:py-0 max-w-lg lg:max-w-none mx-auto">
+        <p className="text-muted-foreground text-sm mb-1">歡迎回來</p>
+        <h1 className="text-2xl font-bold text-foreground mb-6">{profile?.display_name ?? '老師'}</h1>
 
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 mb-6 lg:mb-0">
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground">今日預約</p>
-                  <p className="text-3xl font-bold text-primary mt-1">{todayCount ?? 0}</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <p className="text-xs text-muted-foreground">待確認</p>
-                  <p className="text-3xl font-bold text-foreground mt-1">{pendingCount ?? 0}</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">今日預約</p>
+              <p className="text-3xl font-bold text-primary mt-1">{todayCount ?? 0}</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">待確認</p>
+              <p className="text-3xl font-bold text-foreground mt-1">{pendingCount ?? 0}</p>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* 右側：功能入口 */}
-          <div className="flex-1 min-w-0">
-            <SettingsListGroup>
-              {entries.map((entry) => (
-                <SettingsListItem
-                  key={entry.href}
-                  href={entry.href}
-                  icon={entry.icon}
-                  label={entry.label}
-                  sublabel={entry.sublabel}
-                />
-              ))}
-            </SettingsListGroup>
-          </div>
+        {/* 功能入口：桌面版已移至左側選單，這裡只在手機版顯示 */}
+        <div className="lg:hidden">
+          <SettingsListGroup>
+            {entries.map((entry) => (
+              <SettingsListItem
+                key={entry.href}
+                href={entry.href}
+                icon={entry.icon}
+                label={entry.label}
+                sublabel={entry.sublabel}
+              />
+            ))}
+          </SettingsListGroup>
         </div>
       </div>
     </div>
