@@ -146,14 +146,18 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-3 shadow-sm">
-        <Link href="/">
-          <Button variant="ghost" size="icon">
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
-        </Link>
-        <span className="font-semibold text-lg">老師詳細資料</span>
+      <div className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <Link href="/">
+            <Button variant="ghost" size="icon">
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+          </Link>
+          <span className="font-semibold text-lg">老師詳細資料</span>
+        </div>
       </div>
+
+      <div className="max-w-lg mx-auto">
 
       {/* 封面照：無封面照時用老師自訂品牌主色疊加漸層，有封面照則用品牌主色做半透明疊色 */}
       <div
@@ -255,15 +259,19 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
+      </div>
+
       {/* 底部提示 */}
-      <div className="sticky bottom-0 bg-white border-t border-border px-4 py-4">
-        {user ? (
-          <p className="text-center text-base text-muted-foreground">請點選上方時段開始預約</p>
-        ) : (
-          <form action={signInWithGoogle}>
-            <Button className="w-full" size="lg" type="submit" style={{ backgroundColor: brandColor }}>登入以預約</Button>
-          </form>
-        )}
+      <div className="sticky bottom-0 bg-white border-t border-border">
+        <div className="max-w-lg mx-auto px-4 py-4">
+          {user ? (
+            <p className="text-center text-base text-muted-foreground">請點選上方時段開始預約</p>
+          ) : (
+            <form action={signInWithGoogle}>
+              <Button className="w-full" size="lg" type="submit" style={{ backgroundColor: brandColor }}>登入以預約</Button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   )

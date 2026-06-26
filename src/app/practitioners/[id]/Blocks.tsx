@@ -156,7 +156,7 @@ export function MapBlock({ practitionerId, practitionerName, lat, lng }: { pract
   return (
     <div>
       <h2 className="font-bold text-lg mb-3">地圖位置</h2>
-      <div className="rounded-xl overflow-hidden border border-border h-72">
+      <div className="rounded-xl overflow-hidden border border-border h-[28rem]">
         <GoogleMap practitioners={[{ id: practitionerId, name: practitionerName, lat, lng }]} />
       </div>
     </div>
