@@ -14,7 +14,7 @@ export async function approvePractitioner(formData: FormData) {
     body: '恭喜，你的職人入駐申請已通過，現在可以開始接案了',
     link: '/practitioner/dashboard',
   })
-  revalidatePath('/admin')
+  revalidatePath('/admin', 'layout')
 }
 
 export async function rejectPractitioner(formData: FormData) {
@@ -28,7 +28,7 @@ export async function rejectPractitioner(formData: FormData) {
     body: reason ? `退回原因：${reason}` : '請查看詳細退回原因並補件',
     link: '/practitioner/pending',
   })
-  revalidatePath('/admin')
+  revalidatePath('/admin', 'layout')
 }
 
 export async function approveBank(formData: FormData) {
@@ -40,7 +40,7 @@ export async function approveBank(formData: FormData) {
     title: '銀行帳戶審核通過',
     link: '/practitioner/dashboard/profile',
   })
-  revalidatePath('/admin')
+  revalidatePath('/admin', 'layout')
 }
 
 export async function rejectBank(formData: FormData) {
@@ -53,7 +53,7 @@ export async function rejectBank(formData: FormData) {
     body: '請重新確認帳戶資料後再次送出',
     link: '/practitioner/dashboard/profile',
   })
-  revalidatePath('/admin')
+  revalidatePath('/admin', 'layout')
 }
 
 export async function approveId(formData: FormData) {
@@ -65,7 +65,7 @@ export async function approveId(formData: FormData) {
     title: '身份驗證審核通過',
     link: '/practitioner/dashboard/profile',
   })
-  revalidatePath('/admin')
+  revalidatePath('/admin', 'layout')
 }
 
 export async function rejectId(formData: FormData) {
@@ -78,5 +78,5 @@ export async function rejectId(formData: FormData) {
     body: '請重新確認身分證照片後再次送出',
     link: '/practitioner/dashboard/profile',
   })
-  revalidatePath('/admin')
+  revalidatePath('/admin', 'layout')
 }

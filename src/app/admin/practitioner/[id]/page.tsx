@@ -61,17 +61,23 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
   const reviewList = reviews ?? []
 
   return (
-    <div className="min-h-screen bg-[#F8F7F5]">
-      <nav className="sticky top-0 z-50 bg-white border-b border-border shadow-sm">
+    <div className="min-h-screen lg:min-h-0 bg-[#F8F7F5] lg:bg-transparent -m-0 lg:-m-0">
+      <nav className="lg:hidden sticky top-0 z-50 bg-white border-b border-border shadow-sm">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
-          <Link href="/admin">
+          <Link href="/admin/practitioners">
             <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
           </Link>
           <span className="font-bold text-base text-foreground">{prof?.display_name ?? '未知'} 的詳細資料</span>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-6 py-8 space-y-5">
+      <div className="max-w-4xl mx-auto px-6 lg:px-0 py-8 lg:py-0 space-y-5">
+        <div className="hidden lg:flex items-center gap-3 -mt-2">
+          <Link href="/admin/practitioners">
+            <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
+          </Link>
+          <span className="font-bold text-lg text-foreground">{prof?.display_name ?? '未知'} 的詳細資料</span>
+        </div>
         <div className="bg-white rounded-2xl border border-border p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
