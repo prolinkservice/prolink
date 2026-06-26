@@ -4,6 +4,7 @@ import { ChevronLeft, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { StudentList } from './StudentList'
+import { BrandMark } from '@/components/BrandMark'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '待確認',
@@ -102,6 +103,7 @@ export default async function StudentsPage() {
           <Users className="w-4 h-4" />
           學員列表
         </span>
+        <BrandMark />
       </nav>
 
       <div className="px-4 py-6 max-w-lg lg:max-w-2xl mx-auto">

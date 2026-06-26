@@ -9,6 +9,7 @@ import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { ClientNoteEditor } from './ClientNoteEditor'
+import { BrandMark } from '@/components/BrandMark'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '待確認',
@@ -102,6 +103,7 @@ export default function PractitionerBookingsPage() {
           <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
         </Link>
         <span className="font-semibold">預約管理</span>
+      <BrandMark />
       </nav>
 
       <div className="px-4 py-4 max-w-lg mx-auto">

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BrandForm } from './BrandForm'
+import { BrandMark } from '@/components/BrandMark'
 
 export default function BrandPage() {
   return (
@@ -11,6 +12,7 @@ export default function BrandPage() {
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <span className="font-semibold text-lg">個人品牌</span>
+      <BrandMark />
       </div>
 
       <div className="px-4 py-6 max-w-lg mx-auto">

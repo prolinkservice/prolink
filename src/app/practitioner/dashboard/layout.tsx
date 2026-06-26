@@ -24,7 +24,8 @@ export default async function PractitionerDashboardLayout({ children }: { childr
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
-          <span className="font-bold text-xl text-foreground">ProLink 職人後台</span>
+          <span className="font-bold text-xl text-foreground">職人連結</span>
+          <span className="ml-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">職人後台</span>
         </Link>
         <div className="flex items-center gap-1">
           <Link href="/practitioner/dashboard/notifications">

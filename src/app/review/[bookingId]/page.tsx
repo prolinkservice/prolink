@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { submitReview } from './actions'
 import StarRating from './StarRating'
+import { BrandMark } from '@/components/BrandMark'
 
 export default async function ReviewPage({
   params,
@@ -45,6 +46,7 @@ export default async function ReviewPage({
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <span className="font-semibold text-lg">給評價</span>
+      <BrandMark />
       </div>
 
       <form action={submitReview} className="px-4 py-6 max-w-lg mx-auto flex flex-col gap-6">

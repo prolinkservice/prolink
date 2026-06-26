@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <span className="text-white font-bold text-sm">P</span>
             </div>
             <div>
-              <span className="font-bold text-base text-foreground">ProLink</span>
+              <span className="font-bold text-base text-foreground">職人連結</span>
               <span className="ml-2 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">管理後台</span>
             </div>
           </Link>

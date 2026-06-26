@@ -10,6 +10,7 @@ import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { ArrowLeft, Plus, Trash2, Pencil, X } from 'lucide-react'
 import Link from 'next/link'
 import { SERVICE_CATEGORIES } from '@/lib/categories'
+import { BrandMark } from '@/components/BrandMark'
 
 type Service = { id: string; name: string; duration_minutes: number; price: number; description: string | null; category: string | null }
 
@@ -124,6 +125,7 @@ export default function ServicesPage() {
           <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
         </Link>
         <span className="font-semibold">服務管理</span>
+      <BrandMark />
       </nav>
 
       <div className="px-4 py-4 max-w-lg mx-auto space-y-3">

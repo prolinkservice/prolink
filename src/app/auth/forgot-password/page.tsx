@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { BrandMark } from '@/components/BrandMark'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -57,6 +58,7 @@ export default function ForgotPasswordPage() {
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <h1 className="text-xl font-bold">忘記密碼</h1>
+      <BrandMark />
       </div>
 
       <p className="text-muted-foreground text-sm mb-6">

@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { PLATFORM_COMMISSION_RATE } from '@/lib/commission'
 import { DailyBarChart } from './DailyBarChart'
+import { BrandMark } from '@/components/BrandMark'
 
 const DAYS = 30
 
@@ -83,6 +84,7 @@ export default async function AnalyticsPage() {
           <BarChart3 className="w-4 h-4" />
           數據分析
         </span>
+        <BrandMark />
       </nav>
 
       <div className="px-4 py-6 max-w-lg lg:max-w-2xl mx-auto">

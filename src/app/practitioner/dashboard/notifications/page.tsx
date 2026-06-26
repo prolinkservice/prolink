@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { markAllNotificationsRead } from './actions'
+import { BrandMark } from '@/components/BrandMark'
 
 const TYPE_ICON: Record<string, typeof Calendar> = {
   new_booking: Calendar,
@@ -43,6 +44,7 @@ export default async function NotificationsPage() {
           <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
         </Link>
         <span className="font-semibold">通知中心</span>
+      <BrandMark />
       </nav>
 
       <div className="px-4 py-4 max-w-lg mx-auto space-y-2">

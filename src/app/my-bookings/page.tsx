@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { BrandMark } from '@/components/BrandMark'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '待確認',
@@ -105,6 +106,7 @@ export default function MyBookingsPage() {
           <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
         </Link>
         <span className="font-semibold">我的預約</span>
+      <BrandMark />
       </nav>
 
       <div className="px-4 py-4 max-w-lg mx-auto">

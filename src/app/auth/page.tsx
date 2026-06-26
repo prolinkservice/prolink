@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { signInWithGoogle } from '@/app/auth/actions'
+import { BrandMark } from '@/components/BrandMark'
 
 type Mode = 'login' | 'signup'
 
@@ -95,6 +96,7 @@ function AuthForm() {
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <h1 className="text-xl font-bold">{mode === 'signup' ? '會員註冊' : '會員登入'}</h1>
+      <BrandMark />
       </div>
 
       <div className="flex border-b border-border mb-6">

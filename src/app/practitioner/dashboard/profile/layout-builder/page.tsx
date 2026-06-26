@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { LayoutBuilderForm } from './LayoutBuilderForm'
+import { BrandMark } from '@/components/BrandMark'
 
 export default function LayoutBuilderPage() {
   return (
@@ -11,6 +12,7 @@ export default function LayoutBuilderPage() {
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <span className="font-semibold text-lg">首頁編排</span>
+      <BrandMark />
       </div>
 
       <div className="px-4 py-6 max-w-lg mx-auto">

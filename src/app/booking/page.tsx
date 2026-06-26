@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createBooking } from './actions'
 import { PLATFORM_COMMISSION_RATE } from '@/lib/commission'
+import { BrandMark } from '@/components/BrandMark'
 
 const SERVICE_MODE_LABEL: Record<string, string> = {
   at_shop: '到店服務',
@@ -80,6 +81,7 @@ export default async function BookingPage({
           </button>
         </Link>
         <span className="font-semibold text-base">確認預約</span>
+      <BrandMark />
       </div>
 
       <form action={createBooking}>

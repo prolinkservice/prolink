@@ -8,6 +8,7 @@ import { parseCityDistrict } from '@/lib/address'
 import { resolveLayout, type PageBlock } from '@/lib/pageBlocks'
 import { AboutBlock, CertificatesBlock, ServicesBlock, ReviewsBlock, SocialBlock, MapBlock, TextBlock, ImageBlock } from './Blocks'
 import { CoverAvatarEditor } from './CoverAvatarEditor'
+import { BrandMark } from '@/components/BrandMark'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -157,6 +158,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
             </Button>
           </Link>
           <span className="font-semibold text-lg">老師詳細資料</span>
+        <BrandMark />
         </div>
       </div>
 

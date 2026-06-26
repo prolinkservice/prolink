@@ -8,6 +8,7 @@ import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLa
 import { ProfileForm } from './profile/ProfileForm'
 import { PaymentPlaceholder } from './payment/PaymentPlaceholder'
 import { PasswordForm } from './password/PasswordForm'
+import { BrandMark } from '@/components/BrandMark'
 
 export default async function AccountPage() {
   const supabase = await createServerSupabaseClient()
@@ -58,6 +59,7 @@ export default async function AccountPage() {
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <span className="font-semibold text-lg">我的帳戶</span>
+      <BrandMark />
       </div>
 
       <div className="px-4 py-6 max-w-lg lg:max-w-5xl mx-auto flex flex-col gap-5">

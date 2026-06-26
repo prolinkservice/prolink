@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { BrandMark } from '@/components/BrandMark'
 
 export default function LoginPage() {
   return (
@@ -50,6 +51,7 @@ function LoginForm() {
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <h1 className="text-xl font-bold">會員登入</h1>
+      <BrandMark />
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">

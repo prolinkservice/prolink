@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { ChevronLeft, ChevronRight, ArrowLeft, Copy, CircleMinus, X, Layers, CalendarDays, CalendarRange } from 'lucide-react'
 import Link from 'next/link'
+import { BrandMark } from '@/components/BrandMark'
 
 const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六']
 const SLOT_MINUTES = 30
@@ -241,6 +242,7 @@ export default function AvailabilityPage() {
           <Button variant="ghost" size="icon"><ArrowLeft className="w-4 h-4" /></Button>
         </Link>
         <span className="font-semibold">時段管理</span>
+      <BrandMark />
       </nav>
 
       <div className="px-4 py-4 max-w-lg mx-auto space-y-3">

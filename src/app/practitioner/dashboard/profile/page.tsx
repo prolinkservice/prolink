@@ -9,6 +9,7 @@ import { AddressForm } from './address/AddressForm'
 import { SocialForm } from './social/SocialForm'
 import { BrandForm } from './brand/BrandForm'
 import { LayoutBuilderForm } from './layout-builder/LayoutBuilderForm'
+import { BrandMark } from '@/components/BrandMark'
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
   not_submitted: { label: '未上傳', className: 'text-muted-foreground' },
@@ -119,6 +120,7 @@ export default async function MemberProfilePage() {
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <span className="font-semibold text-lg">會員中心</span>
+      <BrandMark />
       </div>
 
       <div className="px-4 py-6 max-w-lg lg:max-w-5xl mx-auto flex flex-col gap-5">

@@ -4,6 +4,7 @@ import { ChevronLeft, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { BrandMark } from '@/components/BrandMark'
 
 export default async function PractitionerReviewsPage() {
   const supabase = await createServerSupabaseClient()
@@ -44,6 +45,7 @@ export default async function PractitionerReviewsPage() {
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
         <span className="font-semibold text-lg">我的評價</span>
+      <BrandMark />
       </div>
 
       <div className="px-4 py-6 max-w-lg mx-auto flex flex-col gap-5">
