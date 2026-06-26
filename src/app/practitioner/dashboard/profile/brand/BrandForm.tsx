@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
-import { updateBrandInfo, updateAvatar } from '../actions'
+import { updateBrandInfo, updateAvatar, updateCoverImage } from '../actions'
 import { updateDisplayName } from '@/lib/profile-actions'
 
 const NAME_CHANGE_COOLDOWN_DAYS = 7
@@ -23,6 +23,7 @@ interface BrandData {
   certificates: CertificateEntry[] | null
   specialty_tags: string[] | null
   cover_image_url: string | null
+  cover_image_position: string | null
   brand_color: string | null
 }
 
@@ -49,6 +50,15 @@ export function BrandForm() {
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [certificates, setCertificates] = useState<CertificateEntry[]>([])
   const [brandColor, setBrandColor] = useState('#4A7C59')
+  const [coverUrl, setCoverUrl] = useState<string | null>(null)
+  const [coverPosition, setCoverPosition] = useState('50% 50%')
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [coverError, setCoverError] = useState<string | null>(null)
+  const [coverSaving, setCoverSaving] = useState(false)
+  const [coverSuccess, setCoverSuccess] = useState(false)
+  const [draggingCover, setDraggingCover] = useState(false)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+  const coverPreviewRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -57,13 +67,15 @@ export function BrandForm() {
       if (!user) return
       const { data: practitioner } = await supabase
         .from('practitioners')
-        .select('years_experience, certificates, specialty_tags, cover_image_url, brand_color')
+        .select('years_experience, certificates, specialty_tags, cover_image_url, cover_image_position, brand_color')
         .eq('user_id', user.id)
         .single()
       setData(practitioner as BrandData)
       const certs = (practitioner?.certificates as CertificateEntry[]) ?? []
       setCertificates(certs.length > 0 ? certs : [{ name: '', year: null }])
       setBrandColor(practitioner?.brand_color ?? '#4A7C59')
+      setCoverUrl(practitioner?.cover_image_url ?? null)
+      setCoverPosition((practitioner as { cover_image_position?: string })?.cover_image_position ?? '50% 50%')
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -116,6 +128,64 @@ export function BrandForm() {
       setAvatarError('上傳失敗，請再試一次')
     } finally {
       setUploadingAvatar(false)
+    }
+  }
+
+  async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingCover(true)
+    setCoverError(null)
+    setCoverSuccess(false)
+    try {
+      const supabase = createBrowserSupabaseClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('尚未登入')
+
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `${user.id}/cover.${ext}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
+
+      if (uploadError) throw uploadError
+
+      const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(path)
+      const publicUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`
+
+      setCoverUrl(publicUrl)
+      setCoverPosition('50% 50%')
+    } catch (err) {
+      console.error(err)
+      setCoverError('上傳失敗，請再試一次')
+    } finally {
+      setUploadingCover(false)
+    }
+  }
+
+  function handleCoverPointerEvent(e: React.PointerEvent<HTMLDivElement>) {
+    const box = coverPreviewRef.current
+    if (!box) return
+    const rect = box.getBoundingClientRect()
+    const x = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100))
+    const y = Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100))
+    setCoverPosition(`${x.toFixed(0)}% ${y.toFixed(0)}%`)
+  }
+
+  async function handleCoverSave() {
+    setCoverSaving(true)
+    setCoverSuccess(false)
+    try {
+      const formData = new FormData()
+      formData.set('coverImageUrl', coverUrl ?? '')
+      formData.set('coverImagePosition', coverPosition)
+      await updateCoverImage(formData)
+      setCoverSuccess(true)
+      setTimeout(() => setCoverSuccess(false), 2000)
+    } finally {
+      setCoverSaving(false)
     }
   }
 
@@ -294,9 +364,57 @@ export function BrandForm() {
             <Input name="specialtyTags" defaultValue={(data.specialty_tags ?? []).join(', ')} placeholder="例：運動按摩, 深層組織按摩, 久坐族群調理" className="mt-1" />
           </div>
           <div>
-            <Label>封面照網址</Label>
-            <Input name="coverImageUrl" defaultValue={data.cover_image_url ?? ''} placeholder="https://..." className="mt-1" />
-            <p className="text-xs text-muted-foreground mt-1">建議使用寬幅橫向照片，Demo 階段請貼上圖片連結</p>
+            <Label>封面照</Label>
+            <p className="text-xs text-muted-foreground mt-1 mb-2">
+              上傳後可在下方預覽圖點擊或拖曳，選擇要顯示的部分
+            </p>
+            {coverUrl && (
+              <div
+                ref={coverPreviewRef}
+                onPointerDown={(e) => { setDraggingCover(true); handleCoverPointerEvent(e) }}
+                onPointerMove={(e) => { if (draggingCover) handleCoverPointerEvent(e) }}
+                onPointerUp={() => setDraggingCover(false)}
+                onPointerLeave={() => setDraggingCover(false)}
+                className="relative w-full h-32 rounded-xl border border-border bg-cover bg-no-repeat cursor-crosshair touch-none mb-2 overflow-hidden"
+                style={{ backgroundImage: `url(${coverUrl})`, backgroundPosition: coverPosition }}
+              >
+                <div
+                  className="absolute w-4 h-4 rounded-full border-2 border-white bg-primary/80 shadow pointer-events-none -translate-x-1/2 -translate-y-1/2"
+                  style={{ left: coverPosition.split(' ')[0], top: coverPosition.split(' ')[1] }}
+                />
+              </div>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={uploadingCover}
+              onClick={() => coverInputRef.current?.click()}
+              className="active:scale-95 transition-transform"
+            >
+              <Upload className="w-3.5 h-3.5 mr-1.5" />
+              {uploadingCover ? '上傳中...' : coverUrl ? '更換封面照' : '上傳封面照'}
+            </Button>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/jpg"
+              onChange={handleCoverChange}
+              className="hidden"
+            />
+            {coverError && <p className="text-xs text-destructive mt-1.5">{coverError}</p>}
+            <div className="mt-2 flex items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                disabled={coverSaving}
+                onClick={handleCoverSave}
+                className="active:scale-95 transition-transform"
+              >
+                {coverSaving ? '儲存中...' : '儲存封面'}
+              </Button>
+              {coverSuccess && <span className="text-xs text-green-600">已儲存</span>}
+            </div>
           </div>
           <div>
             <Label>品牌主色</Label>

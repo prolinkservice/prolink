@@ -80,7 +80,6 @@ export async function updateBrandInfo(formData: FormData) {
   const yearsExperience = formData.get('yearsExperience') as string
   const certificatesRaw = formData.get('certificates') as string
   const specialtyTags = formData.get('specialtyTags') as string
-  const coverImageUrl = formData.get('coverImageUrl') as string
   const brandColor = formData.get('brandColor') as string
 
   let certificates: { name: string; year: number | null }[] = []
@@ -98,9 +97,27 @@ export async function updateBrandInfo(formData: FormData) {
       // certificate_name 舊欄位同步保留第一筆名稱，避免其他尚未更新的程式碼讀到空值
       certificate_name: certificates[0]?.name || null,
       specialty_tags: specialtyTags ? specialtyTags.split(',').map(s => s.trim()).filter(Boolean) : [],
-      cover_image_url: coverImageUrl || null,
       // 只接受合法的 6 位數 hex 色碼，避免寫入不合法字串造成公開頁面套用 inline style 出錯
       ...(brandColor && HEX_COLOR_PATTERN.test(brandColor) ? { brand_color: brandColor } : {}),
+    })
+    .eq('id', practitionerId)
+
+  revalidatePath('/practitioner/dashboard/profile')
+  revalidatePath('/practitioners/[id]', 'page')
+}
+
+export async function updateCoverImage(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const coverImageUrl = formData.get('coverImageUrl') as string
+  const coverImagePosition = formData.get('coverImagePosition') as string
+
+  await supabase
+    .from('practitioners')
+    .update({
+      cover_image_url: coverImageUrl || null,
+      cover_image_position: coverImagePosition || '50% 50%',
     })
     .eq('id', practitionerId)
 

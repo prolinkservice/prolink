@@ -34,6 +34,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         certificates,
         specialty_tags,
         cover_image_url,
+        cover_image_position,
         brand_color,
         page_blocks,
         profiles ( display_name, avatar_url ),
@@ -159,13 +160,14 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
 
       <div className="max-w-lg mx-auto">
 
-      {/* 封面照：無封面照時用老師自訂品牌主色疊加漸層，有封面照則用品牌主色做半透明疊色 */}
+      {/* 封面照：無封面照時用老師自訂品牌主色疊加漸層，有封面照則用品牌主色做半透明疊色，並套用老師自選的裁切位置 */}
       <div
-        className="relative h-40 bg-cover bg-center"
+        className="relative h-40 bg-cover bg-no-repeat"
         style={
           practitioner.cover_image_url
             ? {
                 backgroundImage: `linear-gradient(to bottom right, ${brandColor}99, ${brandColor}4D), url(${practitioner.cover_image_url})`,
+                backgroundPosition: (practitioner.cover_image_position as string | null) || '50% 50%',
               }
             : { backgroundImage: `linear-gradient(to bottom right, ${brandColor}, #E0935D)` }
         }
