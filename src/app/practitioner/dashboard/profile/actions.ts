@@ -108,6 +108,28 @@ export async function updateBrandInfo(formData: FormData) {
   revalidatePath('/practitioners/[id]', 'page')
 }
 
+export async function updatePageBlocks(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const blocksRaw = formData.get('blocks') as string
+  let blocks: { id: string; type: string; visible: boolean; data?: Record<string, string> }[] = []
+  try {
+    blocks = blocksRaw ? JSON.parse(blocksRaw) : []
+  } catch {
+    return { error: '排版資料格式錯誤' }
+  }
+
+  const validTypes = ['cover', 'about', 'certificates', 'services', 'reviews', 'social', 'map', 'availability', 'text', 'image']
+  const sanitized = blocks.filter((b) => validTypes.includes(b.type))
+
+  await supabase.from('practitioners').update({ page_blocks: sanitized }).eq('id', practitionerId)
+
+  revalidatePath('/practitioner/dashboard/profile')
+  revalidatePath('/practitioners/[id]', 'page')
+  return { success: true }
+}
+
 export async function addSocialLink(formData: FormData) {
   const supabase = await createServerSupabaseClient()
   const practitionerId = await getOwnPractitionerId(supabase)

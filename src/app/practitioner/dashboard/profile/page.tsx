@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ShieldCheck, MapPin, Link2, Sparkles } from 'lucide-react'
+import { ChevronLeft, ShieldCheck, MapPin, Link2, Sparkles, Rows3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLayout'
@@ -8,6 +8,7 @@ import { VerificationForm } from './verification/VerificationForm'
 import { AddressForm } from './address/AddressForm'
 import { SocialForm } from './social/SocialForm'
 import { BrandForm } from './brand/BrandForm'
+import { LayoutBuilderForm } from './layout-builder/LayoutBuilderForm'
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
   not_submitted: { label: '未上傳', className: 'text-muted-foreground' },
@@ -100,6 +101,14 @@ export default async function MemberProfilePage() {
       sublabel: socialLinks.length > 0 ? `${socialLinks.length} 個連結` : '尚未新增',
       href: '/practitioner/dashboard/profile/social',
       content: <SocialForm />,
+    },
+    {
+      key: 'layout-builder',
+      icon: <Rows3 className={iconClass} />,
+      label: '首頁編排',
+      sublabel: '自訂老師頁面排版',
+      href: '/practitioner/dashboard/profile/layout-builder',
+      content: <LayoutBuilderForm />,
     },
   ]
 

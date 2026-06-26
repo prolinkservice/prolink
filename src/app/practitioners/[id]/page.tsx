@@ -1,13 +1,13 @@
-import { MapPin, ChevronLeft, Star, Share2, MessageCircle, Award, BadgeCheck } from 'lucide-react'
+import { MapPin, ChevronLeft, Star, Share2, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { signInWithGoogle } from '@/app/auth/actions'
 import { parseCityDistrict } from '@/lib/address'
-import { PractitionerTabs } from './PractitionerTabs'
+import { resolveLayout, type PageBlock } from '@/lib/pageBlocks'
+import { AboutBlock, CertificatesBlock, ServicesBlock, ReviewsBlock, SocialBlock, MapBlock, TextBlock, ImageBlock } from './Blocks'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -35,6 +35,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
         specialty_tags,
         cover_image_url,
         brand_color,
+        page_blocks,
         profiles ( display_name, avatar_url ),
         services ( id, name, description, duration_minutes, price ),
         availability_slots ( id, start_time, end_time, is_booked ),
@@ -51,6 +52,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
   ])
 
   if (!practitioner) notFound()
+  const pr = practitioner
 
   const reviewList = reviews ?? []
   const avgRating = reviewList.length
@@ -93,21 +95,53 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
   const district = parseCityDistrict(practitioner.shop_address as string | null)
   // 老師自訂品牌主色：只套用在這個公開頁面內的封面疊色與預約按鈕，不動全站 CSS 變數
   const brandColor = (practitioner.brand_color as string | null) || '#4A7C59'
-  const reviewsForTabs = reviewList.map((r) => {
-    const revProfRaw = r.profiles as unknown
-    const revProf = (Array.isArray(revProfRaw) ? revProfRaw[0] : revProfRaw) as { display_name: string | null } | null
-    const bookingRaw = r.bookings as unknown
-    const booking = (Array.isArray(bookingRaw) ? bookingRaw[0] : bookingRaw) as { services: unknown } | null
-    const serviceRaw = booking?.services as unknown
-    const service = (Array.isArray(serviceRaw) ? serviceRaw[0] : serviceRaw) as { name: string; price: number } | null
-    return {
-      rating: r.rating,
-      comment: r.comment,
-      reviewerName: revProf?.display_name ?? '匿名學員',
-      serviceName: service?.name ?? null,
-      servicePrice: service?.price ?? null,
+
+  const layout = resolveLayout(practitioner.page_blocks).filter((b) => b.visible)
+
+  function renderBlock(block: PageBlock) {
+    switch (block.type) {
+      case 'about':
+        return <AboutBlock bio={pr.bio} specialtyTags={specialtyTags} />
+      case 'certificates':
+        return <CertificatesBlock yearsExperience={pr.years_experience} certificates={certificates} />
+      case 'services':
+        return <ServicesBlock services={services} />
+      case 'reviews':
+        return (
+          <ReviewsBlock
+            avgRating={avgRating}
+            reviews={reviewList.map((r) => {
+              const revProfRaw = r.profiles as unknown
+              const revProf = (Array.isArray(revProfRaw) ? revProfRaw[0] : revProfRaw) as { display_name: string | null } | null
+              const bookingRaw = r.bookings as unknown
+              const booking = (Array.isArray(bookingRaw) ? bookingRaw[0] : bookingRaw) as { services: unknown } | null
+              const serviceRaw = booking?.services as unknown
+              const service = (Array.isArray(serviceRaw) ? serviceRaw[0] : serviceRaw) as { name: string; price: number } | null
+              return {
+                rating: r.rating,
+                comment: r.comment,
+                reviewerName: revProf?.display_name ?? '匿名學員',
+                serviceName: service?.name ?? null,
+                servicePrice: service?.price ?? null,
+              }
+            })}
+          />
+        )
+      case 'social':
+        return <SocialBlock socialLinks={socialLinks} />
+      case 'map':
+        return <MapBlock practitionerId={pr.id} practitionerName={name} lat={pr.latitude} lng={pr.longitude} />
+      case 'text':
+        return <TextBlock data={block.data} />
+      case 'image':
+        return <ImageBlock data={block.data} />
+      default:
+        return null
     }
-  })
+  }
+
+  // cover / availability 是版面頭尾兩個特殊位置，維持目前固定的視覺位置，不參與中段區塊排序
+  const middleBlocks = layout.filter((b) => b.type !== 'cover' && b.type !== 'availability')
 
   return (
     <div className="min-h-screen bg-background">
@@ -160,40 +194,21 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
             <span className="text-muted-foreground text-sm">（{reviewList.length} 則評價）</span>
           </div>
         )}
-        <div className="flex flex-wrap gap-1.5 mt-2.5">
-          {practitioner.years_experience && (
-            <Badge className="bg-accent text-primary border-none text-xs px-2.5 py-1 rounded-full">
-              <Award className="w-3 h-3 mr-1" />
-              {practitioner.years_experience} 年經驗
-            </Badge>
-          )}
-          {certificates.filter(c => c.name?.trim()).map((cert, i) => (
-            <Badge key={i} className="bg-accent text-primary border-none text-xs px-2.5 py-1 rounded-full">
-              <BadgeCheck className="w-3 h-3 mr-1" />
-              {cert.name}{cert.year ? `（${cert.year}）` : ''}
-            </Badge>
-          ))}
-          {serviceMode.map((mode) => (
-            <Badge key={mode} variant="outline" className="text-xs px-2.5 py-1">
-              {mode}
-            </Badge>
-          ))}
-        </div>
+        {serviceMode.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-2.5">
+            {serviceMode.map((mode) => (
+              <span key={mode} className="text-xs px-2.5 py-1 border border-border rounded-full text-muted-foreground">
+                {mode}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="px-4">
-        <PractitionerTabs
-          bio={practitioner.bio}
-          specialtyTags={specialtyTags}
-          socialLinks={socialLinks}
-          services={services}
-          reviews={reviewsForTabs}
-          avgRating={avgRating}
-          practitionerId={practitioner.id}
-          practitionerName={name}
-          lat={practitioner.latitude}
-          lng={practitioner.longitude}
-        />
+      <div className="px-4 flex flex-col gap-6 py-4">
+        {middleBlocks.map((block) => (
+          <div key={block.id}>{renderBlock(block)}</div>
+        ))}
       </div>
 
       <div className="px-4 py-5 flex flex-col gap-5">
