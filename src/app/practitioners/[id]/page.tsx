@@ -1,6 +1,5 @@
 import { MapPin, ChevronLeft, Star, Share2, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
@@ -8,6 +7,7 @@ import { signInWithGoogle } from '@/app/auth/actions'
 import { parseCityDistrict } from '@/lib/address'
 import { resolveLayout, type PageBlock } from '@/lib/pageBlocks'
 import { AboutBlock, CertificatesBlock, ServicesBlock, ReviewsBlock, SocialBlock, MapBlock, TextBlock, ImageBlock } from './Blocks'
+import { CoverAvatarEditor } from './CoverAvatarEditor'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
   at_shop: ['到店'],
@@ -24,6 +24,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       .from('practitioners')
       .select(`
         id,
+        user_id,
         bio,
         service_mode,
         shop_address,
@@ -54,6 +55,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
 
   if (!practitioner) notFound()
   const pr = practitioner
+  const isOwner = user?.id === pr.user_id
 
   const reviewList = reviews ?? []
   const avgRating = reviewList.length
@@ -160,23 +162,15 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
 
       <div className="max-w-lg mx-auto">
 
-      {/* 封面照：無封面照時用老師自訂品牌主色疊加漸層，有封面照則用品牌主色做半透明疊色，並套用老師自選的裁切位置 */}
-      <div
-        className="relative h-40 bg-cover bg-no-repeat"
-        style={
-          practitioner.cover_image_url
-            ? {
-                backgroundImage: `linear-gradient(to bottom right, ${brandColor}99, ${brandColor}4D), url(${practitioner.cover_image_url})`,
-                backgroundPosition: (practitioner.cover_image_position as string | null) || '50% 50%',
-              }
-            : { backgroundImage: `linear-gradient(to bottom right, ${brandColor}, #E0935D)` }
-        }
-      >
-        <Avatar className="absolute left-4 -bottom-8 w-20 h-20 border-[3px] border-white shadow-sm">
-          <AvatarImage src={avatar} />
-          <AvatarFallback className="bg-accent text-foreground text-2xl font-bold">{name[0]}</AvatarFallback>
-        </Avatar>
-      </div>
+      {/* 封面照與大頭照：老師本人檢視自己的公開頁面時可直接上傳更換、調整封面裁切位置 */}
+      <CoverAvatarEditor
+        name={name}
+        avatarUrl={avatar}
+        coverImageUrl={practitioner.cover_image_url}
+        coverImagePosition={(practitioner.cover_image_position as string | null) || '50% 50%'}
+        brandColor={brandColor}
+        isOwner={isOwner}
+      />
 
       {/* 老師基本資訊 */}
       <div className="px-4 pt-10 pb-2">
