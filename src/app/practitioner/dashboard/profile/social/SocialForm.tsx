@@ -1,19 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Link2, AtSign, Share2, Globe, Plus, X } from 'lucide-react'
+import { Link2, Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { addSocialLink, removeSocialLink } from '../actions'
-
-const PLATFORM_ICON: Record<string, typeof Globe> = {
-  instagram: AtSign,
-  facebook: Share2,
-  line: Link2,
-  other: Globe,
-}
+import { SOCIAL_PLATFORMS, getSocialIcon } from '@/lib/socialPlatforms'
 
 type SocialLink = { platform: string; url: string }
 
@@ -53,7 +47,7 @@ export function SocialForm() {
         {socialLinks.length > 0 && (
           <div className="flex flex-col gap-2">
             {socialLinks.map((link, i) => {
-              const Icon = PLATFORM_ICON[link.platform] ?? Globe
+              const Icon = getSocialIcon(link.platform)
               return (
                 <div key={i} className="flex items-center gap-3 bg-muted/40 rounded-xl px-3 py-2.5">
                   <a href={link.url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 hover:bg-primary hover:text-white transition-colors active:scale-90">
@@ -77,10 +71,9 @@ export function SocialForm() {
         <form action={addSocialLink} className="flex flex-col gap-2 pt-1">
           <div className="flex gap-2">
             <select name="platform" className="border border-input rounded-md px-3 py-2 text-sm bg-background" defaultValue="instagram">
-              <option value="instagram">Instagram</option>
-              <option value="facebook">Facebook</option>
-              <option value="line">LINE</option>
-              <option value="other">其他</option>
+              {SOCIAL_PLATFORMS.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
             </select>
             <Input name="url" placeholder="https://..." required className="flex-1" />
           </div>

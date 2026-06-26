@@ -1,12 +1,9 @@
-import { Clock, Star, AtSign, Share2, Link2, Globe, CheckCircle2, Award, BadgeCheck } from 'lucide-react'
+import { Clock, Star, CheckCircle2, Award, BadgeCheck } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import GoogleMap from '@/components/GoogleMap'
 import type { PageBlock } from '@/lib/pageBlocks'
-
-const PLATFORM_ICON: Record<string, typeof Globe> = {
-  instagram: AtSign, facebook: Share2, line: Link2, other: Globe,
-}
+import { getSocialIcon } from '@/lib/socialPlatforms'
 
 type Service = { id: string; name: string; description: string | null; duration_minutes: number; price: number }
 type Review = {
@@ -136,7 +133,7 @@ export function SocialBlock({ socialLinks }: { socialLinks: SocialLink[] }) {
       <h2 className="font-bold text-lg mb-3">社群連結</h2>
       <div className="flex gap-2">
         {socialLinks.map((link, i) => {
-          const Icon = PLATFORM_ICON[link.platform] ?? Globe
+          const Icon = getSocialIcon(link.platform)
           return (
             <a
               key={i}
