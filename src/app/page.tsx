@@ -100,12 +100,15 @@ export default async function Home({
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-2 shadow-sm">
-        <div className="flex items-center gap-2 shrink-0">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
-          <span className="font-bold text-xl text-foreground">ProLink</span>
-        </div>
+          <span className="flex items-baseline gap-1.5">
+            <span className="font-bold text-xl text-foreground">職人連結</span>
+            <span className="text-xs text-muted-foreground">快速找到你要的老師</span>
+          </span>
+        </Link>
         <div className="flex items-center gap-2 overflow-x-auto flex-nowrap ml-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {user ? (
             <>
