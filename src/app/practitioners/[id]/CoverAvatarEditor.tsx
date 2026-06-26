@@ -141,6 +141,7 @@ export function CoverAvatarEditor({
         <>
           <button
             type="button"
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={() => avatarInputRef.current?.click()}
             disabled={uploadingAvatar}
             className="absolute left-[4.5rem] bottom-[-1.75rem] w-7 h-7 rounded-full bg-foreground text-white flex items-center justify-center shadow active:scale-90 transition-transform"
@@ -154,6 +155,7 @@ export function CoverAvatarEditor({
           {editingCover ? (
             <button
               type="button"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={handleSaveCoverPosition}
               disabled={savingCover}
               className="absolute right-3 top-3 flex items-center gap-1 px-3 py-1.5 rounded-full bg-foreground text-white text-xs font-medium shadow active:scale-95 transition-transform"
@@ -164,6 +166,7 @@ export function CoverAvatarEditor({
           ) : (
             <button
               type="button"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={() => (coverUrl ? setEditingCover(true) : coverInputRef.current?.click())}
               disabled={uploadingCover}
               className="absolute right-3 top-3 flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/90 text-foreground text-xs font-medium shadow active:scale-95 transition-transform"
