@@ -31,7 +31,7 @@ export const BLOCK_REGISTRY: Record<BlockType, { label: string; deletable: boole
   services: { label: '服務項目', deletable: false },
   reviews: { label: '學員評價', deletable: false },
   social: { label: '社群連結', deletable: false },
-  map: { label: '地圖位置', deletable: false },
+  map: { label: '服務地點', deletable: false },
   availability: { label: '可預約時段', deletable: false },
   text: { label: '文字區塊', deletable: true },
   image: { label: '圖片區塊', deletable: true },

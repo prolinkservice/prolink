@@ -151,14 +151,29 @@ export function SocialBlock({ socialLinks }: { socialLinks: SocialLink[] }) {
   )
 }
 
-export function MapBlock({ practitionerId, practitionerName, lat, lng }: { practitionerId: string; practitionerName: string; lat: number | null; lng: number | null }) {
-  if (lat == null || lng == null) return null
+export function MapBlock({
+  practitionerId,
+  practitionerName,
+  lat,
+  lng,
+  shopAddress,
+}: {
+  practitionerId: string
+  practitionerName: string
+  lat: number | null
+  lng: number | null
+  shopAddress?: string | null
+}) {
+  if (lat == null && lng == null && !shopAddress) return null
   return (
     <div>
-      <h2 className="font-bold text-lg mb-3">地圖位置</h2>
-      <div className="rounded-xl overflow-hidden border border-border h-[28rem]">
-        <GoogleMap practitioners={[{ id: practitionerId, name: practitionerName, lat, lng }]} />
-      </div>
+      <h2 className="font-bold text-lg mb-3">服務地點</h2>
+      {shopAddress && <p className="text-base text-muted-foreground mb-3">{shopAddress}</p>}
+      {lat != null && lng != null && (
+        <div className="rounded-xl overflow-hidden border border-border h-[28rem]">
+          <GoogleMap practitioners={[{ id: practitionerId, name: practitionerName, lat, lng }]} />
+        </div>
+      )}
     </div>
   )
 }

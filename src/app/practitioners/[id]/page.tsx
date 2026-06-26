@@ -131,7 +131,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       case 'social':
         return <SocialBlock socialLinks={socialLinks} />
       case 'map':
-        return <MapBlock practitionerId={pr.id} practitionerName={name} lat={pr.latitude} lng={pr.longitude} />
+        return <MapBlock practitionerId={pr.id} practitionerName={name} lat={pr.latitude} lng={pr.longitude} shopAddress={pr.shop_address} />
       case 'text':
         return <TextBlock data={block.data} />
       case 'image':
