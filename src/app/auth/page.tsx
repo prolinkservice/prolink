@@ -190,6 +190,12 @@ function AuthForm() {
 
           {error && <p className="text-destructive text-sm">{error}</p>}
 
+          <div className="text-right -mt-1">
+            <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
+              忘記密碼？
+            </Link>
+          </div>
+
           <Button type="submit" size="lg" disabled={loading} className="mt-2 active:scale-95 transition-transform">
             {loading ? '登入中...' : '登入'}
           </Button>
