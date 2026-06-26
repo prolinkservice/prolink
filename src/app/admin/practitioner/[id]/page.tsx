@@ -4,6 +4,7 @@ import { ChevronLeft, MapPin, CreditCard, IdCard, Star, Award, Sparkles } from '
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { suspendPractitioner, restorePractitioner } from '../../actions'
 
 const SERVICE_MODE_LABEL: Record<string, string> = {
   at_shop: '到店', on_site: '到府', both: '到店 + 到府'
@@ -14,6 +15,11 @@ const STATUS_LABEL: Record<string, { label: string; className: string }> = {
   pending: { label: '審核中', className: 'text-amber-600 bg-amber-50 border-amber-200' },
   approved: { label: '已通過', className: 'text-green-600 bg-green-50 border-green-200' },
   rejected: { label: '已退回', className: 'text-destructive bg-destructive/5 border-destructive/20' },
+}
+
+const TOP_STATUS_LABEL: Record<string, { label: string; className: string }> = {
+  approved: { label: '上架中', className: 'text-green-600 bg-green-50 border-green-200' },
+  suspended: { label: '已下架', className: 'text-destructive bg-destructive/5 border-destructive/20' },
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -35,8 +41,8 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
       .from('practitioners')
       .select(`
         id, bio, service_mode, shop_address, status, created_at,
-        bank_name, bank_account, bank_status,
-        id_verification_status,
+        bank_name, bank_account, bank_status, bank_reject_reason,
+        id_verification_status, id_reject_reason, suspend_reason,
         years_experience, certificates, specialty_tags, cover_image_url, social_links,
         profiles ( display_name, avatar_url ),
         services ( id, name, description, duration_minutes, price )
@@ -86,8 +92,17 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
                 上架時間：{new Date(practitioner.created_at).toLocaleString('zh-TW', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
-            <Badge variant="outline" className="text-green-600 bg-green-50 border-green-200">已上架</Badge>
+            <Badge variant="outline" className={(TOP_STATUS_LABEL[practitioner.status] ?? TOP_STATUS_LABEL.approved).className}>
+              {(TOP_STATUS_LABEL[practitioner.status] ?? TOP_STATUS_LABEL.approved).label}
+            </Badge>
           </div>
+
+          {practitioner.status === 'suspended' && (
+            <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 mb-3">
+              <p className="text-xs font-medium text-destructive mb-1">已下架原因</p>
+              <p className="text-sm text-foreground">{practitioner.suspend_reason || '（未填寫原因）'}</p>
+            </div>
+          )}
 
           {practitioner.bio && (
             <div className="bg-[#F8F7F5] rounded-xl p-4 mb-3">
@@ -160,6 +175,9 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
             <StatusBadge status={practitioner.bank_status} />
           </div>
           <p className="text-sm text-foreground">{practitioner.bank_name ?? '尚未填寫'}　{practitioner.bank_account}</p>
+          {practitioner.bank_status === 'rejected' && practitioner.bank_reject_reason && (
+            <p className="text-xs text-destructive mt-2">退回原因：{practitioner.bank_reject_reason}</p>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl border border-border p-6">
@@ -168,6 +186,30 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
             <p className="font-semibold text-sm text-foreground">身份驗證</p>
             <StatusBadge status={practitioner.id_verification_status} />
           </div>
+          {practitioner.id_verification_status === 'rejected' && practitioner.id_reject_reason && (
+            <p className="text-xs text-destructive mt-2">退回原因：{practitioner.id_reject_reason}</p>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-border p-6">
+          <p className="font-semibold text-sm text-foreground mb-3">上架狀態管理</p>
+          {practitioner.status === 'suspended' ? (
+            <form action={restorePractitioner}>
+              <input type="hidden" name="practitionerId" value={practitioner.id} />
+              <Button type="submit" size="sm">恢復上架</Button>
+            </form>
+          ) : (
+            <form action={suspendPractitioner} className="space-y-2">
+              <textarea
+                name="reason"
+                placeholder="請填寫下架原因（將顯示給職人）"
+                required
+                className="w-full bg-white border border-border rounded-xl px-3 py-2 text-sm resize-none min-h-[60px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <input type="hidden" name="practitionerId" value={practitioner.id} />
+              <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">下架此職人</Button>
+            </form>
+          )}
         </div>
 
         <div className="bg-white rounded-2xl border border-border p-6">

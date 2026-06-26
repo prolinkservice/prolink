@@ -45,12 +45,13 @@ export async function approveBank(formData: FormData) {
 
 export async function rejectBank(formData: FormData) {
   const practitionerId = formData.get('practitionerId') as string
+  const reason = formData.get('reason') as string
   const supabase = await createServerSupabaseClient()
-  await supabase.from('practitioners').update({ bank_status: 'rejected' }).eq('id', practitionerId)
+  await supabase.from('practitioners').update({ bank_status: 'rejected', bank_reject_reason: reason || null }).eq('id', practitionerId)
   await notifyPractitioner(supabase, practitionerId, {
     type: 'verification_result',
     title: '銀行帳戶審核未通過',
-    body: '請重新確認帳戶資料後再次送出',
+    body: reason ? `退回原因：${reason}` : '請重新確認帳戶資料後再次送出',
     link: '/practitioner/dashboard/profile',
   })
   revalidatePath('/admin', 'layout')
@@ -70,13 +71,40 @@ export async function approveId(formData: FormData) {
 
 export async function rejectId(formData: FormData) {
   const practitionerId = formData.get('practitionerId') as string
+  const reason = formData.get('reason') as string
   const supabase = await createServerSupabaseClient()
-  await supabase.from('practitioners').update({ id_verification_status: 'rejected' }).eq('id', practitionerId)
+  await supabase.from('practitioners').update({ id_verification_status: 'rejected', id_reject_reason: reason || null }).eq('id', practitionerId)
   await notifyPractitioner(supabase, practitionerId, {
     type: 'verification_result',
     title: '身份驗證審核未通過',
-    body: '請重新確認身分證照片後再次送出',
+    body: reason ? `退回原因：${reason}` : '請重新確認身分證照片後再次送出',
     link: '/practitioner/dashboard/profile',
+  })
+  revalidatePath('/admin', 'layout')
+}
+
+export async function suspendPractitioner(formData: FormData) {
+  const practitionerId = formData.get('practitionerId') as string
+  const reason = formData.get('reason') as string
+  const supabase = await createServerSupabaseClient()
+  await supabase.from('practitioners').update({ status: 'suspended', suspend_reason: reason || null }).eq('id', practitionerId)
+  await notifyPractitioner(supabase, practitionerId, {
+    type: 'verification_result',
+    title: '你的職人帳號已被下架',
+    body: reason ? `下架原因：${reason}` : undefined,
+    link: '/practitioner/dashboard',
+  })
+  revalidatePath('/admin', 'layout')
+}
+
+export async function restorePractitioner(formData: FormData) {
+  const practitionerId = formData.get('practitionerId') as string
+  const supabase = await createServerSupabaseClient()
+  await supabase.from('practitioners').update({ status: 'approved', suspend_reason: null }).eq('id', practitionerId)
+  await notifyPractitioner(supabase, practitionerId, {
+    type: 'verification_result',
+    title: '你的職人帳號已恢復上架',
+    link: '/practitioner/dashboard',
   })
   revalidatePath('/admin', 'layout')
 }

@@ -141,12 +141,18 @@ export default async function AdminReviewPage() {
               {r.passbookSignedUrl && (
                 <a href={r.passbookSignedUrl} target="_blank" className="text-xs text-primary underline">查看存摺影本</a>
               )}
-              <div className="flex gap-2 mt-3">
+              <div className="flex gap-3 mt-3">
                 <form action={approveBank}>
                   <input type="hidden" name="practitionerId" value={r.id} />
                   <Button type="submit" size="sm">核准</Button>
                 </form>
-                <form action={rejectBank}>
+                <form action={rejectBank} className="flex-1 space-y-2">
+                  <textarea
+                    name="reason"
+                    placeholder="請填寫退回原因（將顯示給職人）"
+                    required
+                    className="w-full bg-white border border-border rounded-xl px-3 py-2 text-sm resize-none min-h-[44px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
                   <input type="hidden" name="practitionerId" value={r.id} />
                   <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">退回</Button>
                 </form>
@@ -165,12 +171,18 @@ export default async function AdminReviewPage() {
                 {r.idFrontSignedUrl && <a href={r.idFrontSignedUrl} target="_blank" className="text-primary underline">正面照片</a>}
                 {r.idBackSignedUrl && <a href={r.idBackSignedUrl} target="_blank" className="text-primary underline">反面照片</a>}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <form action={approveId}>
                   <input type="hidden" name="practitionerId" value={r.id} />
                   <Button type="submit" size="sm">核准</Button>
                 </form>
-                <form action={rejectId}>
+                <form action={rejectId} className="flex-1 space-y-2">
+                  <textarea
+                    name="reason"
+                    placeholder="請填寫退回原因（將顯示給職人）"
+                    required
+                    className="w-full bg-white border border-border rounded-xl px-3 py-2 text-sm resize-none min-h-[44px] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
                   <input type="hidden" name="practitionerId" value={r.id} />
                   <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">退回</Button>
                 </form>

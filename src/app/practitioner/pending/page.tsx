@@ -11,12 +11,31 @@ export default async function PractitionerPendingPage() {
 
   const { data: practitioner } = await supabase
     .from('practitioners')
-    .select('status, rejection_reason')
+    .select('status, rejection_reason, suspend_reason')
     .eq('user_id', user.id)
     .single()
 
   if (!practitioner) redirect('/')
   if (practitioner.status === 'approved') redirect('/practitioner/dashboard')
+
+  if (practitioner.status === 'suspended') {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 text-center">
+        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
+          <XCircle className="w-8 h-8 text-destructive" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground mb-2">帳號已被下架</h1>
+        <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-4 max-w-sm mb-6 text-left">
+          <p className="text-sm text-foreground leading-relaxed">
+            下架原因：{practitioner.suspend_reason || '（管理員未填寫具體原因，請聯繫客服了解詳情）'}
+          </p>
+        </div>
+        <Button asChild variant="outline">
+          <Link href="/">返回首頁</Link>
+        </Button>
+      </div>
+    )
+  }
 
   if (practitioner.status === 'rejected') {
     return (
