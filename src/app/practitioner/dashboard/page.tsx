@@ -57,12 +57,12 @@ export default async function PractitionerDashboardPage() {
     <div className="min-h-screen lg:min-h-0 bg-background">
       {/* 手機版專用頂部導覽，桌面版由 layout 共用頂部導覽取代 */}
       <nav className="lg:hidden sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
           <span className="font-bold text-xl text-foreground">ProLink 職人後台</span>
-        </div>
+        </Link>
         <div className="flex items-center gap-1">
           <Link href="/practitioner/dashboard/notifications">
             <Button variant="ghost" size="icon" className="relative">
