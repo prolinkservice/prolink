@@ -33,7 +33,7 @@ export default function RootLayout({
       lang="en"
       className={`${karla.variable} ${fraunces.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full antialiased">{children}</body>
     </html>
   );
 }
