@@ -78,7 +78,7 @@ function SignupForm() {
       </div>
 
       <p className="text-muted-foreground text-sm mb-6">
-        註冊成為 ProLink 會員，立即預約老師服務
+        註冊成為 職人連結會員，立即預約老師服務
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
