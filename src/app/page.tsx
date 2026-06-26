@@ -26,7 +26,7 @@ export default async function Home({
 
   const [{ data: profile }, { data: practitioners }] = await Promise.all([
     user
-      ? supabase.from('profiles').select('role').eq('id', user.id).single()
+      ? supabase.from('profiles').select('role, avatar_url, display_name').eq('id', user.id).single()
       : Promise.resolve({ data: null }),
     supabase
       .from('practitioners')
@@ -138,9 +138,9 @@ export default async function Home({
                 </Button>
               )}
               <Avatar className="w-8 h-8 shrink-0">
-                <AvatarImage src={user.user_metadata?.avatar_url} />
+                <AvatarImage src={profile?.avatar_url ?? user.user_metadata?.avatar_url} />
                 <AvatarFallback className="bg-accent text-xs">
-                  {user.user_metadata?.full_name?.[0] ?? user.email?.[0]?.toUpperCase()}
+                  {profile?.display_name?.[0] ?? user.user_metadata?.full_name?.[0] ?? user.email?.[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <form action={signOut} className="shrink-0">
