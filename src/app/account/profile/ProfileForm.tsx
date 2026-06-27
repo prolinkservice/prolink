@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
-import { updateDisplayName } from '@/lib/profile-actions'
+import { updateDisplayName, updateDemographics } from '@/lib/profile-actions'
 
 const NAME_CHANGE_COOLDOWN_DAYS = 7
 
@@ -16,11 +16,15 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
   const [userId, setUserId] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [displayName, setDisplayName] = useState('')
+  const [gender, setGender] = useState('')
+  const [birthdate, setBirthdate] = useState('')
   const [nextEditableAt, setNextEditableAt] = useState<Date | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingDemo, setSavingDemo] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [demoSuccess, setDemoSuccess] = useState('')
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -35,11 +39,13 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('display_name, display_name_updated_at')
+        .select('display_name, display_name_updated_at, gender, birthdate')
         .eq('id', user.id)
         .single()
 
       setDisplayName(profile?.display_name ?? '')
+      setGender(profile?.gender ?? '')
+      setBirthdate(profile?.birthdate ?? '')
       if (profile?.display_name_updated_at) {
         const next = new Date(profile.display_name_updated_at)
         next.setDate(next.getDate() + NAME_CHANGE_COOLDOWN_DAYS)
@@ -82,6 +88,21 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
     }
   }
 
+  async function handleDemographicsSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setDemoSuccess('')
+    setSavingDemo(true)
+    try {
+      const formData = new FormData()
+      formData.set('gender', gender)
+      formData.set('birthdate', birthdate)
+      await updateDemographics(formData)
+      setDemoSuccess('已更新')
+    } finally {
+      setSavingDemo(false)
+    }
+  }
+
   if (loading) {
     return <p className="text-muted-foreground text-sm text-center py-8">載入中...</p>
   }
@@ -115,6 +136,43 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
       <Button type="submit" size="lg" disabled={saving || !!nextEditableAt} className="mt-2 active:scale-95 transition-transform">
         {saving ? '儲存中...' : '儲存'}
       </Button>
+
+      <div className="border-t border-border mt-2 pt-4 flex flex-col gap-4">
+        <div>
+          <p className="text-sm font-medium text-foreground">個人資料（選填）</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            填寫後有助於平台了解使用者輪廓、優化服務，不影響預約功能，可隨時修改或留空
+          </p>
+        </div>
+        <div>
+          <Label htmlFor="gender">性別</Label>
+          <select
+            id="gender"
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="mt-1 w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="">不透露</option>
+            <option value="male">男性</option>
+            <option value="female">女性</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        <div>
+          <Label htmlFor="birthdate">生日</Label>
+          <Input
+            id="birthdate"
+            type="date"
+            value={birthdate}
+            onChange={(e) => setBirthdate(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+        {demoSuccess && <p className="text-green-600 text-sm">{demoSuccess}</p>}
+        <Button type="button" variant="outline" disabled={savingDemo} onClick={handleDemographicsSubmit} className="active:scale-95 transition-transform">
+          {savingDemo ? '儲存中...' : '儲存個人資料'}
+        </Button>
+      </div>
     </form>
   )
 }

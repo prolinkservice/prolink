@@ -37,3 +37,25 @@ export async function updateDisplayName(formData: FormData) {
   revalidatePath('/account')
   return { success: true }
 }
+
+const VALID_GENDERS = ['male', 'female', 'other']
+
+export async function updateDemographics(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/')
+
+  const genderRaw = formData.get('gender') as string
+  const birthdateRaw = formData.get('birthdate') as string
+
+  const gender = VALID_GENDERS.includes(genderRaw) ? genderRaw : null
+  const birthdate = birthdateRaw ? birthdateRaw : null
+
+  await supabase
+    .from('profiles')
+    .update({ gender, birthdate })
+    .eq('id', user.id)
+
+  revalidatePath('/account')
+  return { success: true }
+}
