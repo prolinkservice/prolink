@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { randomUUID } from 'crypto'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   const next = request.nextUrl.searchParams.get('next') ?? '/'
   const csrf = randomUUID()

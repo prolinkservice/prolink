@@ -8,6 +8,8 @@ type LineVerifyResponse = {
   picture?: string
 }
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   const code = request.nextUrl.searchParams.get('code')
