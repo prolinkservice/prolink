@@ -91,18 +91,22 @@ export default async function PractitionerDashboardPage() {
         <h1 className="text-2xl font-bold text-foreground mb-6">{profile?.display_name ?? '老師'}</h1>
 
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">今日預約</p>
-              <p className="text-3xl font-bold text-primary mt-1">{todayCount ?? 0}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">待確認</p>
-              <p className="text-3xl font-bold text-foreground mt-1">{pendingCount ?? 0}</p>
-            </CardContent>
-          </Card>
+          <Link href="/practitioner/dashboard/bookings?today=1">
+            <Card className="transition-colors hover:border-primary active:scale-[0.98]">
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground">今日預約</p>
+                <p className="text-3xl font-bold text-primary mt-1">{todayCount ?? 0}</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/practitioner/dashboard/bookings?status=pending">
+            <Card className="transition-colors hover:border-primary active:scale-[0.98]">
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground">待確認</p>
+                <p className="text-3xl font-bold text-foreground mt-1">{pendingCount ?? 0}</p>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
 
         {/* 功能入口：桌面版已移至左側選單，這裡只在手機版顯示 */}

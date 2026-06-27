@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -46,10 +46,12 @@ type Booking = {
 
 export default function PractitionerBookingsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [practitionerId, setPractitionerId] = useState<string | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState(searchParams.get('status') ?? 'all')
+  const [todayOnly, setTodayOnly] = useState(searchParams.get('today') === '1')
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -81,10 +83,11 @@ export default function PractitionerBookingsPage() {
       .order('created_at', { ascending: false })
 
     if (filter !== 'all') query = query.eq('status', filter)
+    if (todayOnly) query = query.gte('created_at', new Date().toISOString().split('T')[0])
 
     const { data } = await query
     setBookings((data as unknown as Booking[]) ?? [])
-  }, [practitionerId, filter])
+  }, [practitionerId, filter, todayOnly])
 
   useEffect(() => { fetchBookings() }, [fetchBookings])
 
@@ -109,6 +112,14 @@ export default function PractitionerBookingsPage() {
       <div className="px-4 py-4 max-w-lg mx-auto">
         {/* 篩選 */}
         <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
+          <button
+            onClick={() => setTodayOnly(v => !v)}
+            className={`px-3 py-1 rounded-full text-sm border whitespace-nowrap transition-colors ${
+              todayOnly ? 'bg-primary text-white border-primary' : 'border-input hover:border-primary'
+            }`}
+          >
+            只看今日
+          </button>
           {[
             { value: 'all', label: '全部' },
             { value: 'pending', label: '待確認' },
