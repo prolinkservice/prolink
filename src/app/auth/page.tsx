@@ -4,6 +4,8 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
+import { FcGoogle } from 'react-icons/fc'
+import { FaLine } from 'react-icons/fa6'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -25,7 +27,7 @@ function AuthForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next') ?? '/'
-  const initialMode = searchParams.get('mode') === 'login' ? 'login' : 'signup'
+  const initialMode = searchParams.get('mode') === 'signup' ? 'signup' : 'login'
 
   const [mode, setMode] = useState<Mode>(initialMode)
 
@@ -211,13 +213,17 @@ function AuthForm() {
       </div>
 
       <form action={signInWithGoogle}>
-        <Button type="submit" variant="outline" size="lg" className="w-full">
+        <Button type="submit" variant="outline" size="lg" className="w-full gap-2">
+          <FcGoogle className="w-5 h-5" />
           使用 Google 繼續
         </Button>
       </form>
 
-      <Button asChild variant="outline" size="lg" className="w-full mt-3 border-[#06C755] text-[#06C755] hover:bg-[#06C755]/10">
-        <a href={`/auth/line/start?next=${encodeURIComponent(next)}`}>使用 LINE 繼續</a>
+      <Button asChild variant="outline" size="lg" className="w-full mt-3 gap-2 border-[#06C755] text-[#06C755] hover:bg-[#06C755]/10">
+        <a href={`/auth/line/start?next=${encodeURIComponent(next)}`}>
+          <FaLine className="w-5 h-5" />
+          使用 LINE 繼續
+        </a>
       </Button>
     </div>
   )
