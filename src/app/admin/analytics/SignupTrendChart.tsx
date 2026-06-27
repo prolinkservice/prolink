@@ -16,15 +16,22 @@ function fmtShortDate(iso: string) {
 }
 
 const MODES = [
-  { key: 'signups', label: '新會員數' },
-  { key: 'bookings', label: '預約數' },
-  { key: 'revenue', label: '平台服務費收入' },
+  { key: 'signups', label: '新會員數', unit: '人' },
+  { key: 'bookings', label: '預約數', unit: '筆' },
+  { key: 'revenue', label: '平台服務費收入', unit: '元' },
 ] as const
+
+function fmtValue(mode: (typeof MODES)[number]['key'], value: number) {
+  return mode === 'revenue' ? `NT$${value.toLocaleString()}` : `${value}`
+}
 
 export function SignupTrendChart({ data }: { data: DayData[] }) {
   const [mode, setMode] = useState<'signups' | 'bookings' | 'revenue'>('bookings')
+  const activeMode = MODES.find((m) => m.key === mode)!
 
   const maxVal = Math.max(1, ...data.map((d) => d[mode]))
+  const total = data.reduce((sum, d) => sum + d[mode], 0)
+  const hasData = total > 0
 
   return (
     <Card>
@@ -46,22 +53,30 @@ export function SignupTrendChart({ data }: { data: DayData[] }) {
         </div>
       </CardHeader>
       <CardContent>
-        {data.every((d) => d[mode] === 0) ? (
-          <p className="text-muted-foreground text-sm text-center py-10">這段期間還沒有資料</p>
+        <p className="text-sm text-muted-foreground mb-3">
+          近 30 天合計
+          <span className="text-foreground font-bold text-lg mx-1.5">{fmtValue(mode, total)}</span>
+          {activeMode.unit}
+        </p>
+
+        {!hasData ? (
+          <p className="text-muted-foreground text-sm text-center py-10">這段期間還沒有{activeMode.label}資料</p>
         ) : (
           <div className="overflow-x-auto">
-            <div className="flex items-end gap-1 h-40 min-w-[700px]">
+            <div className="flex items-end gap-1 h-44 min-w-[900px] border-b border-border">
               {data.map((d) => {
                 const value = d[mode]
                 const heightPct = (value / maxVal) * 100
                 return (
-                  <div key={d.date} className="flex-1 flex flex-col items-center justify-end h-full group relative">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute -top-6 text-[10px] bg-foreground text-white rounded px-1.5 py-0.5 whitespace-nowrap z-10">
-                      {mode === 'revenue' ? `NT$${value.toLocaleString()}` : `${value}`}
-                    </div>
+                  <div key={d.date} className="flex-1 flex flex-col items-center justify-end h-full relative">
+                    {value > 0 && (
+                      <p className="text-[9px] text-foreground font-medium mb-0.5 whitespace-nowrap">
+                        {mode === 'revenue' ? value.toLocaleString() : value}
+                      </p>
+                    )}
                     <div
-                      className="w-full bg-primary rounded-t-sm min-h-[2px] transition-all"
-                      style={{ height: `${Math.max(heightPct, value > 0 ? 4 : 0)}%` }}
+                      className="w-full bg-primary rounded-t-sm transition-all"
+                      style={{ height: value > 0 ? `${Math.max(heightPct, 4)}%` : '1px', backgroundColor: value > 0 ? undefined : 'var(--border)' }}
                     />
                     <p className="text-[9px] text-muted-foreground mt-1 whitespace-nowrap">{fmtShortDate(d.date)}</p>
                   </div>
