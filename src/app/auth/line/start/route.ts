@@ -1,12 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { randomUUID } from 'crypto'
+import { signLineState } from '@/lib/lineOauthState'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   const next = request.nextUrl.searchParams.get('next') ?? '/'
-  const csrf = randomUUID()
-  const state = Buffer.from(JSON.stringify({ csrf, next })).toString('base64url')
+  const state = signLineState(next)
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   const redirectUri = `${siteUrl}/auth/line/callback`
@@ -19,13 +18,5 @@ export async function GET(request: NextRequest) {
   authorizeUrl.searchParams.set('scope', 'profile openid')
   authorizeUrl.searchParams.set('bot_prompt', 'normal')
 
-  const response = NextResponse.redirect(authorizeUrl.toString())
-  response.cookies.set('line_csrf', csrf, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    maxAge: 600,
-    path: '/',
-  })
-  return response
+  return NextResponse.redirect(authorizeUrl.toString())
 }

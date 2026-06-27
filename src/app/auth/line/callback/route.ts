@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createAdminSupabaseClient } from '@/lib/supabase-admin'
+import { verifyLineState } from '@/lib/lineOauthState'
 
 type LineVerifyResponse = {
   sub: string
@@ -14,25 +15,18 @@ export async function GET(request: NextRequest) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   const code = request.nextUrl.searchParams.get('code')
   const state = request.nextUrl.searchParams.get('state')
-  const csrfCookie = request.cookies.get('line_csrf')?.value
 
   if (!code || !state) {
     console.error('[line-callback] missing code or state', { code, state })
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
-  let next = '/'
-  try {
-    const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf-8'))
-    if (!csrfCookie || decoded.csrf !== csrfCookie) {
-      console.error('[line-callback] csrf mismatch', { csrfCookie, decodedCsrf: decoded.csrf })
-      return NextResponse.redirect(`${siteUrl}/auth/error`)
-    }
-    next = decoded.next ?? '/'
-  } catch (err) {
-    console.error('[line-callback] state decode failed', err)
+  const verified = verifyLineState(state)
+  if (!verified) {
+    console.error('[line-callback] state signature invalid or expired')
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
+  const next = verified.next
 
   const redirectUri = `${siteUrl}/auth/line/callback`
 
@@ -81,9 +75,7 @@ export async function GET(request: NextRequest) {
   if (currentUser) {
     // 已登入帳號：綁定 LINE 帳號（會員中心「綁定 LINE」用）
     await supabase.from('profiles').update({ line_user_id: lineUserId }).eq('id', currentUser.id)
-    const response = NextResponse.redirect(`${siteUrl}${next}`)
-    response.cookies.set('line_csrf', '', { path: '/', maxAge: 0 })
-    return response
+    return NextResponse.redirect(`${siteUrl}${next}`)
   }
 
   // 未登入：用 LINE 帳號登入或建立新帳號
@@ -140,7 +132,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
-  const response = NextResponse.redirect(`${siteUrl}${next}`)
-  response.cookies.set('line_csrf', '', { path: '/', maxAge: 0 })
-  return response
+  return NextResponse.redirect(`${siteUrl}${next}`)
 }
