@@ -1,9 +1,9 @@
 import { notFound, redirect } from 'next/navigation'
 import { ChevronLeft, Clock, MapPin, CreditCard, Banknote, Building2, ShieldCheck, CheckCircle2, CalendarDays } from 'lucide-react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createBooking } from './actions'
+import { SubmitBookingButton } from './SubmitBookingButton'
 import { PLATFORM_COMMISSION_RATE } from '@/lib/commission'
 import { BrandMark } from '@/components/BrandMark'
 
@@ -211,13 +211,7 @@ export default async function BookingPage({
 
         {/* 固定底部 */}
         <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-border px-4 py-4 z-40">
-          <Button
-            className="w-full h-13 text-base font-semibold rounded-xl shadow-md active:scale-[0.97] transition-transform duration-150"
-            size="lg"
-            type="submit"
-          >
-            確認預約
-          </Button>
+          <SubmitBookingButton />
         </div>
       </form>
     </div>

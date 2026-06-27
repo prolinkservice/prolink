@@ -33,6 +33,20 @@ export async function createBooking(formData: FormData) {
 
   if (!service) redirect(`${backTo}&error=${encodeURIComponent('找不到此服務項目，請重新選擇')}`)
 
+  // 先「原子性」鎖定時段：只有在時段目前未被預約時才會更新成功（affected row 數為 0 代表已被搶先預約或重複送出）
+  // 這是防止連續點擊／併發請求造成同一時段被建立多筆預約的關鍵防護，務必在寫入 bookings 之前完成
+  const { data: lockedSlot, error: lockError } = await supabase
+    .from('availability_slots')
+    .update({ is_booked: true })
+    .eq('id', slotId)
+    .eq('is_booked', false)
+    .select('id')
+    .maybeSingle()
+
+  if (lockError || !lockedSlot) {
+    redirect(`${backTo}&error=${encodeURIComponent('此時段已被預約，請重新選擇時段')}`)
+  }
+
   // 建立預約（訂單編號跟著一起寫入，避免事後 UPDATE 被 RLS 擋掉）
   const bookingId = crypto.randomUUID()
   const { data: booking, error } = await supabase
@@ -56,14 +70,10 @@ export async function createBooking(formData: FormData) {
 
   if (error || !booking) {
     console.error(error)
+    // 預約寫入失敗，把剛剛鎖定的時段釋放回去，避免時段卡死變成永遠無法預約
+    await supabase.from('availability_slots').update({ is_booked: false }).eq('id', slotId)
     redirect(`${backTo}&error=${encodeURIComponent(`預約建立失敗：${error?.message ?? '未知錯誤'}`)}`)
   }
-
-  // 標記時段為已預約
-  await supabase
-    .from('availability_slots')
-    .update({ is_booked: true })
-    .eq('id', slotId)
 
   await notifyPractitioner(supabase, practitionerId, {
     type: 'new_booking',
