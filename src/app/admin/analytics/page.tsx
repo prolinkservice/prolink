@@ -4,12 +4,6 @@ import { PLATFORM_COMMISSION_RATE } from '@/lib/commission'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SignupTrendChart } from './SignupTrendChart'
 
-const GENDER_LABEL: Record<string, string> = {
-  male: '男性',
-  female: '女性',
-  other: '其他',
-}
-
 function calcAge(birthdate: string) {
   const today = new Date()
   const d = new Date(birthdate)
@@ -46,11 +40,10 @@ function BreakdownBar({ label, count, total }: { label: string; count: number; t
 export default async function AdminAnalyticsPage() {
   const supabase = await createServerSupabaseClient()
 
-  const [{ data: customers }, { data: bookings }, { count: practitionerCount }] = await Promise.all([
+  const [{ data: allProfiles }, { data: bookings }, { count: practitionerCount }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, gender, birthdate, created_at')
-      .eq('role', 'customer'),
+      .select('id, role, gender, birthdate, created_at'),
     supabase
       .from('bookings')
       .select(`
@@ -64,8 +57,17 @@ export default async function AdminAnalyticsPage() {
       .eq('status', 'approved'),
   ])
 
-  const customerList = customers ?? []
+  const profileList = allProfiles ?? []
   const bookingList = bookings ?? []
+
+  // 角色分布
+  const roleCounts = { practitioner: 0, customer: 0, admin: 0 }
+  for (const p of profileList) {
+    if (p.role in roleCounts) roleCounts[p.role as 'practitioner' | 'customer' | 'admin']++
+  }
+
+  // 性別/年齡統計含所有角色（入駐老師／一般使用者／系統管理員）
+  const customerList = profileList
   const totalCustomers = customerList.length
 
   // 性別分布
@@ -153,7 +155,7 @@ export default async function AdminAnalyticsPage() {
       {/* 總覽卡片 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card><CardContent className="p-4">
-          <p className="text-xs text-muted-foreground">會員總數</p>
+          <p className="text-xs text-muted-foreground">全平台帳號數</p>
           <p className="text-2xl font-bold text-foreground mt-1">{totalCustomers}</p>
         </CardContent></Card>
         <Card><CardContent className="p-4">
@@ -174,6 +176,16 @@ export default async function AdminAnalyticsPage() {
       <SignupTrendChart data={days} />
 
       <div className="grid lg:grid-cols-2 gap-4">
+        {/* 角色分布 */}
+        <Card>
+          <CardHeader><CardTitle className="text-base">角色分布</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <BreakdownBar label="入駐老師" count={roleCounts.practitioner} total={totalCustomers} />
+            <BreakdownBar label="一般使用者" count={roleCounts.customer} total={totalCustomers} />
+            <BreakdownBar label="系統管理員" count={roleCounts.admin} total={totalCustomers} />
+          </CardContent>
+        </Card>
+
         {/* 性別分布 */}
         <Card>
           <CardHeader><CardTitle className="text-base">性別分布</CardTitle></CardHeader>
