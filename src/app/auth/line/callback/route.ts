@@ -1,0 +1,135 @@
+import { NextResponse, type NextRequest } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createAdminSupabaseClient } from '@/lib/supabase-admin'
+
+type LineVerifyResponse = {
+  sub: string
+  name?: string
+  picture?: string
+}
+
+export async function GET(request: NextRequest) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const code = request.nextUrl.searchParams.get('code')
+  const state = request.nextUrl.searchParams.get('state')
+  const csrfCookie = request.cookies.get('line_csrf')?.value
+
+  if (!code || !state) {
+    return NextResponse.redirect(`${siteUrl}/auth/error`)
+  }
+
+  let next = '/'
+  try {
+    const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf-8'))
+    if (!csrfCookie || decoded.csrf !== csrfCookie) {
+      return NextResponse.redirect(`${siteUrl}/auth/error`)
+    }
+    next = decoded.next ?? '/'
+  } catch {
+    return NextResponse.redirect(`${siteUrl}/auth/error`)
+  }
+
+  const redirectUri = `${siteUrl}/auth/line/callback`
+
+  // 交換 access token + id_token
+  const tokenRes = await fetch('https://api.line.me/oauth2/v2.1/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: redirectUri,
+      client_id: process.env.LINE_LOGIN_CHANNEL_ID!,
+      client_secret: process.env.LINE_LOGIN_CHANNEL_SECRET!,
+    }),
+  })
+  if (!tokenRes.ok) {
+    return NextResponse.redirect(`${siteUrl}/auth/error`)
+  }
+  const tokenData = await tokenRes.json()
+  const idToken = tokenData.id_token as string | undefined
+  if (!idToken) {
+    return NextResponse.redirect(`${siteUrl}/auth/error`)
+  }
+
+  // 用 LINE 官方 verify endpoint 驗證 id_token 簽章與內容，取得 LINE 個人資料
+  const verifyRes = await fetch('https://api.line.me/oauth2/v2.1/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      id_token: idToken,
+      client_id: process.env.LINE_LOGIN_CHANNEL_ID!,
+    }),
+  })
+  if (!verifyRes.ok) {
+    return NextResponse.redirect(`${siteUrl}/auth/error`)
+  }
+  const profile = (await verifyRes.json()) as LineVerifyResponse
+  const lineUserId = profile.sub
+
+  const supabase = await createServerSupabaseClient()
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+
+  if (currentUser) {
+    // 已登入帳號：綁定 LINE 帳號（會員中心「綁定 LINE」用）
+    await supabase.from('profiles').update({ line_user_id: lineUserId }).eq('id', currentUser.id)
+    const response = NextResponse.redirect(`${siteUrl}${next}`)
+    response.cookies.set('line_csrf', '', { path: '/', maxAge: 0 })
+    return response
+  }
+
+  // 未登入：用 LINE 帳號登入或建立新帳號
+  const admin = createAdminSupabaseClient()
+
+  const { data: existingProfile } = await admin
+    .from('profiles')
+    .select('id')
+    .eq('line_user_id', lineUserId)
+    .maybeSingle()
+
+  let targetEmail: string
+
+  if (existingProfile) {
+    const { data: authUserData } = await admin.auth.admin.getUserById(existingProfile.id)
+    if (!authUserData.user?.email) {
+      return NextResponse.redirect(`${siteUrl}/auth/error`)
+    }
+    targetEmail = authUserData.user.email
+  } else {
+    targetEmail = `line-${lineUserId}@line.prolink.invalid`
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
+      email: targetEmail,
+      email_confirm: true,
+      user_metadata: {
+        full_name: profile.name ?? 'LINE 用戶',
+        avatar_url: profile.picture ?? null,
+      },
+    })
+    if (createError || !created.user) {
+      return NextResponse.redirect(`${siteUrl}/auth/error`)
+    }
+    await admin.from('profiles').update({ line_user_id: lineUserId }).eq('id', created.user.id)
+  }
+
+  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+    type: 'magiclink',
+    email: targetEmail,
+  })
+  const tokenHash = linkData?.properties?.hashed_token
+  if (linkError || !tokenHash) {
+    return NextResponse.redirect(`${siteUrl}/auth/error`)
+  }
+
+  const { error: otpError } = await supabase.auth.verifyOtp({
+    type: 'magiclink',
+    token_hash: tokenHash,
+    email: targetEmail,
+  })
+  if (otpError) {
+    return NextResponse.redirect(`${siteUrl}/auth/error`)
+  }
+
+  const response = NextResponse.redirect(`${siteUrl}${next}`)
+  response.cookies.set('line_csrf', '', { path: '/', maxAge: 0 })
+  return response
+}

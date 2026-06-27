@@ -215,6 +215,10 @@ function AuthForm() {
           使用 Google 繼續
         </Button>
       </form>
+
+      <Button asChild variant="outline" size="lg" className="w-full mt-3 border-[#06C755] text-[#06C755] hover:bg-[#06C755]/10">
+        <a href={`/auth/line/start?next=${encodeURIComponent(next)}`}>使用 LINE 繼續</a>
+      </Button>
     </div>
   )
 }

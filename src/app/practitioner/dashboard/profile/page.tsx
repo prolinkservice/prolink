@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ShieldCheck, MapPin, Link2, Sparkles, Rows3 } from 'lucide-react'
+import { ChevronLeft, ShieldCheck, MapPin, Link2, Sparkles, Rows3, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLayout'
@@ -9,6 +9,7 @@ import { AddressForm } from './address/AddressForm'
 import { SocialForm } from './social/SocialForm'
 import { BrandForm } from './brand/BrandForm'
 import { LayoutBuilderForm } from './layout-builder/LayoutBuilderForm'
+import { LineLinkSection } from '@/app/account/line/LineLinkSection'
 import { BrandMark } from '@/components/BrandMark'
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
@@ -110,6 +111,14 @@ export default async function MemberProfilePage() {
       sublabel: '自訂老師頁面排版',
       href: '/practitioner/dashboard/profile/layout-builder',
       content: <LayoutBuilderForm />,
+    },
+    {
+      key: 'line',
+      icon: <MessageCircle className={iconClass} />,
+      label: 'LINE 通知綁定',
+      sublabel: '接收新預約 LINE 通知',
+      href: '/practitioner/dashboard/profile/line',
+      content: <LineLinkSection next="/practitioner/dashboard/profile/line" />,
     },
   ]
 

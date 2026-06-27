@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, User, CreditCard, Lock } from 'lucide-react'
+import { ChevronLeft, User, CreditCard, Lock, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
@@ -8,6 +8,7 @@ import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLa
 import { ProfileForm } from './profile/ProfileForm'
 import { PaymentPlaceholder } from './payment/PaymentPlaceholder'
 import { PasswordForm } from './password/PasswordForm'
+import { LineLinkSection } from './line/LineLinkSection'
 import { BrandMark } from '@/components/BrandMark'
 
 export default async function AccountPage() {
@@ -39,6 +40,14 @@ export default async function AccountPage() {
       sublabel: '尚未設定',
       href: '/account/payment',
       content: <PaymentPlaceholder />,
+    },
+    {
+      key: 'line',
+      icon: <MessageCircle className={iconClass} />,
+      label: 'LINE 通知綁定',
+      sublabel: '可接收預約 LINE 通知',
+      href: '/account/line',
+      content: <LineLinkSection />,
     },
   ]
 

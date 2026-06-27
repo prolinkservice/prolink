@@ -9,6 +9,7 @@ import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { ClientNoteEditor } from './ClientNoteEditor'
+import { updateBookingStatusAction } from './actions'
 import { BrandMark } from '@/components/BrandMark'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -92,8 +93,7 @@ export default function PractitionerBookingsPage() {
   useEffect(() => { fetchBookings() }, [fetchBookings])
 
   async function updateStatus(id: string, status: string) {
-    const supabase = createBrowserSupabaseClient()
-    await supabase.from('bookings').update({ status }).eq('id', id)
+    await updateBookingStatusAction(id, status)
     await fetchBookings()
   }
 
