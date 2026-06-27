@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLayout'
 import { ProfileForm } from './profile/ProfileForm'
-import { PaymentPlaceholder } from './payment/PaymentPlaceholder'
+import { PaymentHistory } from './payment/PaymentHistory'
 import { PasswordForm } from './password/PasswordForm'
 import { LineLinkSection } from './line/LineLinkSection'
 import { BrandMark } from '@/components/BrandMark'
@@ -36,10 +36,10 @@ export default async function AccountPage() {
     {
       key: 'payment',
       icon: <CreditCard className={iconClass} />,
-      label: '付款方式',
-      sublabel: '尚未設定',
+      label: '付款紀錄',
+      sublabel: '查看歷史預約付款狀態',
       href: '/account/payment',
-      content: <PaymentPlaceholder />,
+      content: <PaymentHistory />,
     },
     {
       key: 'line',

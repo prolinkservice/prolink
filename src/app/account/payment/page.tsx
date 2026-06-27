@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { PaymentPlaceholder } from './PaymentPlaceholder'
+import { PaymentHistory } from './PaymentHistory'
 import { BrandMark } from '@/components/BrandMark'
 
 export default function AccountPaymentPage() {
@@ -11,12 +11,12 @@ export default function AccountPaymentPage() {
         <Link href="/account">
           <Button variant="ghost" size="icon"><ChevronLeft className="w-5 h-5" /></Button>
         </Link>
-        <span className="font-semibold text-lg">付款方式</span>
+        <span className="font-semibold text-lg">付款紀錄</span>
       <BrandMark />
       </div>
 
-      <div className="px-4 max-w-lg mx-auto">
-        <PaymentPlaceholder />
+      <div className="px-4 py-6 max-w-lg mx-auto">
+        <PaymentHistory />
       </div>
     </div>
   )
