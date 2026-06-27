@@ -99,17 +99,17 @@ export default async function Home({
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center gap-2 shadow-sm">
+      <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex flex-wrap items-center gap-2 shadow-sm">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-sm">P</span>
           </div>
           <span className="flex items-baseline gap-1.5">
             <span className="font-bold text-xl text-foreground">職人連結</span>
-            <span className="text-xs text-muted-foreground">快速找到你要的老師</span>
+            <span className="text-xs text-muted-foreground hidden sm:inline">快速找到你要的老師</span>
           </span>
         </Link>
-        <div className="flex items-center gap-2 overflow-x-auto flex-nowrap ml-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto sm:ml-auto sm:flex-nowrap sm:overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {user ? (
             <>
               {/* 「我的預約」對所有登入用戶都顯示：職人本人同時也可能是消費者（同一帳號先當會員再升級職人），
