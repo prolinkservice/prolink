@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   const csrfCookie = request.cookies.get('line_csrf')?.value
 
   if (!code || !state) {
+    console.error('[line-callback] missing code or state', { code, state })
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
@@ -22,10 +23,12 @@ export async function GET(request: NextRequest) {
   try {
     const decoded = JSON.parse(Buffer.from(state, 'base64url').toString('utf-8'))
     if (!csrfCookie || decoded.csrf !== csrfCookie) {
+      console.error('[line-callback] csrf mismatch', { csrfCookie, decodedCsrf: decoded.csrf })
       return NextResponse.redirect(`${siteUrl}/auth/error`)
     }
     next = decoded.next ?? '/'
-  } catch {
+  } catch (err) {
+    console.error('[line-callback] state decode failed', err)
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
@@ -44,11 +47,13 @@ export async function GET(request: NextRequest) {
     }),
   })
   if (!tokenRes.ok) {
+    console.error('[line-callback] token exchange failed', tokenRes.status, await tokenRes.text())
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
   const tokenData = await tokenRes.json()
   const idToken = tokenData.id_token as string | undefined
   if (!idToken) {
+    console.error('[line-callback] no id_token in token response', tokenData)
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
@@ -62,6 +67,7 @@ export async function GET(request: NextRequest) {
     }),
   })
   if (!verifyRes.ok) {
+    console.error('[line-callback] id_token verify failed', verifyRes.status, await verifyRes.text())
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
   const profile = (await verifyRes.json()) as LineVerifyResponse
@@ -92,6 +98,7 @@ export async function GET(request: NextRequest) {
   if (existingProfile) {
     const { data: authUserData } = await admin.auth.admin.getUserById(existingProfile.id)
     if (!authUserData.user?.email) {
+      console.error('[line-callback] existing profile has no auth email', existingProfile.id)
       return NextResponse.redirect(`${siteUrl}/auth/error`)
     }
     targetEmail = authUserData.user.email
@@ -106,6 +113,7 @@ export async function GET(request: NextRequest) {
       },
     })
     if (createError || !created.user) {
+      console.error('[line-callback] createUser failed', createError)
       return NextResponse.redirect(`${siteUrl}/auth/error`)
     }
     await admin.from('profiles').update({ line_user_id: lineUserId }).eq('id', created.user.id)
@@ -117,6 +125,7 @@ export async function GET(request: NextRequest) {
   })
   const tokenHash = linkData?.properties?.hashed_token
   if (linkError || !tokenHash) {
+    console.error('[line-callback] generateLink failed', linkError)
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
@@ -126,6 +135,7 @@ export async function GET(request: NextRequest) {
     email: targetEmail,
   })
   if (otpError) {
+    console.error('[line-callback] verifyOtp failed', otpError)
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
