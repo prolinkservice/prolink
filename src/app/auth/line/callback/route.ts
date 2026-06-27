@@ -132,7 +132,6 @@ export async function GET(request: NextRequest) {
   const { error: otpError } = await supabase.auth.verifyOtp({
     type: 'magiclink',
     token_hash: tokenHash,
-    email: targetEmail,
   })
   if (otpError) {
     console.error('[line-callback] verifyOtp failed', otpError)
