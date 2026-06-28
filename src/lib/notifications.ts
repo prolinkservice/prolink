@@ -19,13 +19,16 @@ export async function notifyUser(
   userId: string,
   notification: { type: NotificationType; title: string; body?: string; link?: string; lineText?: string; skipLine?: boolean }
 ) {
-  await supabase.from('notifications').insert({
+  const { error: insertError } = await supabase.from('notifications').insert({
     user_id: userId,
     type: notification.type,
     title: notification.title,
     body: notification.body ?? null,
     link: notification.link ?? null,
   })
+  if (insertError) {
+    console.error('[notifications] insert failed', insertError, { userId, type: notification.type })
+  }
 
   if (notification.skipLine) return
 
