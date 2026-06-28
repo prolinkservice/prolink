@@ -45,6 +45,7 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       `)
       .eq('id', id)
       .eq('status', 'approved')
+      .eq('availability_slots.is_open', true)
       .single(),
     supabase
       .from('reviews')

@@ -54,7 +54,7 @@ function addMinutes(time: string, minutes: number) {
   return `${String(nh).padStart(2, '0')}:${String(nm).padStart(2, '0')}`
 }
 
-type Slot = { id: string; start_time: string; end_time: string; is_booked: boolean }
+type Slot = { id: string; start_time: string; end_time: string; is_booked: boolean; is_open: boolean }
 
 export default function AvailabilityPage() {
   const router = useRouter()
@@ -93,7 +93,7 @@ export default function AvailabilityPage() {
     const supabase = createBrowserSupabaseClient()
     const { data } = await supabase
       .from('availability_slots')
-      .select('id, start_time, end_time, is_booked')
+      .select('id, start_time, end_time, is_booked, is_open')
       .eq('practitioner_id', practitionerId)
       .gte('start_time', `${selectedDate}T00:00:00`)
       .lt('start_time', `${selectedDate}T23:59:59`)
@@ -132,14 +132,16 @@ export default function AvailabilityPage() {
     const supabase = createBrowserSupabaseClient()
 
     if (existing) {
-      const { error } = await supabase.from('availability_slots').delete().eq('id', existing.id)
-      if (error) setErrorMsg(`關閉失敗：${error.message}`)
+      // 不直接刪除資料列，因為這個時段可能曾經有過預約（即便已取消/完成），刪除會違反外鍵限制；改成標記開放/關閉
+      const { error } = await supabase.from('availability_slots').update({ is_open: !existing.is_open }).eq('id', existing.id)
+      if (error) setErrorMsg(`${existing.is_open ? '關閉' : '開放'}失敗：${error.message}`)
     } else {
       const { error } = await supabase.from('availability_slots').insert({
         practitioner_id: practitionerId,
         start_time: `${selectedDate}T${time}:00+08:00`,
         end_time: `${selectedDate}T${addMinutes(time, SLOT_MINUTES)}:00+08:00`,
         is_booked: false,
+        is_open: true,
       })
       if (error) setErrorMsg(`開放失敗：${error.message}`)
     }
@@ -149,7 +151,10 @@ export default function AvailabilityPage() {
 
   async function copyOpenPatternToDates(dates: string[]) {
     if (!practitionerId) return
-    const openTimes = gridTimes.filter((t) => slotByTime.has(t) && !slotByTime.get(t)?.is_booked)
+    const openTimes = gridTimes.filter((t) => {
+      const s = slotByTime.get(t)
+      return !!s?.is_open && !s.is_booked
+    })
     const targetDates = dates.filter((d) => d !== selectedDate)
     if (openTimes.length === 0) { setErrorMsg('本日尚無開放時段可複製'); return }
     if (targetDates.length === 0) { setErrorMsg('沒有有效的目標日期'); return }
@@ -199,7 +204,7 @@ export default function AvailabilityPage() {
     setErrorMsg(null)
     const supabase = createBrowserSupabaseClient()
 
-    let query = supabase.from('availability_slots').delete().eq('practitioner_id', practitionerId).eq('is_booked', false)
+    let query = supabase.from('availability_slots').update({ is_open: false }).eq('practitioner_id', practitionerId).eq('is_booked', false)
     if (dates && dates.length > 0) {
       const sorted = [...dates].sort()
       query = query.gte('start_time', `${sorted[0]}T00:00:00`).lte('start_time', `${sorted[sorted.length - 1]}T23:59:59`)
@@ -295,7 +300,7 @@ export default function AvailabilityPage() {
           <div className="grid grid-cols-3 gap-2">
             {gridTimes.map((time) => {
               const slot = slotByTime.get(time)
-              const isOpen = !!slot
+              const isOpen = !!slot?.is_open
               const isBooked = !!slot?.is_booked
               return (
                 <button

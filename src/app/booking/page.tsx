@@ -50,7 +50,7 @@ export default async function BookingPage({
   const [{ data: slot }, { data: practitioner }] = await Promise.all([
     supabase
       .from('availability_slots')
-      .select('id, start_time, end_time, is_booked')
+      .select('id, start_time, end_time, is_booked, is_open')
       .eq('id', slotId)
       .single(),
     supabase
@@ -61,7 +61,7 @@ export default async function BookingPage({
       .single(),
   ])
 
-  if (!slot || !practitioner || slot.is_booked) notFound()
+  if (!slot || !practitioner || slot.is_booked || !slot.is_open) notFound()
 
   const profileRaw = practitioner.profiles as unknown
   const profile = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null

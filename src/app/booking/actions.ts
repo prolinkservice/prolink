@@ -41,6 +41,7 @@ export async function createBooking(formData: FormData) {
     .update({ is_booked: true })
     .eq('id', slotId)
     .eq('is_booked', false)
+    .eq('is_open', true)
     .select('id')
     .maybeSingle()
 
