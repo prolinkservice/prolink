@@ -5,7 +5,7 @@ import { CreditCard } from 'lucide-react'
 
 const PAYMENT_STATUS_LABEL: Record<string, { label: string; variant: 'default' | 'outline' | 'secondary' | 'destructive' }> = {
   unpaid: { label: '未付款', variant: 'destructive' },
-  partially_paid: { label: '已付訂金', variant: 'secondary' },
+  partially_paid: { label: '已付定金', variant: 'secondary' },
   paid: { label: '已付款', variant: 'default' },
   refunded: { label: '已退款', variant: 'outline' },
 }
@@ -66,7 +66,7 @@ export async function PaymentHistory() {
                 <Badge variant={status.variant}>{status.label}</Badge>
               </div>
               <div className="text-xs text-muted-foreground space-y-0.5">
-                <p>金額：NT${Math.round(amount ?? 0)}{b.payment_status === 'partially_paid' ? '（訂金）' : ''}</p>
+                <p>金額：NT${Math.round(amount ?? 0)}{b.payment_status === 'partially_paid' ? '（定金）' : ''}</p>
                 <p>付款方式：{PAYMENT_METHOD_LABEL[b.payment_method] ?? b.payment_method}</p>
                 {b.merchant_trade_no && <p>訂單編號：{b.merchant_trade_no}</p>}
               </div>

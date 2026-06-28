@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       '',
       service?.name ? `服務：${service.name}` : null,
       timeStr ? `時間：${timeStr}` : null,
-      `已付10%訂金（平台服務費）`,
+      `已付10%定金（平台服務費）`,
       remainingLine,
       '',
       `查看預約詳情：${SITE_URL}/practitioner/dashboard/bookings?today=1`,
