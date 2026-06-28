@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/auto-cancel-pending",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 3 * * *"
     }
   ]
 }
