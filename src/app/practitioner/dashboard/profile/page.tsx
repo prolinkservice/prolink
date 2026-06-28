@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ShieldCheck, MapPin, Link2, Sparkles, Rows3, MessageCircle } from 'lucide-react'
+import { ChevronLeft, ShieldCheck, MapPin, Link2, Rows3, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLayout'
@@ -8,7 +8,6 @@ import { VerificationForm } from './verification/VerificationForm'
 import { AddressForm } from './address/AddressForm'
 import { ServiceModeForm } from './address/ServiceModeForm'
 import { SocialForm } from './social/SocialForm'
-import { BrandForm } from './brand/BrandForm'
 import { LayoutBuilderForm } from './layout-builder/LayoutBuilderForm'
 import { LineLinkSection } from '@/app/account/line/LineLinkSection'
 import { BrandMark } from '@/components/BrandMark'
@@ -56,9 +55,6 @@ export default async function MemberProfilePage() {
 
   const socialLinks = (practitioner.social_links as { platform: string; url: string }[]) ?? []
   const addressVerified = practitioner.latitude !== null && practitioner.longitude !== null
-  const specialtyTags = (practitioner.specialty_tags as string[]) ?? []
-  const certificates = (practitioner.certificates as { name: string; year: number | null }[]) ?? []
-  const brandFilled = practitioner.years_experience || certificates.length > 0 || specialtyTags.length > 0 || practitioner.cover_image_url
 
   const verificationChecks = [
     practitioner.bank_status === 'approved',
@@ -68,14 +64,6 @@ export default async function MemberProfilePage() {
 
   const iconClass = "w-4.5 h-4.5 text-primary"
   const items: SettingsLayoutItem[] = [
-    {
-      key: 'brand',
-      icon: <Sparkles className={iconClass} />,
-      label: '個人品牌',
-      sublabel: brandFilled ? <span className="text-green-600">已填寫</span> : <span className="text-amber-600">尚未填寫</span>,
-      href: '/practitioner/dashboard/profile/brand',
-      content: <BrandForm />,
-    },
     {
       key: 'verification',
       icon: <ShieldCheck className={iconClass} />,
@@ -136,6 +124,7 @@ export default async function MemberProfilePage() {
       <div className="px-4 py-6 max-w-lg lg:max-w-5xl mx-auto flex flex-col gap-5">
         <SettingsLayout
           items={items}
+          direction="horizontal"
           header={
             <div>
               <p className="font-semibold text-foreground truncate">{profile?.display_name ?? '會員中心'}</p>

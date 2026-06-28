@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Calendar, ListChecks, ClipboardList, Users, BarChart3, UserCog, Star } from 'lucide-react'
+import { LayoutDashboard, Calendar, ListChecks, ClipboardList, Users, BarChart3, UserCog, Star, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ENTRIES = [
   { href: '/practitioner/dashboard', icon: LayoutDashboard, label: '總覽' },
+  { href: '/practitioner/dashboard/profile/brand', icon: Sparkles, label: '品牌頁面' },
   { href: '/practitioner/dashboard/availability', icon: Calendar, label: '時段管理' },
   { href: '/practitioner/dashboard/services', icon: ListChecks, label: '服務管理' },
   { href: '/practitioner/dashboard/bookings', icon: ClipboardList, label: '預約管理' },
@@ -24,7 +25,9 @@ export function DashboardSideNav() {
       {ENTRIES.map((entry) => {
         const isActive = entry.href === '/practitioner/dashboard'
           ? pathname === entry.href
-          : pathname.startsWith(entry.href)
+          : entry.href === '/practitioner/dashboard/profile'
+            ? pathname.startsWith(entry.href) && !pathname.startsWith('/practitioner/dashboard/profile/brand')
+            : pathname.startsWith(entry.href)
         const Icon = entry.icon
         return (
           <Link

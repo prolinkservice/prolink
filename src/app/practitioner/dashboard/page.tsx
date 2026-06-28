@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Calendar, ClipboardList, LogOut, UserCog, Star, Home, ListChecks, Bell, Users, BarChart3 } from 'lucide-react'
+import { Calendar, ClipboardList, LogOut, UserCog, Star, Home, ListChecks, Bell, Users, BarChart3, Sparkles } from 'lucide-react'
 import { signOut } from '@/app/auth/actions'
 import { SettingsListGroup, SettingsListItem } from '@/components/SettingsListItem'
 
@@ -44,6 +44,7 @@ export default async function PractitionerDashboardPage() {
   ])
 
   const entries = [
+    { href: '/practitioner/dashboard/profile/brand', icon: Sparkles, label: '品牌頁面', sublabel: '自訂老師公開頁面內容' },
     { href: '/practitioner/dashboard/availability', icon: Calendar, label: '時段管理', sublabel: '新增或移除可預約時段' },
     { href: '/practitioner/dashboard/services', icon: ListChecks, label: '服務管理', sublabel: '新增、編輯或刪除服務項目' },
     { href: '/practitioner/dashboard/bookings', icon: ClipboardList, label: '預約管理', sublabel: '查看並管理所有預約訂單' },
