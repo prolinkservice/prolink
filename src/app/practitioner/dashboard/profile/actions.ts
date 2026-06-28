@@ -195,3 +195,13 @@ export async function removeSocialLink(formData: FormData) {
   await supabase.from('practitioners').update({ social_links: links }).eq('id', practitionerId)
   revalidatePath('/practitioner/dashboard/profile')
 }
+
+export async function updateFollowupMessage(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const message = (formData.get('followupMessage') as string).trim()
+  await supabase.from('practitioners').update({ followup_message: message || null }).eq('id', practitionerId)
+
+  revalidatePath('/practitioner/dashboard/profile')
+}

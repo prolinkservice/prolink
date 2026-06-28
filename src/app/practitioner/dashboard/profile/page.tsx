@@ -10,6 +10,7 @@ import { ServiceModeForm } from './address/ServiceModeForm'
 import { SocialForm } from './social/SocialForm'
 import { LayoutBuilderForm } from './layout-builder/LayoutBuilderForm'
 import { LineLinkSection } from '@/app/account/line/LineLinkSection'
+import { FollowupMessageForm } from './followup/FollowupMessageForm'
 import { BrandMark } from '@/components/BrandMark'
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
@@ -108,6 +109,14 @@ export default async function MemberProfilePage() {
       sublabel: '接收新預約 LINE 通知',
       href: '/practitioner/dashboard/profile/line',
       content: <LineLinkSection next="/practitioner/dashboard/profile/line" />,
+    },
+    {
+      key: 'followup',
+      icon: <MessageCircle className={iconClass} />,
+      label: '完成後問候訊息',
+      sublabel: '預約完成24小時後自動發送',
+      href: '/practitioner/dashboard/profile/followup',
+      content: <FollowupMessageForm />,
     },
   ]
 

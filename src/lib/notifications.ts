@@ -11,6 +11,7 @@ type NotificationType =
   | 'cancellation_requested'
   | 'cancellation_approved'
   | 'cancellation_rejected'
+  | 'followup_message'
 
 export async function notifyUser(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

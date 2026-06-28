@@ -20,7 +20,10 @@ export async function updateBookingStatusAction(bookingId: string, status: strin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('未登入')
 
-  const { error } = await supabase.from('bookings').update({ status }).eq('id', bookingId)
+  const { error } = await supabase
+    .from('bookings')
+    .update({ status, ...(status === 'completed' ? { completed_at: new Date().toISOString() } : {}) })
+    .eq('id', bookingId)
   if (error) throw error
 
   if (status === 'confirmed') {
