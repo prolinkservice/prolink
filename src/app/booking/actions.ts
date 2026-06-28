@@ -77,11 +77,14 @@ export async function createBooking(formData: FormData) {
     redirect(`${backTo}&error=${encodeURIComponent(`預約建立失敗：${error?.message ?? '未知錯誤'}`)}`)
   }
 
+  // LINE 推播改在客人完成付款後（綠界 callback）才發送，這裡只寫站內通知，
+  // 避免客人還沒付款就讓老師收到 LINE 訊息、內容也還沒有確定的付款金額可以呈現
   await notifyPractitioner(supabase, practitionerId, {
     type: 'new_booking',
     title: '收到新預約',
-    body: '有客人剛預約了你的服務，點此查看詳情',
+    body: '有客人剛預約了你的服務，等待付款完成',
     link: '/practitioner/dashboard/bookings',
+    skipLine: true,
   })
 
   redirect(`/booking/pay?bookingId=${booking.id}`)

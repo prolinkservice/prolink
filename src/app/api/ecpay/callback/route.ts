@@ -2,6 +2,15 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifyCheckMacValue } from '@/lib/ecpay'
 import { calcCommission, PLATFORM_COMMISSION_RATE } from '@/lib/commission'
+import { notifyPractitioner } from '@/lib/notifications'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  full_online: '線上付清尾款',
+  cash: '現場付現結尾款',
+  transfer: '轉帳結尾款',
+}
 
 // 綠界 ReturnURL 是伺服器對伺服器的非同步通知，沒有使用者登入狀態，
 // 必須用 service role key 才能寫入資料（RLS 只允許本人操作自己的預約）
@@ -23,7 +32,11 @@ export async function POST(req: NextRequest) {
 
   const { data: booking } = await supabase
     .from('bookings')
-    .select('id, total_amount, payment_method, payment_status')
+    .select(`
+      id, total_amount, deposit_amount, payment_method, payment_status, practitioner_id,
+      services ( name ),
+      availability_slots ( start_time )
+    `)
     .eq('merchant_trade_no', merchantTradeNo)
     .single()
 
@@ -48,6 +61,38 @@ export async function POST(req: NextRequest) {
       commission_amount: commissionAmount,
       practitioner_payout: booking.total_amount - commissionAmount,
       status: 'completed',
+    })
+
+    const service = Array.isArray(booking.services) ? booking.services[0] : booking.services
+    const slot = Array.isArray(booking.availability_slots) ? booking.availability_slots[0] : booking.availability_slots
+    const timeStr = slot?.start_time
+      ? new Date(new Date(slot.start_time).getTime() + 8 * 60 * 60 * 1000)
+          .toISOString()
+          .replace('T', ' ')
+          .slice(5, 16)
+      : ''
+
+    const remainingAmount = booking.total_amount - booking.deposit_amount
+    const remainingLine = booking.payment_method === 'full_online'
+      ? '尾款：已線上付清，現場不需再收費'
+      : `尾款：NT$${remainingAmount.toLocaleString()}（${PAYMENT_METHOD_LABEL[booking.payment_method] ?? booking.payment_method}，請與客人現場核對收款）`
+
+    const lineText = [
+      '💰 客人已完成付款',
+      service?.name ? `服務：${service.name}` : null,
+      timeStr ? `時間：${timeStr}` : null,
+      `平台服務費：NT$${booking.deposit_amount.toLocaleString()}（已線上付款）`,
+      remainingLine,
+      '',
+      `查看預約詳情：${SITE_URL}/practitioner/dashboard/bookings?today=1`,
+    ].filter(Boolean).join('\n')
+
+    await notifyPractitioner(supabase, booking.practitioner_id, {
+      type: 'payment_received',
+      title: '客人已完成付款',
+      body: service?.name ? `${service.name}的平台服務費已付款完成` : '平台服務費已付款完成',
+      link: '/practitioner/dashboard/bookings?today=1',
+      lineText,
     })
   }
 

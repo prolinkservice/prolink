@@ -96,6 +96,12 @@ export default async function BookingSuccessPage({
                 <span className="font-bold">NT${booking.deposit_amount}</span>
               </div>
             )}
+            {booking.payment_method !== 'full_online' && (
+              <div className="flex justify-between text-foreground">
+                <span className="text-muted-foreground">尾款現場應付金額</span>
+                <span className="font-bold">NT${booking.total_amount - booking.deposit_amount}</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

@@ -1,12 +1,13 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { pushLineMessage } from '@/lib/lineMessaging'
 
-type NotificationType = 'new_booking' | 'new_review' | 'verification_result' | 'booking_confirmed'
+type NotificationType = 'new_booking' | 'new_review' | 'verification_result' | 'booking_confirmed' | 'payment_received'
 
 export async function notifyUser(
-  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: SupabaseClient<any>,
   userId: string,
-  notification: { type: NotificationType; title: string; body?: string; link?: string }
+  notification: { type: NotificationType; title: string; body?: string; link?: string; lineText?: string; skipLine?: boolean }
 ) {
   await supabase.from('notifications').insert({
     user_id: userId,
@@ -16,6 +17,8 @@ export async function notifyUser(
     link: notification.link ?? null,
   })
 
+  if (notification.skipLine) return
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('line_user_id')
@@ -23,17 +26,18 @@ export async function notifyUser(
     .single()
 
   if (profile?.line_user_id) {
-    const text = notification.body
+    const text = notification.lineText ?? (notification.body
       ? `${notification.title}\n${notification.body}`
-      : notification.title
+      : notification.title)
     await pushLineMessage(profile.line_user_id, text)
   }
 }
 
 export async function notifyPractitioner(
-  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: SupabaseClient<any>,
   practitionerId: string,
-  notification: { type: NotificationType; title: string; body?: string; link?: string }
+  notification: { type: NotificationType; title: string; body?: string; link?: string; lineText?: string; skipLine?: boolean }
 ) {
   const { data: practitioner } = await supabase
     .from('practitioners')
