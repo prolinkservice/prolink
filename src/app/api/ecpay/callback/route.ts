@@ -6,12 +6,6 @@ import { notifyPractitioner, notifyUser } from '@/lib/notifications'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
-const PAYMENT_METHOD_LABEL: Record<string, string> = {
-  full_online: '線上刷卡（全額）',
-  cash: '現場付現結尾款',
-  transfer: '轉帳結尾款',
-}
-
 const WEEKDAY_LABEL = ['日', '一', '二', '三', '四', '五', '六']
 
 // 綠界 ReturnURL 是伺服器對伺服器的非同步通知，沒有使用者登入狀態，
@@ -78,19 +72,14 @@ export async function POST(req: NextRequest) {
         })()
       : ''
 
-    const remainingAmount = booking.total_amount - booking.deposit_amount
-    const remainingLine = booking.payment_method === 'full_online'
-      ? '尾款：已線上付清，現場不需再收費'
-      : `尾款：NT$${remainingAmount.toLocaleString()}（${PAYMENT_METHOD_LABEL[booking.payment_method] ?? booking.payment_method}，請與客人現場核對收款）`
-
     const lineText = [
-      '✅ 客人已完成付款',
+      '🔔 有新預約等你確認',
       '',
       service?.name ? `服務：${service.name}` : null,
       timeStr ? `時間：${timeStr}` : null,
-      `已付10%定金（平台服務費）`,
-      remainingLine,
+      '客人已付10%定金（平台服務費）',
       '',
+      '記得到後台確認接單，客人正在等你回覆喔',
       `查看預約詳情：${SITE_URL}/practitioner/dashboard/bookings?today=1`,
     ].filter(Boolean).join('\n')
 
