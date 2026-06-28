@@ -17,7 +17,7 @@ export function AdminSideNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="w-60 shrink-0 sticky top-20 rounded-xl border border-border bg-white overflow-hidden divide-y divide-border">
+    <nav className="w-full lg:w-56 lg:h-full rounded-xl lg:rounded-none border border-border lg:border-0 lg:border-r bg-white overflow-hidden lg:overflow-y-auto divide-y divide-border lg:divide-y-0 lg:py-3 lg:px-2 lg:flex lg:flex-col lg:gap-0.5">
       {ENTRIES.map((entry) => {
         const isActive = entry.href === '/admin'
           ? pathname === entry.href
@@ -28,7 +28,7 @@ export function AdminSideNav() {
             key={entry.href}
             href={entry.href}
             className={cn(
-              'flex items-center gap-3 px-4 py-3 text-sm transition-colors',
+              'flex items-center gap-3 px-4 py-3 lg:px-3 lg:py-2.5 lg:rounded-lg text-sm transition-colors',
               isActive ? 'bg-accent/60 text-primary font-medium' : 'text-foreground hover:bg-muted/50'
             )}
           >

@@ -21,7 +21,7 @@ export function DashboardSideNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="w-60 shrink-0 sticky top-20 rounded-xl border border-border bg-white overflow-hidden divide-y divide-border">
+    <nav className="w-56 h-full shrink-0 border-r border-border bg-white py-3 px-2 flex flex-col gap-0.5 overflow-y-auto">
       {ENTRIES.map((entry) => {
         const isActive = entry.href === '/practitioner/dashboard'
           ? pathname === entry.href
@@ -34,7 +34,7 @@ export function DashboardSideNav() {
             key={entry.href}
             href={entry.href}
             className={cn(
-              'flex items-center gap-3 px-4 py-3 text-sm transition-colors',
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
               isActive ? 'bg-accent/60 text-primary font-medium' : 'text-foreground hover:bg-muted/50'
             )}
           >

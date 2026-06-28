@@ -49,13 +49,11 @@ export default async function PractitionerDashboardLayout({ children }: { childr
         </div>
       </nav>
 
-      <div className="lg:px-6 lg:py-6 lg:max-w-6xl lg:mx-auto">
-        <div className="lg:flex lg:gap-6 lg:items-start">
-          <div className="hidden lg:block">
-            <DashboardSideNav />
-          </div>
-          <div className="flex-1 min-w-0">{children}</div>
+      <div className="lg:flex lg:items-start">
+        <div className="hidden lg:block lg:shrink-0 lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)]">
+          <DashboardSideNav />
         </div>
+        <div className="flex-1 min-w-0 lg:px-6 lg:py-6">{children}</div>
       </div>
     </div>
   )
