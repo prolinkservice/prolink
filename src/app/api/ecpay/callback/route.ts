@@ -7,10 +7,12 @@ import { notifyPractitioner } from '@/lib/notifications'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
 const PAYMENT_METHOD_LABEL: Record<string, string> = {
-  full_online: '線上付清尾款',
+  full_online: '線上刷卡（全額）',
   cash: '現場付現結尾款',
   transfer: '轉帳結尾款',
 }
+
+const WEEKDAY_LABEL = ['日', '一', '二', '三', '四', '五', '六']
 
 // 綠界 ReturnURL 是伺服器對伺服器的非同步通知，沒有使用者登入狀態，
 // 必須用 service role key 才能寫入資料（RLS 只允許本人操作自己的預約）
@@ -66,10 +68,14 @@ export async function POST(req: NextRequest) {
     const service = Array.isArray(booking.services) ? booking.services[0] : booking.services
     const slot = Array.isArray(booking.availability_slots) ? booking.availability_slots[0] : booking.availability_slots
     const timeStr = slot?.start_time
-      ? new Date(new Date(slot.start_time).getTime() + 8 * 60 * 60 * 1000)
-          .toISOString()
-          .replace('T', ' ')
-          .slice(5, 16)
+      ? (() => {
+          const d = new Date(new Date(slot.start_time).getTime() + 8 * 60 * 60 * 1000)
+          const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+          const dd = String(d.getUTCDate()).padStart(2, '0')
+          const hh = String(d.getUTCHours()).padStart(2, '0')
+          const min = String(d.getUTCMinutes()).padStart(2, '0')
+          return `${mm}/${dd}（${WEEKDAY_LABEL[d.getUTCDay()]}）${hh}:${min}`
+        })()
       : ''
 
     const remainingAmount = booking.total_amount - booking.deposit_amount
@@ -78,10 +84,11 @@ export async function POST(req: NextRequest) {
       : `尾款：NT$${remainingAmount.toLocaleString()}（${PAYMENT_METHOD_LABEL[booking.payment_method] ?? booking.payment_method}，請與客人現場核對收款）`
 
     const lineText = [
-      '💰 客人已完成付款',
+      '✅ 客人已完成付款',
+      '',
       service?.name ? `服務：${service.name}` : null,
       timeStr ? `時間：${timeStr}` : null,
-      `平台服務費：NT$${booking.deposit_amount.toLocaleString()}（已線上付款）`,
+      `已付10%訂金（平台服務費）`,
       remainingLine,
       '',
       `查看預約詳情：${SITE_URL}/practitioner/dashboard/bookings?today=1`,
