@@ -74,7 +74,20 @@ export async function GET(request: NextRequest) {
 
   if (currentUser) {
     // 已登入帳號：綁定 LINE 帳號（會員中心「綁定 LINE」用）
-    await supabase.from('profiles').update({ line_user_id: lineUserId }).eq('id', currentUser.id)
+    const { error: bindError } = await supabase
+      .from('profiles')
+      .update({ line_user_id: lineUserId })
+      .eq('id', currentUser.id)
+
+    if (bindError) {
+      // 23505 = unique 衝突，代表這個 LINE 帳號已經綁定在別的 ProLink 帳號上
+      const message = bindError.code === '23505'
+        ? '這個 LINE 帳號已經綁定在另一個 ProLink 帳號上，請先在那個帳號解除綁定再試一次'
+        : '綁定 LINE 失敗，請再試一次'
+      console.error('[line-callback] bind to existing user failed', bindError)
+      return NextResponse.redirect(`${siteUrl}/auth/error?message=${encodeURIComponent(message)}`)
+    }
+
     return NextResponse.redirect(`${siteUrl}${next}`)
   }
 
