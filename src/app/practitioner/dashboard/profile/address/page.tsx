@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { AddressForm } from './AddressForm'
+import { ServiceModeForm } from './ServiceModeForm'
 import { BrandMark } from '@/components/BrandMark'
 
 export default function ShopAddressPage() {
@@ -15,7 +16,8 @@ export default function ShopAddressPage() {
       <BrandMark />
       </div>
 
-      <div className="px-4 py-6 max-w-lg mx-auto">
+      <div className="px-4 py-6 max-w-lg mx-auto flex flex-col gap-5">
+        <ServiceModeForm />
         <AddressForm />
       </div>
     </div>

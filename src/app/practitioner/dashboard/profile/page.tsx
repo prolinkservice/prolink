@@ -6,6 +6,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLayout'
 import { VerificationForm } from './verification/VerificationForm'
 import { AddressForm } from './address/AddressForm'
+import { ServiceModeForm } from './address/ServiceModeForm'
 import { SocialForm } from './social/SocialForm'
 import { BrandForm } from './brand/BrandForm'
 import { LayoutBuilderForm } from './layout-builder/LayoutBuilderForm'
@@ -91,10 +92,10 @@ export default async function MemberProfilePage() {
     {
       key: 'address',
       icon: <MapPin className={iconClass} />,
-      label: '店家地址',
+      label: '服務方式 / 店家地址',
       sublabel: addressVerified ? <span className="text-green-600">已驗證</span> : <span className="text-amber-600">尚未驗證</span>,
       href: '/practitioner/dashboard/profile/address',
-      content: <AddressForm />,
+      content: <div className="flex flex-col gap-5"><ServiceModeForm /><AddressForm /></div>,
     },
     {
       key: 'social',

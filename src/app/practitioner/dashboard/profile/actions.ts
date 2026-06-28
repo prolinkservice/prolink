@@ -71,6 +71,28 @@ export async function updateAddress(formData: FormData) {
   revalidatePath('/practitioner/dashboard/profile')
 }
 
+const VALID_SERVICE_MODES = ['at_shop', 'on_site', 'both']
+
+export async function updateServiceMode(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const atShop = formData.get('atShop') === 'on'
+  const onSite = formData.get('onSite') === 'on'
+
+  let serviceMode: string
+  if (atShop && onSite) serviceMode = 'both'
+  else if (onSite) serviceMode = 'on_site'
+  else serviceMode = 'at_shop' // 兩者都沒勾選時，預設保留到店服務，避免老師完全無法被預約
+
+  if (!VALID_SERVICE_MODES.includes(serviceMode)) return
+
+  await supabase.from('practitioners').update({ service_mode: serviceMode }).eq('id', practitionerId)
+
+  revalidatePath('/practitioner/dashboard/profile')
+  revalidatePath('/practitioners/[id]', 'page')
+}
+
 const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 
 export async function updateBrandInfo(formData: FormData) {
