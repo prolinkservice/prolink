@@ -102,7 +102,7 @@ export default async function Home({
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex flex-wrap items-center gap-2 shadow-sm">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Image src="/logo-icon.png" alt="職人連結" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
+          <Image src="/logo-icon.png" alt="職人連結" width={37} height={26} className="h-8 w-auto object-contain" />
           <span className="flex items-baseline gap-1.5">
             <span className="font-bold text-xl text-foreground">職人連結</span>
             <span className="text-xs text-muted-foreground hidden sm:inline">快速找到你要的老師</span>
