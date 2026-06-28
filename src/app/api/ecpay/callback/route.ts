@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     await supabase
       .from('bookings')
-      .update({ payment_status: newStatus })
+      .update({ payment_status: newStatus, trade_no: params.TradeNo ?? null })
       .eq('id', booking.id)
 
     const commissionAmount = calcCommission(booking.total_amount)

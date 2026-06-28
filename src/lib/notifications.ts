@@ -1,7 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { pushLineMessage } from '@/lib/lineMessaging'
+import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 
-type NotificationType = 'new_booking' | 'new_review' | 'verification_result' | 'booking_confirmed' | 'payment_received'
+type NotificationType =
+  | 'new_booking'
+  | 'new_review'
+  | 'verification_result'
+  | 'booking_confirmed'
+  | 'payment_received'
+  | 'cancellation_requested'
+  | 'cancellation_approved'
+  | 'cancellation_rejected'
 
 export async function notifyUser(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,7 +28,8 @@ export async function notifyUser(
 
   if (notification.skipLine) return
 
-  const { data: profile } = await supabase
+  // 查詢對方是否綁定 LINE 一律用 service role，避免呼叫者（例如老師查客人）受限於 profiles 表的 RLS 而靜默查不到資料
+  const { data: profile } = await createAdminSupabaseClient()
     .from('profiles')
     .select('line_user_id')
     .eq('id', userId)

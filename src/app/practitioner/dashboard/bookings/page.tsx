@@ -9,7 +9,7 @@ import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { ClientNoteEditor } from './ClientNoteEditor'
-import { updateBookingStatusAction } from './actions'
+import { updateBookingStatusAction, requestCancellationAsPractitioner } from './actions'
 import { BrandMark } from '@/components/BrandMark'
 
 const STATUS_LABEL: Record<string, string> = {
@@ -53,6 +53,10 @@ export default function PractitionerBookingsPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState(searchParams.get('status') ?? 'all')
   const [todayOnly, setTodayOnly] = useState(searchParams.get('today') === '1')
+  const [pendingCancelIds, setPendingCancelIds] = useState<Set<string>>(new Set())
+  const [cancelOpenId, setCancelOpenId] = useState<string | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelSubmitting, setCancelSubmitting] = useState(false)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -87,7 +91,17 @@ export default function PractitionerBookingsPage() {
     if (todayOnly) query = query.gte('created_at', new Date().toISOString().split('T')[0])
 
     const { data } = await query
-    setBookings((data as unknown as Booking[]) ?? [])
+    const list = (data as unknown as Booking[]) ?? []
+    setBookings(list)
+
+    if (list.length > 0) {
+      const { data: cancelRows } = await supabase
+        .from('cancellation_requests')
+        .select('booking_id')
+        .eq('status', 'pending_review')
+        .in('booking_id', list.map(b => b.id))
+      setPendingCancelIds(new Set((cancelRows ?? []).map(r => r.booking_id)))
+    }
   }, [practitionerId, filter, todayOnly])
 
   useEffect(() => { fetchBookings() }, [fetchBookings])
@@ -176,13 +190,65 @@ export default function PractitionerBookingsPage() {
                     </div>
 
                     {b.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <Button size="sm" className="flex-1" onClick={() => updateStatus(b.id, 'confirmed')}>確認接單</Button>
-                        <Button size="sm" variant="outline" className="flex-1" onClick={() => updateStatus(b.id, 'cancelled')}>取消</Button>
-                      </div>
+                      <Button size="sm" className="w-full" onClick={() => updateStatus(b.id, 'confirmed')}>確認接單</Button>
                     )}
                     {b.status === 'confirmed' && (
                       <Button size="sm" variant="outline" className="w-full" onClick={() => updateStatus(b.id, 'completed')}>標記完成</Button>
+                    )}
+
+                    {(b.status === 'pending' || b.status === 'confirmed') && (
+                      pendingCancelIds.has(b.id) ? (
+                        <p className="text-xs text-muted-foreground mt-2">已送出取消申請，待客服審核</p>
+                      ) : cancelOpenId === b.id ? (
+                        <div className="mt-2 space-y-2">
+                          <textarea
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                            placeholder="請說明取消原因"
+                            className="w-full text-sm border border-border rounded-md px-3 py-2 min-h-[60px]"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1"
+                              disabled={cancelSubmitting}
+                              onClick={() => { setCancelOpenId(null); setCancelReason('') }}
+                            >
+                              取消
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              disabled={cancelSubmitting}
+                              onClick={async () => {
+                                setCancelSubmitting(true)
+                                try {
+                                  await requestCancellationAsPractitioner(b.id, cancelReason)
+                                  setPendingCancelIds(prev => new Set(prev).add(b.id))
+                                  setCancelOpenId(null)
+                                  setCancelReason('')
+                                } catch (err) {
+                                  alert(err instanceof Error ? err.message : '送出失敗，請再試一次')
+                                } finally {
+                                  setCancelSubmitting(false)
+                                }
+                              }}
+                            >
+                              {cancelSubmitting ? '送出中...' : '送出申請'}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full mt-2"
+                          onClick={() => { setCancelOpenId(b.id); setCancelReason('') }}
+                        >
+                          申請取消
+                        </Button>
+                      )
                     )}
 
                     <ClientNoteEditor customerId={b.customer_id} />

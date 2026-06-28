@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { BrandMark } from '@/components/BrandMark'
+import { requestCancellationAsCustomer } from './actions'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '待確認',
@@ -49,6 +50,11 @@ export default function MyBookingsPage() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [notes, setNotes] = useState<Record<string, string>>({})
+  const [pendingCancelIds, setPendingCancelIds] = useState<Set<string>>(new Set())
+  const [cancelOpenId, setCancelOpenId] = useState<string | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelSubmitting, setCancelSubmitting] = useState(false)
+  const [cancelAckNoRefund, setCancelAckNoRefund] = useState(false)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -73,6 +79,15 @@ export default function MyBookingsPage() {
       const list = (data as unknown as Booking[]) ?? []
       setBookings(list)
       setLoading(false)
+
+      if (list.length > 0) {
+        const { data: cancelRows } = await supabase
+          .from('cancellation_requests')
+          .select('booking_id')
+          .eq('status', 'pending_review')
+          .in('booking_id', list.map(b => b.id))
+        setPendingCancelIds(new Set((cancelRows ?? []).map(r => r.booking_id)))
+      }
 
       const practitionerIds = Array.from(new Set(
         list.map(b => {
@@ -193,6 +208,79 @@ export default function MyBookingsPage() {
                         </Button>
                       )
                     )}
+
+                    {(b.status === 'pending' || b.status === 'confirmed') && (() => {
+                      const withinNoRefundWindow = !!slot && (new Date(slot.start_time).getTime() - Date.now()) < 24 * 60 * 60 * 1000
+                      const canSubmit = !cancelSubmitting && (!withinNoRefundWindow || cancelAckNoRefund)
+
+                      return pendingCancelIds.has(b.id) ? (
+                        <p className="text-xs text-muted-foreground mt-3">已送出取消申請，待客服審核</p>
+                      ) : cancelOpenId === b.id ? (
+                        <div className="mt-3 space-y-2">
+                          <textarea
+                            value={cancelReason}
+                            onChange={(e) => setCancelReason(e.target.value)}
+                            placeholder="請說明取消原因"
+                            className="w-full text-sm border border-border rounded-md px-3 py-2 min-h-[60px]"
+                          />
+                          {withinNoRefundWindow && (
+                            <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5">
+                              <p className="text-xs font-semibold text-destructive mb-1.5">距服務時段已不到24小時，依規定此次取消將不予退款</p>
+                              <label className="flex items-start gap-2 text-xs text-foreground cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={cancelAckNoRefund}
+                                  onChange={(e) => setCancelAckNoRefund(e.target.checked)}
+                                  className="mt-0.5"
+                                />
+                                我已了解，24小時內取消不予退款，仍要送出取消申請
+                              </label>
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="flex-1"
+                              disabled={cancelSubmitting}
+                              onClick={() => { setCancelOpenId(null); setCancelReason(''); setCancelAckNoRefund(false) }}
+                            >
+                              取消
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              disabled={!canSubmit}
+                              onClick={async () => {
+                                setCancelSubmitting(true)
+                                try {
+                                  await requestCancellationAsCustomer(b.id, cancelReason)
+                                  setPendingCancelIds(prev => new Set(prev).add(b.id))
+                                  setCancelOpenId(null)
+                                  setCancelReason('')
+                                  setCancelAckNoRefund(false)
+                                } catch (err) {
+                                  alert(err instanceof Error ? err.message : '送出失敗，請再試一次')
+                                } finally {
+                                  setCancelSubmitting(false)
+                                }
+                              }}
+                            >
+                              {cancelSubmitting ? '送出中...' : '確定取消'}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full mt-3"
+                          onClick={() => { setCancelOpenId(b.id); setCancelReason(''); setCancelAckNoRefund(false) }}
+                        >
+                          申請取消
+                        </Button>
+                      )
+                    })()}
                   </CardContent>
                 </Card>
               )

@@ -2,7 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { notifyPractitioner } from '@/lib/notifications'
+import { notifyPractitioner, notifyUser } from '@/lib/notifications'
+import { calcRefundAmount, executeApprovedCancellation } from '@/lib/cancellation'
 
 export async function approvePractitioner(formData: FormData) {
   const practitionerId = formData.get('practitionerId') as string
@@ -106,5 +107,83 @@ export async function restorePractitioner(formData: FormData) {
     title: '你的職人帳號已恢復上架',
     link: '/practitioner/dashboard',
   })
+  revalidatePath('/admin', 'layout')
+}
+
+export async function approveCancellation(formData: FormData) {
+  const requestId = formData.get('requestId') as string
+  const supabase = await createServerSupabaseClient()
+
+  const { data: request } = await supabase
+    .from('cancellation_requests')
+    .select('id, booking_id, requested_by, bookings ( payment_status, total_amount, deposit_amount, availability_slots ( start_time ) )')
+    .eq('id', requestId)
+    .single()
+
+  if (!request) throw new Error('找不到此取消申請')
+  const booking = Array.isArray(request.bookings) ? request.bookings[0] : request.bookings
+  const slot = Array.isArray(booking?.availability_slots) ? booking?.availability_slots[0] : booking?.availability_slots
+  if (!booking || !slot) throw new Error('找不到對應的預約資料')
+
+  const refundAmount = calcRefundAmount(booking, request.requested_by as 'customer' | 'practitioner' | 'system', slot.start_time)
+
+  try {
+    await executeApprovedCancellation({
+      bookingId: request.booking_id,
+      refundAmount,
+      requestedBy: request.requested_by as 'customer' | 'practitioner' | 'system',
+    })
+    await supabase
+      .from('cancellation_requests')
+      .update({ status: 'approved', refund_amount: refundAmount, reviewed_at: new Date().toISOString() })
+      .eq('id', requestId)
+  } catch (err) {
+    // 退款無法自動完成（例如缺少 trade_no 或綠界API失敗），不取消預約，留在待審核狀態並記錄原因，避免「已取消但錢沒退」
+    const message = err instanceof Error ? err.message : String(err)
+    await supabase
+      .from('cancellation_requests')
+      .update({ admin_note: `自動退款失敗，需人工處理後再次核准：${message}` })
+      .eq('id', requestId)
+    throw new Error(`退款失敗，此取消申請已保留在待審核狀態，請人工確認退款後再次核准：${message}`)
+  }
+  revalidatePath('/admin', 'layout')
+}
+
+export async function rejectCancellation(formData: FormData) {
+  const requestId = formData.get('requestId') as string
+  const reason = formData.get('reason') as string
+  const supabase = await createServerSupabaseClient()
+
+  const { data: request } = await supabase
+    .from('cancellation_requests')
+    .select('id, requested_by, bookings ( customer_id, practitioner_id )')
+    .eq('id', requestId)
+    .single()
+
+  if (!request) throw new Error('找不到此取消申請')
+  const booking = Array.isArray(request.bookings) ? request.bookings[0] : request.bookings
+  if (!booking) throw new Error('找不到對應的預約資料')
+
+  await supabase
+    .from('cancellation_requests')
+    .update({ status: 'rejected', admin_note: reason || null, reviewed_at: new Date().toISOString() })
+    .eq('id', requestId)
+
+  const body = reason ? `退回原因：${reason}` : '請查看詳細退回原因'
+  if (request.requested_by === 'customer') {
+    await notifyUser(supabase, booking.customer_id, {
+      type: 'cancellation_rejected',
+      title: '取消申請未通過',
+      body,
+      link: '/my-bookings',
+    })
+  } else {
+    await notifyPractitioner(supabase, booking.practitioner_id, {
+      type: 'cancellation_rejected',
+      title: '取消申請未通過',
+      body,
+      link: '/practitioner/dashboard/bookings',
+    })
+  }
   revalidatePath('/admin', 'layout')
 }

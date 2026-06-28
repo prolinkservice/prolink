@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ClipboardCheck, Users, BarChart3, UserCog } from 'lucide-react'
+import { LayoutDashboard, ClipboardCheck, Users, BarChart3, UserCog, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const ENTRIES = [
   { href: '/admin', icon: LayoutDashboard, label: '總覽' },
   { href: '/admin/review', icon: ClipboardCheck, label: '待審核' },
+  { href: '/admin/cancellation-requests', icon: XCircle, label: '取消審核' },
   { href: '/admin/practitioners', icon: Users, label: '已上架職人' },
   { href: '/admin/users', icon: UserCog, label: '會員管理' },
   { href: '/admin/analytics', icon: BarChart3, label: '使用分析報表' },

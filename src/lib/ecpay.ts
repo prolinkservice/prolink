@@ -69,3 +69,37 @@ export function verifyCheckMacValue(params: Record<string, string>) {
 }
 
 export const ECPAY_CHECKOUT_URL = CHECKOUT_URL
+
+// 信用卡關帳後的退刷／取消／放棄動作，文件：https://developers.ecpay.com.tw/?p=2885
+// Action：C=關帳 R=退刷 E=取消關帳 N=放棄
+const REFUND_URL = process.env.ECPAY_REFUND_URL ?? 'https://payment-stage.ecpay.com.tw/CreditDetail/DoAction'
+
+export async function doCreditCardRefund({
+  merchantTradeNo,
+  tradeNo,
+  totalAmount,
+}: {
+  merchantTradeNo: string
+  tradeNo: string
+  totalAmount: number
+}) {
+  const params: Record<string, string> = {
+    MerchantID: MERCHANT_ID,
+    MerchantTradeNo: merchantTradeNo,
+    TradeNo: tradeNo,
+    Action: 'R',
+    TotalAmount: String(Math.round(totalAmount)),
+  }
+  params.CheckMacValue = genCheckMacValue(params)
+
+  const res = await fetch(REFUND_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(params),
+  })
+  const text = await res.text()
+  const result = Object.fromEntries(new URLSearchParams(text))
+  // 綠界回應格式：1|OK 代表成功，其餘代表失敗訊息
+  const ok = text.startsWith('1|')
+  return { ok, raw: text, result }
+}
