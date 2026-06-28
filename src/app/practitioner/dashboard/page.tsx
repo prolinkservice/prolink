@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -59,9 +60,7 @@ export default async function PractitionerDashboardPage() {
       {/* 手機版專用頂部導覽，桌面版由 layout 共用頂部導覽取代 */}
       <nav className="lg:hidden sticky top-0 z-50 bg-white border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-white font-bold text-sm">P</span>
-          </div>
+          <Image src="/logo-icon.png" alt="職人連結" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
           <span className="font-bold text-xl text-foreground">職人連結</span>
           <span className="ml-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">職人後台</span>
         </Link>

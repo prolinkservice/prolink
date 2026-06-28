@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Button } from '@/components/ui/button'
 import { LogOut } from 'lucide-react'
@@ -18,9 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-[#F8F7F5]">
       <nav className="sticky top-0 z-50 bg-white border-b border-border shadow-sm px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-white font-bold text-sm">P</span>
-          </div>
+          <Image src="/logo-icon.png" alt="職人連結" width={32} height={32} className="w-8 h-8 rounded-full object-cover" />
           <div>
             <span className="font-bold text-base text-foreground">職人連結</span>
             <span className="ml-2 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">管理後台</span>
