@@ -3,6 +3,18 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { notifyUser } from '@/lib/notifications'
 
+const WEEKDAY_LABEL = ['日', '一', '二', '三', '四', '五', '六']
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+
+function fmtSlotTime(iso: string) {
+  const d = new Date(new Date(iso).getTime() + 8 * 60 * 60 * 1000)
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(d.getUTCDate()).padStart(2, '0')
+  const hh = String(d.getUTCHours()).padStart(2, '0')
+  const min = String(d.getUTCMinutes()).padStart(2, '0')
+  return `${mm}/${dd}（${WEEKDAY_LABEL[d.getUTCDay()]}）${hh}:${min}`
+}
+
 export async function updateBookingStatusAction(bookingId: string, status: string) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -14,17 +26,31 @@ export async function updateBookingStatusAction(bookingId: string, status: strin
   if (status === 'confirmed') {
     const { data: booking } = await supabase
       .from('bookings')
-      .select('customer_id, services ( name )')
+      .select('customer_id, services ( name ), availability_slots ( start_time )')
       .eq('id', bookingId)
       .single()
 
     if (booking?.customer_id) {
       const service = Array.isArray(booking.services) ? booking.services[0] : booking.services
+      const slot = Array.isArray(booking.availability_slots) ? booking.availability_slots[0] : booking.availability_slots
+      const timeStr = slot?.start_time ? fmtSlotTime(slot.start_time) : ''
+
+      const lineText = [
+        '✅ 老師接單囉！',
+        '',
+        service?.name ? `服務：${service.name}` : null,
+        timeStr ? `時間：${timeStr}` : null,
+        '',
+        '老師已經確認你的預約時段，記得準時赴約喔',
+        `查看預約詳情：${SITE_URL}/my-bookings`,
+      ].filter(Boolean).join('\n')
+
       await notifyUser(supabase, booking.customer_id, {
         type: 'booking_confirmed',
         title: '老師已確認你的預約',
         body: service?.name ? `老師已接受你預約的「${service.name}」服務，請準時赴約` : '老師已接受你的預約，請準時赴約',
         link: '/my-bookings',
+        lineText,
       })
     }
   }
