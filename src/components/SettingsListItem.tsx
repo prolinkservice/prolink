@@ -9,19 +9,24 @@ interface SettingsListItemProps {
   sublabel?: ReactNode
   href: string
   badge?: ReactNode
+  /** 子項目縮排顯示，用於表示從屬於上一個項目（例如服務管理下的時段管理/預約管理） */
+  indent?: boolean
 }
 
-export function SettingsListItem({ icon: Icon, label, sublabel, href, badge }: SettingsListItemProps) {
+export function SettingsListItem({ icon: Icon, label, sublabel, href, badge, indent }: SettingsListItemProps) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-4 py-3.5 bg-white hover:bg-muted/50 active:scale-[0.99] transition-all"
+      className={cn(
+        'flex items-center gap-3 bg-white hover:bg-muted/50 active:scale-[0.99] transition-all',
+        indent ? 'pl-10 pr-4 py-2.5' : 'px-4 py-3.5'
+      )}
     >
-      <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center shrink-0">
-        <Icon className="w-4.5 h-4.5 text-primary" />
+      <div className={cn('rounded-full bg-accent flex items-center justify-center shrink-0', indent ? 'w-7 h-7' : 'w-9 h-9')}>
+        <Icon className={cn('text-primary', indent ? 'w-3.5 h-3.5' : 'w-4.5 h-4.5')} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className={cn('font-medium', indent ? 'text-sm text-muted-foreground' : 'text-sm text-foreground')}>{label}</p>
         {sublabel && (
           <p className="text-xs text-muted-foreground mt-0.5 truncate">{sublabel}</p>
         )}

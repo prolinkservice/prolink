@@ -45,9 +45,9 @@ export default async function PractitionerDashboardPage() {
 
   const entries = [
     { href: '/practitioner/dashboard/profile/brand', icon: Sparkles, label: '品牌頁面', sublabel: '自訂老師公開頁面內容' },
-    { href: '/practitioner/dashboard/availability', icon: Calendar, label: '時段管理', sublabel: '新增或移除可預約時段' },
     { href: '/practitioner/dashboard/services', icon: ListChecks, label: '服務管理', sublabel: '新增、編輯或刪除服務項目' },
-    { href: '/practitioner/dashboard/bookings', icon: ClipboardList, label: '預約管理', sublabel: '查看並管理所有預約訂單' },
+    { href: '/practitioner/dashboard/availability', icon: Calendar, label: '時段管理', sublabel: '新增或移除可預約時段', indent: true },
+    { href: '/practitioner/dashboard/bookings', icon: ClipboardList, label: '預約管理', sublabel: '查看並管理所有預約訂單', indent: true },
     { href: '/practitioner/dashboard/students', icon: Users, label: '學員列表', sublabel: '查看誰預約過我與歷史紀錄' },
     { href: '/practitioner/dashboard/analytics', icon: BarChart3, label: '數據分析', sublabel: '預約量與營收趨勢' },
     { href: '/practitioner/dashboard/profile', icon: UserCog, label: '會員中心', sublabel: '銀行帳戶、身份驗證、社群連結' },
@@ -120,6 +120,7 @@ export default async function PractitionerDashboardPage() {
                 icon={entry.icon}
                 label={entry.label}
                 sublabel={entry.sublabel}
+                indent={'indent' in entry ? entry.indent : false}
               />
             ))}
           </SettingsListGroup>
