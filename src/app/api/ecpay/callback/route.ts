@@ -104,13 +104,13 @@ export async function POST(req: NextRequest) {
 
     if (booking.customer_id) {
       const customerLineText = [
-        '✅ 已送出預約申請',
+        '⏳ 等待老師確認接單',
         '',
         service?.name ? `服務：${service.name}` : null,
         timeStr ? `時間：${timeStr}` : null,
-        '已預約該老師此時段，但老師尚未確認接單，非正式確認預約',
-        '待老師確認接單後，會再以 LINE 通知您',
         '',
+        '你的預約申請已送出，目前還在等老師確認，尚未正式成立',
+        '老師確認後會再通知你，記得留意LINE訊息',
         `查看預約詳情：${SITE_URL}/my-bookings`,
       ].filter(Boolean).join('\n')
 
