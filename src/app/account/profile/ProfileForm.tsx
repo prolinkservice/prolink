@@ -21,10 +21,8 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
   const [nextEditableAt, setNextEditableAt] = useState<Date | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [savingDemo, setSavingDemo] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [demoSuccess, setDemoSuccess] = useState('')
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -64,18 +62,25 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
 
     setSaving(true)
     try {
-      const formData = new FormData()
-      formData.set('displayName', displayName)
-      const result = await updateDisplayName(formData)
-      if (result?.error) {
-        setError(result.error)
-        return
+      if (!nextEditableAt) {
+        const formData = new FormData()
+        formData.set('displayName', displayName)
+        const result = await updateDisplayName(formData)
+        if (result?.error) {
+          setError(result.error)
+          return
+        }
+        const next = new Date()
+        next.setDate(next.getDate() + NAME_CHANGE_COOLDOWN_DAYS)
+        setNextEditableAt(next)
       }
 
+      const demoFormData = new FormData()
+      demoFormData.set('gender', gender)
+      demoFormData.set('birthdate', birthdate)
+      await updateDemographics(demoFormData)
+
       setSuccess('已更新個人檔案')
-      const next = new Date()
-      next.setDate(next.getDate() + NAME_CHANGE_COOLDOWN_DAYS)
-      setNextEditableAt(next)
       if (onSaved) {
         onSaved()
       } else {
@@ -85,21 +90,6 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
       setError((err as { message?: string })?.message ?? String(err))
     } finally {
       setSaving(false)
-    }
-  }
-
-  async function handleDemographicsSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setDemoSuccess('')
-    setSavingDemo(true)
-    try {
-      const formData = new FormData()
-      formData.set('gender', gender)
-      formData.set('birthdate', birthdate)
-      await updateDemographics(formData)
-      setDemoSuccess('已更新')
-    } finally {
-      setSavingDemo(false)
     }
   }
 
@@ -129,13 +119,6 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
         <Label htmlFor="email">Email</Label>
         <Input id="email" value={email} disabled className="mt-1" />
       </div>
-
-      {error && <p className="text-destructive text-sm">{error}</p>}
-      {success && <p className="text-green-600 text-sm">{success}</p>}
-
-      <Button type="submit" size="lg" disabled={saving || !!nextEditableAt} className="mt-2 active:scale-95 transition-transform">
-        {saving ? '儲存中...' : '儲存'}
-      </Button>
 
       <div className="border-t border-border mt-2 pt-4 flex flex-col gap-4">
         <div>
@@ -168,11 +151,14 @@ export function ProfileForm({ onSaved }: { onSaved?: () => void }) {
             className="mt-1"
           />
         </div>
-        {demoSuccess && <p className="text-green-600 text-sm">{demoSuccess}</p>}
-        <Button type="button" variant="outline" disabled={savingDemo} onClick={handleDemographicsSubmit} className="active:scale-95 transition-transform">
-          {savingDemo ? '儲存中...' : '儲存個人資料'}
-        </Button>
       </div>
+
+      {error && <p className="text-destructive text-sm">{error}</p>}
+      {success && <p className="text-green-600 text-sm">{success}</p>}
+
+      <Button type="submit" size="lg" disabled={saving} className="mt-2 active:scale-95 transition-transform">
+        {saving ? '儲存中...' : '儲存'}
+      </Button>
     </form>
   )
 }
