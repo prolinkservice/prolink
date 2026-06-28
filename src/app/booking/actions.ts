@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 import { calcCommission } from '@/lib/commission'
 import { genMerchantTradeNo } from '@/lib/ecpay'
 import { notifyPractitioner } from '@/lib/notifications'
@@ -71,7 +72,8 @@ export async function createBooking(formData: FormData) {
   if (error || !booking) {
     console.error(error)
     // 預約寫入失敗，把剛剛鎖定的時段釋放回去，避免時段卡死變成永遠無法預約
-    await supabase.from('availability_slots').update({ is_booked: false }).eq('id', slotId)
+    // 客人只有「未預約→已預約」這個方向的權限，回復成「未預約」需要用 service role 權限執行
+    await createAdminSupabaseClient().from('availability_slots').update({ is_booked: false }).eq('id', slotId)
     redirect(`${backTo}&error=${encodeURIComponent(`預約建立失敗：${error?.message ?? '未知錯誤'}`)}`)
   }
 
