@@ -26,6 +26,12 @@ const STATUS_VARIANT: Record<string, 'default' | 'outline' | 'secondary' | 'dest
   cancelled: 'destructive',
 }
 
+const GENDER_LABEL: Record<string, string> = {
+  male: '男性',
+  female: '女性',
+  other: '其他',
+}
+
 const PAYMENT_LABEL: Record<string, string> = {
   full_online: '客戶線上付清尾款',
   cash: '客戶現場付現結尾款',
@@ -41,7 +47,7 @@ type Booking = {
   customer_address: string | null
   created_at: string
   availability_slots: { start_time: string; end_time: string } | null
-  profiles: { display_name: string | null } | null
+  profiles: { display_name: string | null; gender: string | null } | null
   services: { name: string; price: number } | null
 }
 
@@ -81,7 +87,7 @@ export default function PractitionerBookingsPage() {
       .select(`
         id, customer_id, status, payment_method, service_mode, customer_address, created_at,
         availability_slots ( start_time, end_time ),
-        profiles ( display_name ),
+        profiles ( display_name, gender ),
         services ( name, price )
       `)
       .eq('practitioner_id', practitionerId)
@@ -175,7 +181,12 @@ export default function PractitionerBookingsPage() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <p className="font-semibold text-sm">{profile?.display_name ?? '顧客'}</p>
+                        <p className="font-semibold text-sm">
+                          {profile?.display_name ?? '顧客'}
+                          {profile?.gender && GENDER_LABEL[profile.gender] && (
+                            <span className="ml-1.5 text-xs font-normal text-muted-foreground">{GENDER_LABEL[profile.gender]}</span>
+                          )}
+                        </p>
                         <p className="text-xs text-muted-foreground">{startStr}{endStr ? ` – ${endStr}` : ''}</p>
                       </div>
                       <Badge variant={STATUS_VARIANT[b.status] ?? 'outline'}>
