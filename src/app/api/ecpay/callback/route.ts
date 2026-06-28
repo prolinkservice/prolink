@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifyCheckMacValue } from '@/lib/ecpay'
 import { calcCommission, PLATFORM_COMMISSION_RATE } from '@/lib/commission'
-import { notifyPractitioner } from '@/lib/notifications'
+import { notifyPractitioner, notifyUser } from '@/lib/notifications'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   const { data: booking } = await supabase
     .from('bookings')
     .select(`
-      id, total_amount, deposit_amount, payment_method, payment_status, practitioner_id,
+      id, total_amount, deposit_amount, payment_method, payment_status, practitioner_id, customer_id,
       services ( name ),
       availability_slots ( start_time )
     `)
@@ -101,6 +101,27 @@ export async function POST(req: NextRequest) {
       link: '/practitioner/dashboard/bookings?today=1',
       lineText,
     })
+
+    if (booking.customer_id) {
+      const customerLineText = [
+        '✅ 已送出預約申請',
+        '',
+        service?.name ? `服務：${service.name}` : null,
+        timeStr ? `時間：${timeStr}` : null,
+        '已預約該老師此時段，但老師尚未確認接單，非正式確認預約',
+        '待老師確認接單後，會再以 LINE 通知您',
+        '',
+        `查看預約詳情：${SITE_URL}/my-bookings`,
+      ].filter(Boolean).join('\n')
+
+      await notifyUser(supabase, booking.customer_id, {
+        type: 'payment_received',
+        title: '已送出預約申請',
+        body: '已預約該老師此時段，但老師尚未確認接單，非正式確認預約，待老師確認後會再通知您',
+        link: '/my-bookings',
+        lineText: customerLineText,
+      })
+    }
   }
 
   return new Response('1|OK')

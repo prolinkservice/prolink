@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${siteUrl}/auth/error?message=${encodeURIComponent(message)}`)
     }
 
-    return NextResponse.redirect(`${siteUrl}${next}`)
+    return NextResponse.redirect(`${siteUrl}/auth/line/added?next=${encodeURIComponent(next)}`)
   }
 
   // 未登入：用 LINE 帳號登入或建立新帳號
@@ -145,5 +145,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
-  return NextResponse.redirect(`${siteUrl}${next}`)
+  return NextResponse.redirect(`${siteUrl}/auth/line/added?next=${encodeURIComponent(next)}`)
 }

@@ -9,6 +9,7 @@ export function LineLinkSection({ next = '/account/line' }: { next?: string }) {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [linked, setLinked] = useState(false)
+  const [lineOnlyAccount, setLineOnlyAccount] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -21,6 +22,7 @@ export function LineLinkSection({ next = '/account/line' }: { next?: string }) {
         return
       }
       setUserId(user.id)
+      setLineOnlyAccount(!!user.email?.endsWith('@line.prolink.invalid'))
       const { data: profile } = await supabase
         .from('profiles')
         .select('line_user_id')
@@ -34,6 +36,10 @@ export function LineLinkSection({ next = '/account/line' }: { next?: string }) {
 
   async function handleUnlink() {
     if (!userId) return
+    if (lineOnlyAccount) {
+      alert('這個帳號是用 LINE 建立的，目前沒有其他登入方式，解除綁定後將無法再登入此帳號，因此暫不開放自行解除。如需解除請聯絡客服協助處理。')
+      return
+    }
     setSaving(true)
     const supabase = createBrowserSupabaseClient()
     await supabase.from('profiles').update({ line_user_id: null }).eq('id', userId)

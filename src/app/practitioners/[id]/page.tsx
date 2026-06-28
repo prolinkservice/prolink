@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { signInWithGoogle } from '@/app/auth/actions'
 import { parseCityDistrict } from '@/lib/address'
 import { resolveLayout, type PageBlock } from '@/lib/pageBlocks'
 import { AboutBlock, CertificatesBlock, ServicesBlock, ReviewsBlock, SocialBlock, MapBlock, TextBlock, ImageBlock } from './Blocks'
@@ -241,11 +240,11 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
                             </div>
                           </Link>
                         ) : (
-                          <form key={slot.id} action={signInWithGoogle}>
-                            <button type="submit" className="w-full rounded-lg border border-primary/30 bg-primary/5 px-1.5 py-2 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
+                          <Link key={slot.id} href={`/auth?next=${encodeURIComponent(`/practitioners/${practitioner.id}`)}`}>
+                            <div className="rounded-lg border border-primary/30 bg-primary/5 px-1.5 py-2 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
                               <p className="text-sm font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
-                            </button>
-                          </form>
+                            </div>
+                          </Link>
                         )
                       ))}
                     </div>
@@ -265,9 +264,9 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
           {user ? (
             <p className="text-center text-base text-muted-foreground">請點選上方時段開始預約</p>
           ) : (
-            <form action={signInWithGoogle}>
-              <Button className="w-full" size="lg" type="submit" style={{ backgroundColor: brandColor }}>登入以預約</Button>
-            </form>
+            <Link href={`/auth?next=${encodeURIComponent(`/practitioners/${practitioner.id}`)}`}>
+              <Button className="w-full" size="lg">登入馬上預約</Button>
+            </Link>
           )}
         </div>
       </div>

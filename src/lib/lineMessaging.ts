@@ -3,7 +3,7 @@ export async function pushLineMessage(lineUserId: string, text: string) {
   if (!token) return
 
   try {
-    await fetch('https://api.line.me/v2/bot/message/push', {
+    const res = await fetch('https://api.line.me/v2/bot/message/push', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -14,6 +14,9 @@ export async function pushLineMessage(lineUserId: string, text: string) {
         messages: [{ type: 'text', text }],
       }),
     })
+    if (!res.ok) {
+      console.error('LINE push message rejected', res.status, await res.text(), { lineUserId })
+    }
   } catch (err) {
     console.error('LINE push message failed', err)
   }
