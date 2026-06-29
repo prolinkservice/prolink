@@ -28,16 +28,21 @@ export default async function AdminReviewPage() {
   const reviewList = reviewRaw
     ? await Promise.all(
         reviewRaw.map(async (r) => {
-          const [passbookSigned, idFrontSigned, idBackSigned] = await Promise.all([
+          const [passbookSigned, idFrontSigned, idBackSigned, licenseSigned] = await Promise.all([
             r.passbook_url ? supabase.storage.from('verification-docs').createSignedUrl(r.passbook_url, 60 * 10) : Promise.resolve({ data: null }),
             r.id_front_url ? supabase.storage.from('verification-docs').createSignedUrl(r.id_front_url, 60 * 10) : Promise.resolve({ data: null }),
             r.id_back_url ? supabase.storage.from('verification-docs').createSignedUrl(r.id_back_url, 60 * 10) : Promise.resolve({ data: null }),
+            // 舊資料Demo階段是直接貼外部連結，不是storage路徑，這種就不需要（也不能）簽名，直接沿用原始連結
+            r.license_url && !r.license_url.startsWith('http')
+              ? supabase.storage.from('verification-docs').createSignedUrl(r.license_url, 60 * 10)
+              : Promise.resolve({ data: null }),
           ])
           return {
             ...r,
             passbookSignedUrl: passbookSigned.data?.signedUrl ?? null,
             idFrontSignedUrl: idFrontSigned.data?.signedUrl ?? null,
             idBackSignedUrl: idBackSigned.data?.signedUrl ?? null,
+            licenseSignedUrl: licenseSigned.data?.signedUrl ?? (r.license_url?.startsWith('http') ? r.license_url : null),
           }
         })
       )
@@ -93,13 +98,13 @@ export default async function AdminReviewPage() {
                     <p className="text-sm font-semibold text-foreground leading-snug">{r.shop_address}</p>
                   </div>
                 )}
-                {r.license_url && (
+                {r.licenseSignedUrl && (
                   <div className="bg-[#F8F7F5] rounded-xl p-3.5">
                     <div className="flex items-center gap-2 mb-1">
                       <FileText className="w-3.5 h-3.5 text-primary" />
                       <span className="text-xs font-medium text-muted-foreground">證照</span>
                     </div>
-                    <a href={r.license_url} target="_blank" className="text-sm font-semibold text-primary underline underline-offset-2">點此查看</a>
+                    <a href={r.licenseSignedUrl} target="_blank" className="text-sm font-semibold text-primary underline underline-offset-2">點此查看</a>
                   </div>
                 )}
               </div>

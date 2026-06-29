@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
-import { Plus, Trash2, User, MapPin, ClipboardList, CreditCard, Sparkles, ChevronLeft } from 'lucide-react'
+import { Plus, Trash2, User, MapPin, ClipboardList, CreditCard, Sparkles, ChevronLeft, Upload, FileImage } from 'lucide-react'
 import { SERVICE_CATEGORIES } from '@/lib/categories'
 
 type Service = { name: string; duration: number; price: number; category: string }
@@ -71,6 +71,63 @@ export default function PractitionerRegisterPage() {
   const [geocoding, setGeocoding] = useState(false)
   const [checkingAuth, setCheckingAuth] = useState(true)
   const [existingPractitionerId, setExistingPractitionerId] = useState<string | null>(null)
+  const [uploadingLicense, setUploadingLicense] = useState(false)
+  const [licenseError, setLicenseError] = useState('')
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [coverError, setCoverError] = useState('')
+
+  async function handleLicenseUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingLicense(true)
+    setLicenseError('')
+    try {
+      const supabase = createBrowserSupabaseClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('尚未登入')
+
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `${user.id}/license.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('verification-docs')
+        .upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
+      if (uploadError) throw uploadError
+
+      setForm(f => ({ ...f, license_url: path }))
+    } catch (err) {
+      console.error(err)
+      setLicenseError('上傳失敗，請再試一次')
+    } finally {
+      setUploadingLicense(false)
+    }
+  }
+
+  async function handleRegisterCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingCover(true)
+    setCoverError('')
+    try {
+      const supabase = createBrowserSupabaseClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('尚未登入')
+
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `${user.id}/cover.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
+      if (uploadError) throw uploadError
+
+      const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(path)
+      setForm(f => ({ ...f, cover_image_url: `${publicUrlData.publicUrl}?t=${Date.now()}` }))
+    } catch (err) {
+      console.error(err)
+      setCoverError('上傳失敗，請再試一次')
+    } finally {
+      setUploadingCover(false)
+    }
+  }
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -436,10 +493,23 @@ export default function PractitionerRegisterPage() {
               </div>
             </div>
             <div>
-              <Label>證照圖片網址（選填）</Label>
-              <Input className="mt-1" placeholder="https://..." value={form.license_url}
-                onChange={e => setForm(f => ({ ...f, license_url: e.target.value }))} />
-              <p className="text-xs text-muted-foreground mt-1">Demo 階段請貼上圖片連結</p>
+              <Label>證照圖片（選填）</Label>
+              <div className="mt-1 flex items-center gap-3">
+                <Button type="button" variant="outline" size="sm" disabled={uploadingLicense}
+                  onClick={() => document.getElementById('license-file-input')?.click()}
+                  className="active:scale-95 transition-transform">
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                  {uploadingLicense ? '上傳中...' : '選擇圖片'}
+                </Button>
+                <input id="license-file-input" type="file" accept="image/png,image/jpeg,image/jpg"
+                  onChange={handleLicenseUpload} className="hidden" />
+                {form.license_url && !uploadingLicense && (
+                  <span className="inline-flex items-center gap-1 text-xs text-green-600">
+                    <FileImage className="w-3.5 h-3.5" />已上傳
+                  </span>
+                )}
+              </div>
+              {licenseError && <p className="text-xs text-destructive mt-1">{licenseError}</p>}
             </div>
             <div>
               <Label>專長標籤（選填，用逗號分隔）</Label>
@@ -447,10 +517,23 @@ export default function PractitionerRegisterPage() {
                 onChange={e => setForm(f => ({ ...f, specialty_tags: e.target.value }))} />
             </div>
             <div>
-              <Label>封面照網址（選填）</Label>
-              <Input className="mt-1" placeholder="https://..." value={form.cover_image_url}
-                onChange={e => setForm(f => ({ ...f, cover_image_url: e.target.value }))} />
-              <p className="text-xs text-muted-foreground mt-1">建議使用寬幅橫向照片，Demo 階段請貼上圖片連結</p>
+              <Label>封面照（選填）</Label>
+              <p className="text-xs text-muted-foreground mt-1 mb-2">建議使用寬幅橫向照片</p>
+              {form.cover_image_url && (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={form.cover_image_url} alt="封面照預覽" className="w-full h-32 object-cover rounded-xl border border-border mb-2" />
+              )}
+              <div className="flex items-center gap-3">
+                <Button type="button" variant="outline" size="sm" disabled={uploadingCover}
+                  onClick={() => document.getElementById('cover-file-input')?.click()}
+                  className="active:scale-95 transition-transform">
+                  <Upload className="w-3.5 h-3.5 mr-1.5" />
+                  {uploadingCover ? '上傳中...' : form.cover_image_url ? '更換封面照' : '選擇圖片'}
+                </Button>
+                <input id="cover-file-input" type="file" accept="image/png,image/jpeg,image/jpg"
+                  onChange={handleRegisterCoverUpload} className="hidden" />
+              </div>
+              {coverError && <p className="text-xs text-destructive mt-1">{coverError}</p>}
             </div>
           </CardContent>
         </Card>

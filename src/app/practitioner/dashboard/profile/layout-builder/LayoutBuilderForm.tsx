@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DndContext, closestCenter, type DragEndEvent } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Eye, EyeOff, Trash2, Plus, Pencil, Smartphone } from 'lucide-react'
+import { GripVertical, Eye, EyeOff, Trash2, Plus, Pencil, Smartphone, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -114,6 +114,9 @@ export function LayoutBuilderForm() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<PreviewData | null>(null)
+  const [uploadingImageBlock, setUploadingImageBlock] = useState(false)
+  const [imageBlockError, setImageBlockError] = useState<string | null>(null)
+  const imageBlockInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -212,6 +215,36 @@ export function LayoutBuilderForm() {
     setBlocks((items) => items.map((b) => (b.id === id ? { ...b, data: { ...b.data, ...data } } : b)))
   }
 
+  async function handleImageBlockUpload(e: React.ChangeEvent<HTMLInputElement>, blockId: string) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploadingImageBlock(true)
+    setImageBlockError(null)
+    try {
+      const supabase = createBrowserSupabaseClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('尚未登入')
+
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `${user.id}/block-${blockId}.${ext}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' })
+
+      if (uploadError) throw uploadError
+
+      const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(path)
+      updateBlockData(blockId, { url: `${publicUrlData.publicUrl}?t=${Date.now()}` })
+    } catch (err) {
+      console.error(err)
+      setImageBlockError('上傳失敗，請再試一次')
+    } finally {
+      setUploadingImageBlock(false)
+    }
+  }
+
   async function handleSave() {
     setSaving(true)
     setError(null)
@@ -284,14 +317,34 @@ export function LayoutBuilderForm() {
             ) : (
               <>
                 <div>
-                  <Label htmlFor="block-url">圖片網址</Label>
-                  <Input
-                    id="block-url"
-                    value={editingBlock.data?.url ?? ''}
-                    onChange={(e) => updateBlockData(editingBlock.id, { url: e.target.value })}
-                    placeholder="https://..."
-                    className="mt-1"
-                  />
+                  <Label>圖片</Label>
+                  <div className="mt-1 flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploadingImageBlock}
+                      onClick={() => imageBlockInputRef.current?.click()}
+                      className="active:scale-95 transition-transform"
+                    >
+                      <Upload className="w-3.5 h-3.5 mr-1.5" />
+                      {uploadingImageBlock ? '上傳中...' : editingBlock.data?.url ? '更換圖片' : '選擇圖片'}
+                    </Button>
+                    <input
+                      ref={imageBlockInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg"
+                      onChange={(e) => handleImageBlockUpload(e, editingBlock.id)}
+                      className="hidden"
+                    />
+                  </div>
+                  {imageBlockError && <p className="text-xs text-destructive mt-1.5">{imageBlockError}</p>}
+                  {editingBlock.data?.url && (
+                    <div className="mt-2 max-w-md rounded-lg border border-border overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={editingBlock.data.url} alt="圖片區塊預覽" className="max-w-full max-h-[240px] object-contain" />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="block-caption">說明文字（選填）</Label>
