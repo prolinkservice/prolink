@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
 import { BrandMark } from '@/components/BrandMark'
-import { requestCancellationAsCustomer } from './actions'
+import { requestCancellationAsCustomer, cancelUnpaidBooking } from './actions'
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '待確認',
@@ -34,6 +34,7 @@ const PAYMENT_LABEL: Record<string, string> = {
 type Booking = {
   id: string
   status: string
+  payment_status: string
   payment_method: string
   service_mode: string
   customer_address: string | null
@@ -54,6 +55,7 @@ export default function MyBookingsPage() {
   const [cancelOpenId, setCancelOpenId] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelSubmitting, setCancelSubmitting] = useState(false)
+  const [instantCancelingId, setInstantCancelingId] = useState<string | null>(null)
   const [cancelAckNoRefund, setCancelAckNoRefund] = useState(false)
 
   useEffect(() => {
@@ -64,7 +66,7 @@ export default function MyBookingsPage() {
       let query = supabase
         .from('bookings')
         .select(`
-          id, status, payment_method, service_mode, customer_address, created_at,
+          id, status, payment_status, payment_method, service_mode, customer_address, created_at,
           availability_slots ( start_time, end_time ),
           practitioners ( id, profiles ( display_name ) ),
           services ( name, price ),
@@ -209,7 +211,29 @@ export default function MyBookingsPage() {
                       )
                     )}
 
-                    {(b.status === 'pending' || b.status === 'confirmed') && (() => {
+                    {b.status === 'pending' && b.payment_status === 'unpaid' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full mt-3"
+                        disabled={instantCancelingId === b.id}
+                        onClick={async () => {
+                          setInstantCancelingId(b.id)
+                          try {
+                            await cancelUnpaidBooking(b.id)
+                            setBookings(prev => prev.map(x => x.id === b.id ? { ...x, status: 'cancelled' } : x))
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : '取消失敗，請再試一次')
+                          } finally {
+                            setInstantCancelingId(null)
+                          }
+                        }}
+                      >
+                        {instantCancelingId === b.id ? '取消中...' : '取消預約（尚未付款，免審核）'}
+                      </Button>
+                    )}
+
+                    {(b.status === 'pending' || b.status === 'confirmed') && b.payment_status !== 'unpaid' && (() => {
                       const withinNoRefundWindow = !!slot && (new Date(slot.start_time).getTime() - Date.now()) < 24 * 60 * 60 * 1000
                       const canSubmit = !cancelSubmitting && (!withinNoRefundWindow || cancelAckNoRefund)
 

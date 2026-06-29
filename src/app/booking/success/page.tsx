@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { ShareSection } from './ShareSection'
+import { cancelUnpaidBookingAndRedirect } from './actions'
 
 const toTaipei = (iso: string) => new Date(new Date(iso).getTime() + 8 * 60 * 60 * 1000)
 
@@ -34,7 +35,7 @@ export default async function BookingSuccessPage({
     ? await supabase
         .from('bookings')
         .select(`
-          id, total_amount, payment_method, deposit_amount, payment_status,
+          id, status, total_amount, payment_method, deposit_amount, payment_status,
           services ( name ),
           availability_slots ( start_time, end_time ),
           practitioners ( id, profiles ( display_name ) )
@@ -116,6 +117,18 @@ export default async function BookingSuccessPage({
             )}
           </CardContent>
         </Card>
+      )}
+
+      {booking && booking.payment_status === 'unpaid' && booking.status === 'pending' && (
+        <div className="w-full max-w-sm flex gap-2 mb-6">
+          <Link href={`/booking/pay?bookingId=${booking.id}`} className="flex-1">
+            <Button className="w-full" size="lg">重新付款</Button>
+          </Link>
+          <form action={cancelUnpaidBookingAndRedirect} className="flex-1">
+            <input type="hidden" name="bookingId" value={booking.id} />
+            <Button type="submit" variant="outline" className="w-full" size="lg">取消此預約</Button>
+          </form>
+        </div>
       )}
 
       {booking && pract && (

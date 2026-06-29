@@ -1,7 +1,32 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 import { notifyPractitioner } from '@/lib/notifications'
+
+// 完全沒收到任何款項的預約（連10%平台服務費都還沒付成功），客人可以直接取消，
+// 不需要走客服審核退款流程（反正沒有錢可以退），同時把時段釋放回去讓其他人可以預約
+export async function cancelUnpaidBooking(bookingId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('未登入')
+
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('id, customer_id, slot_id, status, payment_status')
+    .eq('id', bookingId)
+    .single()
+
+  if (!booking || booking.customer_id !== user.id) throw new Error('找不到此預約')
+  if (booking.payment_status !== 'unpaid') throw new Error('此預約已有付款紀錄，請改用「申請取消」走退款審核流程')
+  if (booking.status !== 'pending') throw new Error('此預約目前狀態無法取消')
+
+  const admin = createAdminSupabaseClient()
+  await admin.from('bookings').update({ status: 'cancelled' }).eq('id', bookingId)
+  if (booking.slot_id) {
+    await admin.from('availability_slots').update({ is_booked: false }).eq('id', booking.slot_id)
+  }
+}
 
 export async function requestCancellationAsCustomer(bookingId: string, reason: string) {
   const supabase = await createServerSupabaseClient()

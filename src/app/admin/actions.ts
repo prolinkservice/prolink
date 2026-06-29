@@ -133,10 +133,14 @@ export async function approveCancellation(formData: FormData) {
       refundAmount,
       requestedBy: request.requested_by as 'customer' | 'practitioner' | 'system',
     })
-    await supabase
+    const { error: updateError } = await supabase
       .from('cancellation_requests')
       .update({ status: 'approved', refund_amount: refundAmount, reviewed_at: new Date().toISOString() })
       .eq('id', requestId)
+    if (updateError) {
+      console.error('[approveCancellation] 更新申請單狀態失敗', updateError, { requestId })
+      throw new Error(`退款/取消已執行成功，但申請單狀態更新失敗：${updateError.message}`)
+    }
   } catch (err) {
     // 退款無法自動完成（例如缺少 trade_no 或綠界API失敗），不取消預約，留在待審核狀態並記錄原因，避免「已取消但錢沒退」
     const message = err instanceof Error ? err.message : String(err)
@@ -164,10 +168,14 @@ export async function rejectCancellation(formData: FormData) {
   const booking = Array.isArray(request.bookings) ? request.bookings[0] : request.bookings
   if (!booking) throw new Error('找不到對應的預約資料')
 
-  await supabase
+  const { error: rejectUpdateError } = await supabase
     .from('cancellation_requests')
     .update({ status: 'rejected', admin_note: reason || null, reviewed_at: new Date().toISOString() })
     .eq('id', requestId)
+  if (rejectUpdateError) {
+    console.error('[rejectCancellation] 更新申請單狀態失敗', rejectUpdateError, { requestId })
+    throw new Error(`駁回失敗：${rejectUpdateError.message}`)
+  }
 
   const body = reason ? `退回原因：${reason}` : '請查看詳細退回原因'
   if (request.requested_by === 'customer') {
