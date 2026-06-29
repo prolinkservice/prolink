@@ -58,7 +58,7 @@ export function SettingsLayout({ items, header, direction = 'vertical' }: Settin
                 {header}
               </div>
             )}
-            <div className="flex flex-wrap gap-2 p-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 p-4">
               {items.map((item) => {
                 const isActive = item.key === activeItem?.key
                 return (
@@ -67,15 +67,18 @@ export function SettingsLayout({ items, header, direction = 'vertical' }: Settin
                     type="button"
                     onClick={() => setActiveKey(item.key)}
                     className={cn(
-                      'flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-left transition-all border',
-                      isActive ? 'bg-accent/60 border-primary/30' : 'bg-white border-transparent hover:bg-muted/50'
+                      'flex flex-col items-start gap-2.5 px-4 py-3.5 rounded-xl text-left transition-all border h-full',
+                      isActive ? 'bg-accent/60 border-primary shadow-sm' : 'bg-white border-border hover:border-primary/40 hover:bg-muted/30'
                     )}
                   >
-                    <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center shrink-0">
+                    <div className={cn(
+                      'w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors',
+                      isActive ? 'bg-white ring-2 ring-primary' : 'bg-accent'
+                    )}>
                       {item.icon}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground whitespace-nowrap">{item.label}</p>
+                      <p className="text-sm font-semibold text-foreground whitespace-nowrap">{item.label}</p>
                       {item.sublabel && (
                         <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.sublabel}</p>
                       )}
