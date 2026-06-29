@@ -38,9 +38,9 @@ const fmtTime = (iso: string) => {
 export default async function BookingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ slotId?: string; practitionerId?: string; error?: string }>
+  searchParams: Promise<{ slotId?: string; practitionerId?: string; serviceId?: string; error?: string }>
 }) {
-  const { slotId, practitionerId, error: errorMsg } = await searchParams
+  const { slotId, practitionerId, serviceId: serviceIdParam, error: errorMsg } = await searchParams
   if (!slotId || !practitionerId) notFound()
 
   const supabase = await createServerSupabaseClient()
@@ -69,6 +69,11 @@ export default async function BookingPage({
   const services = practitioner.services as { id: string; name: string; duration_minutes: number; price: number }[]
   const modes = practitioner.service_mode === 'both' ? ['at_shop', 'on_site'] : [practitioner.service_mode]
   const hasOnSite = practitioner.service_mode === 'on_site' || practitioner.service_mode === 'both'
+
+  // serviceId 是在老師詳細頁先選好才帶過來的，這裡只接住並驗證屬於這位老師，不再讓客人重選一次；
+  // 沒帶或帶錯時退回第一個服務項目，避免舊連結（沒有serviceId參數）直接掛掉
+  const selectedService = services.find(s => s.id === serviceIdParam) ?? services[0]
+  if (!selectedService) notFound()
 
   return (
     <div className="min-h-screen bg-[#F7F1E8]">
@@ -118,33 +123,30 @@ export default async function BookingPage({
             </div>
           </div>
 
-          {/* 選擇服務 */}
+          {/* 已選服務（在老師詳細頁就先選好了，這裡只顯示確認） */}
           <section>
-            <h2 className="font-semibold text-sm text-muted-foreground mb-2.5 px-1">選擇服務項目</h2>
-            <div className="flex flex-col gap-2">
-              {services.map((s, i) => (
-                <label key={s.id} className="cursor-pointer">
-                  <input type="radio" name="serviceId" value={s.id} defaultChecked={i === 0} className="sr-only peer" required />
-                  <div className="bg-white rounded-xl border-2 border-transparent peer-checked:border-primary peer-checked:bg-primary/5 transition-all duration-150 active:scale-[0.98] shadow-sm">
-                    <div className="px-4 py-3.5 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <CheckCircle2 className="w-4 h-4 text-primary peer-checked:opacity-100 opacity-30" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-sm">{s.name}</p>
-                          <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
-                            <Clock className="w-3 h-3" />
-                            <span className="text-xs">{s.duration_minutes} 分鐘</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-primary font-bold text-base">NT${s.price}</span>
+            <h2 className="font-semibold text-sm text-muted-foreground mb-2.5 px-1">服務項目</h2>
+            <input type="hidden" name="serviceId" value={selectedService.id} />
+            <div className="bg-white rounded-xl border-2 border-primary bg-primary/5 shadow-sm">
+              <div className="px-4 py-3.5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{selectedService.name}</p>
+                    <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      <span className="text-xs">{selectedService.duration_minutes} 分鐘</span>
                     </div>
                   </div>
-                </label>
-              ))}
+                </div>
+                <span className="text-primary font-bold text-base">NT${selectedService.price}</span>
+              </div>
             </div>
+            <Link href={`/practitioners/${practitionerId}`} className="text-xs text-muted-foreground underline-offset-2 hover:underline mt-1.5 inline-block px-1">
+              想換其他服務項目？回上一頁重新選擇
+            </Link>
           </section>
 
           {/* 服務方式 */}

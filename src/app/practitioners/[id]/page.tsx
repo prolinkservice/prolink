@@ -7,6 +7,7 @@ import { parseCityDistrict } from '@/lib/address'
 import { resolveLayout, type PageBlock } from '@/lib/pageBlocks'
 import { AboutBlock, CertificatesBlock, ServicesBlock, ReviewsBlock, SocialBlock, MapBlock, TextBlock, ImageBlock } from './Blocks'
 import { CoverAvatarEditor } from './CoverAvatarEditor'
+import { BookingSlotPicker } from './BookingSlotPicker'
 import { BrandMark } from '@/components/BrandMark'
 
 const SERVICE_MODE_LABEL: Record<string, string[]> = {
@@ -78,11 +79,6 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
   const toTaipeiDate = (iso: string) => {
     const d = toTaipei(iso)
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`
-  }
-
-  const toTaipeiTime = (iso: string) => {
-    const d = toTaipei(iso)
-    return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
   }
 
   const groupedSlots = slots.reduce((acc, slot) => {
@@ -214,47 +210,12 @@ export default async function PractitionerPage({ params }: { params: Promise<{ i
       </div>
 
       <div className="px-4 py-5 flex flex-col gap-5">
-        {/* 可預約時段 */}
-        <div>
-          <h2 className="font-bold text-lg mb-3">可預約時段</h2>
-          {Object.keys(groupedSlots).length === 0 ? (
-            <p className="text-muted-foreground text-base">目前沒有可預約時段</p>
-          ) : (
-            <div className="flex flex-col gap-5">
-              {Object.entries(groupedSlots).map(([date, dateSlots]) => {
-                const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-                const [y, m, day] = date.split('-')
-                const wd = weekdays[new Date(Date.UTC(Number(y), Number(m) - 1, Number(day))).getUTCDay()]
-                return (
-                  <div key={date}>
-                    <p className="text-sm font-bold mb-2">{m}/{day}（{wd}）</p>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {dateSlots.map((slot) => (
-                        slot.is_booked ? (
-                          <div key={slot.id} className="rounded-lg border border-border bg-muted/40 px-1.5 py-2 text-center opacity-40 cursor-not-allowed">
-                            <p className="text-sm font-medium text-muted-foreground">{toTaipeiTime(slot.start_time)}</p>
-                          </div>
-                        ) : user ? (
-                          <Link key={slot.id} href={`/booking?slotId=${slot.id}&practitionerId=${practitioner.id}`}>
-                            <div className="rounded-lg border border-primary/30 bg-primary/5 px-1.5 py-2 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
-                              <p className="text-sm font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
-                            </div>
-                          </Link>
-                        ) : (
-                          <Link key={slot.id} href={`/auth?next=${encodeURIComponent(`/practitioners/${practitioner.id}`)}`}>
-                            <div className="rounded-lg border border-primary/30 bg-primary/5 px-1.5 py-2 text-center hover:bg-primary hover:border-primary active:scale-95 transition-all duration-150 cursor-pointer group">
-                              <p className="text-sm font-bold text-primary group-hover:text-white">{toTaipeiTime(slot.start_time)}</p>
-                            </div>
-                          </Link>
-                        )
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+        <BookingSlotPicker
+          practitionerId={practitioner.id}
+          services={services}
+          groupedSlots={groupedSlots}
+          isLoggedIn={!!user}
+        />
       </div>
 
       </div>
