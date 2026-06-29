@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ShieldCheck, MapPin, Link2, Rows3, MessageCircle } from 'lucide-react'
+import { ChevronLeft, ShieldCheck, MapPin, Link2, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { SettingsLayout, type SettingsLayoutItem } from '@/components/SettingsLayout'
@@ -8,7 +8,6 @@ import { VerificationForm } from './verification/VerificationForm'
 import { AddressForm } from './address/AddressForm'
 import { ServiceModeForm } from './address/ServiceModeForm'
 import { SocialForm } from './social/SocialForm'
-import { LayoutBuilderForm } from './layout-builder/LayoutBuilderForm'
 import { LineLinkSection } from '@/app/account/line/LineLinkSection'
 import { FollowupMessageForm } from './followup/FollowupMessageForm'
 import { BrandMark } from '@/components/BrandMark'
@@ -93,14 +92,6 @@ export default async function MemberProfilePage() {
       sublabel: socialLinks.length > 0 ? `${socialLinks.length} 個連結` : '尚未新增',
       href: '/practitioner/dashboard/profile/social',
       content: <SocialForm />,
-    },
-    {
-      key: 'layout-builder',
-      icon: <Rows3 className={iconClass} />,
-      label: '首頁編排',
-      sublabel: '自訂老師頁面排版',
-      href: '/practitioner/dashboard/profile/layout-builder',
-      content: <LayoutBuilderForm />,
     },
     {
       key: 'line',

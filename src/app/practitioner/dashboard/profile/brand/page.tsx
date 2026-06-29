@@ -1,7 +1,9 @@
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Rows3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BrandForm } from './BrandForm'
+import { LayoutBuilderForm } from '../layout-builder/LayoutBuilderForm'
 import { BrandMark } from '@/components/BrandMark'
 
 export default function BrandPage() {
@@ -15,8 +17,20 @@ export default function BrandPage() {
       <BrandMark />
       </div>
 
-      <div className="px-4 py-6 max-w-lg mx-auto">
+      <div className="px-4 py-6 max-w-lg lg:max-w-5xl mx-auto flex flex-col gap-5">
         <BrandForm />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Rows3 className="w-4 h-4 text-primary" />
+              首頁編排
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LayoutBuilderForm />
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
