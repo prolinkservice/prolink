@@ -205,3 +205,34 @@ export async function updateFollowupMessage(formData: FormData) {
 
   revalidatePath('/practitioner/dashboard/profile')
 }
+
+const SLUG_PATTERN = /^[a-z0-9-]{3,30}$/
+
+export async function updateSlug(formData: FormData) {
+  const supabase = await createServerSupabaseClient()
+  const practitionerId = await getOwnPractitionerId(supabase)
+
+  const slug = (formData.get('slug') as string).trim().toLowerCase()
+
+  if (!SLUG_PATTERN.test(slug)) {
+    return { error: '網址代號只能用小寫英文、數字、連字號(-)，長度3~30個字' }
+  }
+
+  const { data: existing } = await supabase
+    .from('practitioners')
+    .select('id')
+    .eq('slug', slug)
+    .neq('id', practitionerId)
+    .maybeSingle()
+
+  if (existing) {
+    return { error: '這個代號已經有人使用了，請換一個' }
+  }
+
+  const { error } = await supabase.from('practitioners').update({ slug }).eq('id', practitionerId)
+  if (error) return { error: '儲存失敗，請再試一次' }
+
+  revalidatePath('/practitioner/dashboard/profile')
+  revalidatePath('/practitioners/[id]', 'page')
+  return { success: true, slug }
+}

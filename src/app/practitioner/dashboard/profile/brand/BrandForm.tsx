@@ -1,15 +1,16 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Sparkles, Upload, Plus, Trash2 } from 'lucide-react'
+import { Sparkles, Upload, Plus, Trash2, Link2, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
-import { updateBrandInfo, updateAvatar, updateCoverImage } from '../actions'
+import { updateBrandInfo, updateAvatar, updateCoverImage, updateSlug } from '../actions'
 import { updateDisplayName } from '@/lib/profile-actions'
+import { slugifySuggestion } from '@/lib/slug'
 
 const NAME_CHANGE_COOLDOWN_DAYS = 7
 
@@ -59,6 +60,13 @@ export function BrandForm() {
   const [draggingCover, setDraggingCover] = useState(false)
   const coverInputRef = useRef<HTMLInputElement>(null)
   const coverPreviewRef = useRef<HTMLDivElement>(null)
+  const [slug, setSlug] = useState<string | null>(null)
+  const [slugInput, setSlugInput] = useState('')
+  const [slugSaving, setSlugSaving] = useState(false)
+  const [slugError, setSlugError] = useState<string | null>(null)
+  const [slugSuccess, setSlugSuccess] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://prolink-delta.vercel.app'
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -67,10 +75,12 @@ export function BrandForm() {
       if (!user) return
       const { data: practitioner } = await supabase
         .from('practitioners')
-        .select('years_experience, certificates, specialty_tags, cover_image_url, cover_image_position, brand_color')
+        .select('years_experience, certificates, specialty_tags, cover_image_url, cover_image_position, brand_color, slug')
         .eq('user_id', user.id)
         .single()
       setData(practitioner as BrandData)
+      const existingSlug = (practitioner as { slug?: string | null })?.slug ?? null
+      setSlug(existingSlug)
       const certs = (practitioner?.certificates as CertificateEntry[]) ?? []
       setCertificates(certs.length > 0 ? certs : [{ name: '', year: null }])
       setBrandColor(practitioner?.brand_color ?? '#4A7C59')
@@ -85,6 +95,7 @@ export function BrandForm() {
       setAvatarUrl(profile?.avatar_url ?? null)
       setDisplayName(profile?.display_name ?? null)
       setNameInput(profile?.display_name ?? '')
+      setSlugInput(existingSlug ?? slugifySuggestion(profile?.display_name ?? ''))
       if (profile?.display_name_updated_at) {
         const next = new Date(profile.display_name_updated_at)
         next.setDate(next.getDate() + NAME_CHANGE_COOLDOWN_DAYS)
@@ -189,6 +200,34 @@ export function BrandForm() {
     }
   }
 
+  async function handleSlugSave() {
+    setSlugSaving(true)
+    setSlugError(null)
+    setSlugSuccess(false)
+    try {
+      const formData = new FormData()
+      formData.set('slug', slugInput)
+      const result = await updateSlug(formData)
+      if (result?.error) {
+        setSlugError(result.error)
+      } else if (result?.slug) {
+        setSlug(result.slug)
+        setSlugInput(result.slug)
+        setSlugSuccess(true)
+        setTimeout(() => setSlugSuccess(false), 2000)
+      }
+    } finally {
+      setSlugSaving(false)
+    }
+  }
+
+  function handleCopyLink() {
+    if (!slug) return
+    navigator.clipboard.writeText(`${siteUrl}/p/${slug}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   async function handleNameSave() {
     setNameSaving(true)
     setNameError(null)
@@ -235,6 +274,60 @@ export function BrandForm() {
 
   return (
     <div className="flex flex-col gap-5">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-primary" />
+            我的專屬預約連結
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <p className="text-sm text-muted-foreground">
+            設定一個好記的網址代號，放到 Instagram 個人簡介或其他社群帳號，客人點擊後可直接進到你的頁面預約。
+          </p>
+          <div>
+            <Label>網址代號</Label>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">{siteUrl}/p/</span>
+              <Input
+                value={slugInput}
+                onChange={(e) => { setSlugInput(e.target.value.toLowerCase()); setSlugError(null) }}
+                placeholder="例：yangyi-massage"
+                className="flex-1"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">只能用小寫英文、數字、連字號(-)，3~30個字</p>
+            {slugError && <p className="text-xs text-destructive mt-1.5">{slugError}</p>}
+            {slugSuccess && <p className="text-xs text-green-600 mt-1.5">已儲存</p>}
+            <Button
+              type="button"
+              size="sm"
+              className="mt-2 active:scale-95 transition-transform"
+              disabled={slugSaving || !slugInput || slugInput === slug}
+              onClick={handleSlugSave}
+            >
+              {slugSaving ? '儲存中...' : '儲存代號'}
+            </Button>
+          </div>
+
+          {slug && (
+            <div className="flex items-center justify-between bg-muted/40 rounded-xl px-3 py-2.5">
+              <a href={`/p/${slug}`} target="_blank" rel="noopener noreferrer" className="text-sm text-primary truncate underline-offset-2 hover:underline">
+                {siteUrl}/p/{slug}
+              </a>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="text-muted-foreground hover:text-primary active:scale-90 transition-transform shrink-0 ml-2"
+                title="複製連結"
+              >
+                {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
