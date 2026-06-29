@@ -51,6 +51,10 @@ export function BrandForm() {
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const [certificates, setCertificates] = useState<CertificateEntry[]>([])
   const [brandColor, setBrandColor] = useState('#4A7C59')
+  const [yearsExperienceInput, setYearsExperienceInput] = useState('')
+  const [specialtyTagsInput, setSpecialtyTagsInput] = useState('')
+  const [brandInfoSaving, setBrandInfoSaving] = useState(false)
+  const [brandInfoSuccess, setBrandInfoSuccess] = useState(false)
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
   const [coverPosition, setCoverPosition] = useState('50% 50%')
   const [uploadingCover, setUploadingCover] = useState(false)
@@ -84,6 +88,8 @@ export function BrandForm() {
       const certs = (practitioner?.certificates as CertificateEntry[]) ?? []
       setCertificates(certs.length > 0 ? certs : [{ name: '', year: null }])
       setBrandColor(practitioner?.brand_color ?? '#4A7C59')
+      setYearsExperienceInput(practitioner?.years_experience != null ? String(practitioner.years_experience) : '')
+      setSpecialtyTagsInput((practitioner?.specialty_tags ?? []).join(', '))
       setCoverUrl(practitioner?.cover_image_url ?? null)
       setCoverPosition((practitioner as { cover_image_position?: string })?.cover_image_position ?? '50% 50%')
 
@@ -218,6 +224,23 @@ export function BrandForm() {
       }
     } finally {
       setSlugSaving(false)
+    }
+  }
+
+  async function handleBrandInfoSave() {
+    setBrandInfoSaving(true)
+    setBrandInfoSuccess(false)
+    try {
+      const formData = new FormData()
+      formData.set('yearsExperience', yearsExperienceInput)
+      formData.set('certificates', JSON.stringify(certificates.filter(c => c.name.trim())))
+      formData.set('specialtyTags', specialtyTagsInput)
+      formData.set('brandColor', brandColor)
+      await updateBrandInfo(formData)
+      setBrandInfoSuccess(true)
+      setTimeout(() => setBrandInfoSuccess(false), 2000)
+    } finally {
+      setBrandInfoSaving(false)
     }
   }
 
@@ -412,10 +435,17 @@ export function BrandForm() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form action={updateBrandInfo} className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <div>
             <Label>執業年資</Label>
-            <Input type="number" name="yearsExperience" defaultValue={data.years_experience ?? ''} placeholder="例：5" className="mt-1" min={0} />
+            <Input
+              type="number"
+              value={yearsExperienceInput}
+              onChange={e => setYearsExperienceInput(e.target.value)}
+              placeholder="例：5"
+              className="mt-1"
+              min={0}
+            />
           </div>
           <div>
             <Label>經歷／相關證照</Label>
@@ -450,11 +480,15 @@ export function BrandForm() {
                 <Plus className="w-3 h-3 mr-1" />新增一筆
               </Button>
             </div>
-            <input type="hidden" name="certificates" value={JSON.stringify(certificates.filter(c => c.name.trim()))} />
           </div>
           <div>
             <Label>專長標籤（用逗號分隔）</Label>
-            <Input name="specialtyTags" defaultValue={(data.specialty_tags ?? []).join(', ')} placeholder="例：運動按摩, 深層組織按摩, 久坐族群調理" className="mt-1" />
+            <Input
+              value={specialtyTagsInput}
+              onChange={e => setSpecialtyTagsInput(e.target.value)}
+              placeholder="例：運動按摩, 深層組織按摩, 久坐族群調理"
+              className="mt-1"
+            />
           </div>
           <div>
             <Label>封面照</Label>
@@ -534,12 +568,20 @@ export function BrandForm() {
               />
             </div>
             <p className="text-xs text-muted-foreground">目前選擇：{brandColor}</p>
-            <input type="hidden" name="brandColor" value={brandColor} />
           </div>
-          <Button type="submit" size="sm" className="self-start active:scale-95 transition-transform">
-            儲存
-          </Button>
-        </form>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              size="sm"
+              disabled={brandInfoSaving}
+              onClick={handleBrandInfoSave}
+              className="active:scale-95 transition-transform"
+            >
+              {brandInfoSaving ? '儲存中...' : '儲存'}
+            </Button>
+            {brandInfoSuccess && <span className="text-xs text-green-600">已儲存</span>}
+          </div>
+        </div>
       </CardContent>
       </Card>
     </div>
