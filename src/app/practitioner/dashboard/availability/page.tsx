@@ -164,10 +164,9 @@ export default function AvailabilityPage() {
 
   async function copyOpenPatternToDates(dates: string[]) {
     if (!practitionerId) return
-    const openTimes = gridTimes.filter((t) => {
-      const s = slotByTime.get(t)
-      return !!s?.is_open && !s.is_booked
-    })
+    // 這裡複製的是「開放時段樣板」，不是複製今天的即時預約狀態：即使這個時段今天已經被預約走，
+    // 代表的仍然是「我平常這個時間有開放」，未來日期理應照樣開放（新複製出去的時段一律是未預約狀態）
+    const openTimes = gridTimes.filter((t) => !!slotByTime.get(t)?.is_open)
     const targetDates = dates.filter((d) => d !== selectedDate)
     if (openTimes.length === 0) { setErrorMsg('本日尚無開放時段可複製'); return }
     if (targetDates.length === 0) { setErrorMsg('沒有有效的目標日期'); return }
