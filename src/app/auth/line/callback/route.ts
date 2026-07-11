@@ -1,13 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 import { verifyLineState } from '@/lib/lineOauthState'
-
-type LineVerifyResponse = {
-  sub: string
-  name?: string
-  picture?: string
-}
+import { verifyLineIdToken, signInOrBindWithLineProfile } from '@/lib/lineAuth'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,95 +47,14 @@ export async function GET(request: NextRequest) {
   }
 
   // 用 LINE 官方 verify endpoint 驗證 id_token 簽章與內容，取得 LINE 個人資料
-  const verifyRes = await fetch('https://api.line.me/oauth2/v2.1/verify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      id_token: idToken,
-      client_id: process.env.LINE_LOGIN_CHANNEL_ID!,
-    }),
-  })
-  if (!verifyRes.ok) {
-    console.error('[line-callback] id_token verify failed', verifyRes.status, await verifyRes.text())
-    return NextResponse.redirect(`${siteUrl}/auth/error`)
-  }
-  const profile = (await verifyRes.json()) as LineVerifyResponse
-  const lineUserId = profile.sub
-
-  const supabase = await createServerSupabaseClient()
-  const { data: { user: currentUser } } = await supabase.auth.getUser()
-
-  if (currentUser) {
-    // 已登入帳號：綁定 LINE 帳號（會員中心「綁定 LINE」用）
-    const { error: bindError } = await supabase
-      .from('profiles')
-      .update({ line_user_id: lineUserId })
-      .eq('id', currentUser.id)
-
-    if (bindError) {
-      // 23505 = unique 衝突，代表這個 LINE 帳號已經綁定在別的 ProLink 帳號上
-      const message = bindError.code === '23505'
-        ? '這個 LINE 帳號已經綁定在另一個 ProLink 帳號上，請先在那個帳號解除綁定再試一次'
-        : '綁定 LINE 失敗，請再試一次'
-      console.error('[line-callback] bind to existing user failed', bindError)
-      return NextResponse.redirect(`${siteUrl}/auth/error?message=${encodeURIComponent(message)}`)
-    }
-
-    return NextResponse.redirect(`${siteUrl}/auth/line/added?next=${encodeURIComponent(next)}`)
-  }
-
-  // 未登入：用 LINE 帳號登入或建立新帳號
-  const admin = createAdminSupabaseClient()
-
-  const { data: existingProfile } = await admin
-    .from('profiles')
-    .select('id')
-    .eq('line_user_id', lineUserId)
-    .maybeSingle()
-
-  let targetEmail: string
-
-  if (existingProfile) {
-    const { data: authUserData } = await admin.auth.admin.getUserById(existingProfile.id)
-    if (!authUserData.user?.email) {
-      console.error('[line-callback] existing profile has no auth email', existingProfile.id)
-      return NextResponse.redirect(`${siteUrl}/auth/error`)
-    }
-    targetEmail = authUserData.user.email
-  } else {
-    targetEmail = `line-${lineUserId}@line.prolink.invalid`
-    const { data: created, error: createError } = await admin.auth.admin.createUser({
-      email: targetEmail,
-      email_confirm: true,
-      user_metadata: {
-        full_name: profile.name ?? 'LINE 用戶',
-        avatar_url: profile.picture ?? null,
-      },
-    })
-    if (createError || !created.user) {
-      console.error('[line-callback] createUser failed', createError)
-      return NextResponse.redirect(`${siteUrl}/auth/error`)
-    }
-    await admin.from('profiles').update({ line_user_id: lineUserId }).eq('id', created.user.id)
-  }
-
-  const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
-    type: 'magiclink',
-    email: targetEmail,
-  })
-  const tokenHash = linkData?.properties?.hashed_token
-  if (linkError || !tokenHash) {
-    console.error('[line-callback] generateLink failed', linkError)
+  const profile = await verifyLineIdToken(idToken)
+  if (!profile) {
     return NextResponse.redirect(`${siteUrl}/auth/error`)
   }
 
-  const { error: otpError } = await supabase.auth.verifyOtp({
-    type: 'magiclink',
-    token_hash: tokenHash,
-  })
-  if (otpError) {
-    console.error('[line-callback] verifyOtp failed', otpError)
-    return NextResponse.redirect(`${siteUrl}/auth/error`)
+  const result = await signInOrBindWithLineProfile(profile)
+  if (!result.ok) {
+    return NextResponse.redirect(`${siteUrl}/auth/error?message=${encodeURIComponent(result.error)}`)
   }
 
   return NextResponse.redirect(`${siteUrl}/auth/line/added?next=${encodeURIComponent(next)}`)

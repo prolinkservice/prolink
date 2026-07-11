@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Fraunces, Karla } from "next/font/google";
+import { LiffAutoLogin } from "@/components/LiffAutoLogin";
 import "./globals.css";
 
 const karla = Karla({
@@ -33,7 +34,10 @@ export default function RootLayout({
       lang="en"
       className={`${karla.variable} ${fraunces.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        <LiffAutoLogin />
+        {children}
+      </body>
     </html>
   );
 }
