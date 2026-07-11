@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { pushLineMessage } from '@/lib/lineMessaging'
+import { pushLineFlexMessage } from '@/lib/lineMessaging'
+import { buildLineFlexBubble } from '@/lib/lineFlex'
 import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 
 type NotificationType =
@@ -43,7 +44,8 @@ export async function notifyUser(
     const text = notification.lineText ?? (notification.body
       ? `${notification.title}\n${notification.body}`
       : notification.title)
-    await pushLineMessage(profile.line_user_id, text)
+    const flex = buildLineFlexBubble(notification.type, notification.title, text)
+    await pushLineFlexMessage(profile.line_user_id, flex.altText, flex.contents)
   }
 }
 
