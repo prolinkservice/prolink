@@ -6,6 +6,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 import { calcCommission } from '@/lib/commission'
 import { genMerchantTradeNo } from '@/lib/ecpay'
 import { notifyPractitioner } from '@/lib/notifications'
+import { checkBookingEligibility } from '@/lib/subscription'
 
 export async function createBooking(formData: FormData) {
   const supabase = await createServerSupabaseClient()
@@ -33,6 +34,12 @@ export async function createBooking(formData: FormData) {
     .single()
 
   if (!service) redirect(`${backTo}&error=${encodeURIComponent('找不到此服務項目，請重新選擇')}`)
+
+  // 免費老師帳號超過100位不重複客人後，新客人需要老師訂閱才能繼續預約；老客人、特權帳號不受影響
+  const eligibility = await checkBookingEligibility(supabase, practitionerId, user.id)
+  if (!eligibility.allowed) {
+    redirect(`${backTo}&error=${encodeURIComponent(eligibility.reason)}`)
+  }
 
   // 先「原子性」鎖定時段：只有在時段目前未被預約時才會更新成功（affected row 數為 0 代表已被搶先預約或重複送出）
   // 這是防止連續點擊／併發請求造成同一時段被建立多筆預約的關鍵防護，務必在寫入 bookings 之前完成

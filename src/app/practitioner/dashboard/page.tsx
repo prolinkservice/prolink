@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Calendar, ClipboardList, LogOut, UserCog, Star, Home, ListChecks, Bell, Users, BarChart3, Sparkles } from 'lucide-react'
 import { signOut } from '@/app/auth/actions'
 import { SettingsListGroup, SettingsListItem } from '@/components/SettingsListItem'
+import { FREE_CUSTOMER_LIMIT, getPractitionerCustomerCount, hasActiveSubscription } from '@/lib/subscription'
 
 export default async function PractitionerDashboardPage() {
   const supabase = await createServerSupabaseClient()
@@ -15,7 +16,7 @@ export default async function PractitionerDashboardPage() {
 
   const [{ data: profile }, { data: practitioner }] = await Promise.all([
     supabase.from('profiles').select('display_name, role').eq('id', user.id).single(),
-    supabase.from('practitioners').select('status, id').eq('user_id', user.id).single(),
+    supabase.from('practitioners').select('status, id, is_privileged').eq('user_id', user.id).single(),
   ])
 
   if (profile?.role !== 'practitioner' && profile?.role !== 'admin') redirect('/')
@@ -43,6 +44,11 @@ export default async function PractitionerDashboardPage() {
       .eq('user_id', user.id)
       .eq('is_read', false),
   ])
+
+  const customerCount = practitioner.is_privileged ? null : await getPractitionerCustomerCount(supabase, practitioner.id)
+  const subscribed = customerCount !== null && customerCount >= FREE_CUSTOMER_LIMIT
+    ? await hasActiveSubscription(supabase, practitioner.id)
+    : false
 
   const entries = [
     { href: '/practitioner/dashboard/profile/brand', icon: Sparkles, label: '品牌頁面', sublabel: '自訂老師公開頁面內容' },
@@ -108,6 +114,40 @@ export default async function PractitionerDashboardPage() {
             </Card>
           </Link>
         </div>
+
+        {customerCount !== null && (
+          <Card className={`mb-6 ${
+            customerCount >= FREE_CUSTOMER_LIMIT && !subscribed
+              ? 'border-destructive bg-destructive/5'
+              : customerCount >= FREE_CUSTOMER_LIMIT - 10
+              ? 'border-amber-400 bg-amber-50'
+              : ''
+          }`}>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground mb-1">客人數</p>
+              <p className="text-2xl font-bold mb-2">
+                {customerCount}
+                <span className="text-sm font-normal text-muted-foreground"> / {FREE_CUSTOMER_LIMIT}</span>
+              </p>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden mb-2">
+                <div
+                  className={`h-full ${customerCount >= FREE_CUSTOMER_LIMIT && !subscribed ? 'bg-destructive' : customerCount >= FREE_CUSTOMER_LIMIT - 10 ? 'bg-amber-500' : 'bg-primary'}`}
+                  style={{ width: `${Math.min(100, (customerCount / FREE_CUSTOMER_LIMIT) * 100)}%` }}
+                />
+              </div>
+              {customerCount >= FREE_CUSTOMER_LIMIT && !subscribed ? (
+                <>
+                  <p className="text-xs text-destructive mb-2">新客人暫時無法預約你（已約過你的老客人不受影響）。訂閱即可繼續接新客。</p>
+                  <p className="text-xs text-muted-foreground">訂閱方案：月費 NT$499（首月 NT$299，訂閱一年送一個月），請聯絡客服開通</p>
+                </>
+              ) : customerCount >= FREE_CUSTOMER_LIMIT - 10 ? (
+                <p className="text-xs text-amber-700">只剩 {FREE_CUSTOMER_LIMIT - customerCount} 位新客人名額，快到免費上限了</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">還可以再服務 {FREE_CUSTOMER_LIMIT - customerCount} 位新客人</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* 功能入口：桌面版已移至左側選單，這裡只在手機版顯示 */}
         <div className="lg:hidden">

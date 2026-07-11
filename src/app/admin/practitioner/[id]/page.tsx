@@ -4,7 +4,8 @@ import { ChevronLeft, MapPin, CreditCard, IdCard, Star, Award, Sparkles } from '
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { suspendPractitioner, restorePractitioner } from '../../actions'
+import { suspendPractitioner, restorePractitioner, togglePrivileged, registerSubscription } from '../../actions'
+import { FREE_CUSTOMER_LIMIT, getPractitionerCustomerCount } from '@/lib/subscription'
 
 const SERVICE_MODE_LABEL: Record<string, string> = {
   at_shop: '到店', on_site: '到府', both: '到店 + 到府'
@@ -40,7 +41,7 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
     supabase
       .from('practitioners')
       .select(`
-        id, bio, service_mode, shop_address, status, created_at,
+        id, bio, service_mode, shop_address, status, created_at, is_privileged,
         bank_name, bank_account, bank_status, bank_reject_reason,
         id_verification_status, id_reject_reason, suspend_reason,
         years_experience, certificates, specialty_tags, cover_image_url, social_links,
@@ -57,6 +58,17 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
   ])
 
   if (!practitioner) notFound()
+
+  const [customerCount, { data: subscriptions }] = await Promise.all([
+    getPractitionerCustomerCount(supabase, practitioner.id),
+    supabase
+      .from('practitioner_subscriptions')
+      .select('id, start_date, end_date, amount, note, created_at')
+      .eq('practitioner_id', practitioner.id)
+      .order('start_date', { ascending: false }),
+  ])
+  const todayStr = new Date().toISOString().split('T')[0]
+  const activeSubscription = (subscriptions ?? []).find((s) => s.start_date <= todayStr && s.end_date >= todayStr)
 
   const profileRaw = practitioner.profiles as unknown
   const prof = (Array.isArray(profileRaw) ? profileRaw[0] : profileRaw) as { display_name: string | null; avatar_url: string | null } | null
@@ -209,6 +221,66 @@ export default async function AdminPractitionerDetailPage({ params }: { params: 
               <input type="hidden" name="practitionerId" value={practitioner.id} />
               <Button type="submit" size="sm" variant="outline" className="text-destructive border-destructive hover:bg-destructive/5">下架此職人</Button>
             </form>
+          )}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-border p-6">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-semibold text-sm text-foreground">客人數與訂閱</p>
+            <form action={togglePrivileged}>
+              <input type="hidden" name="practitionerId" value={practitioner.id} />
+              <input type="hidden" name="nextValue" value={(!practitioner.is_privileged).toString()} />
+              <Button type="submit" size="sm" variant={practitioner.is_privileged ? 'default' : 'outline'}>
+                {practitioner.is_privileged ? '特權中，點擊取消' : '設為特權帳號'}
+              </Button>
+            </form>
+          </div>
+
+          {practitioner.is_privileged ? (
+            <p className="text-sm text-primary bg-primary/5 rounded-xl p-3">此帳號為特權帳號，不受客人數上限與訂閱限制</p>
+          ) : (
+            <>
+              <p className="text-sm text-foreground mb-1">
+                客人數：<span className="font-semibold">{customerCount}</span> / {FREE_CUSTOMER_LIMIT}
+                {customerCount >= FREE_CUSTOMER_LIMIT && (
+                  <span className={`ml-2 text-xs px-1.5 py-0.5 rounded ${activeSubscription ? 'text-green-700 bg-green-100' : 'text-destructive bg-destructive/10'}`}>
+                    {activeSubscription ? `已訂閱至 ${activeSubscription.end_date}` : '未訂閱，新客人無法預約'}
+                  </span>
+                )}
+              </p>
+
+              {(subscriptions ?? []).length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  {(subscriptions ?? []).map((s) => (
+                    <div key={s.id} className="text-xs text-muted-foreground bg-[#F8F7F5] rounded-lg px-3 py-2 flex items-center justify-between">
+                      <span>{s.start_date} ~ {s.end_date}</span>
+                      <span>NT${s.amount}{s.note ? `｜${s.note}` : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <form action={registerSubscription} className="mt-4 grid grid-cols-2 gap-2">
+                <input type="hidden" name="practitionerId" value={practitioner.id} />
+                <div>
+                  <label className="text-xs text-muted-foreground">起始日</label>
+                  <input type="date" name="startDate" required className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">結束日</label>
+                  <input type="date" name="endDate" required className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">金額</label>
+                  <input type="number" name="amount" defaultValue={499} required className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">備註（選填）</label>
+                  <input type="text" name="note" placeholder="例如：轉帳末五碼" className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
+                </div>
+                <Button type="submit" size="sm" className="col-span-2 mt-1">登記訂閱（人工確認已收款後才登記）</Button>
+              </form>
+            </>
           )}
         </div>
 

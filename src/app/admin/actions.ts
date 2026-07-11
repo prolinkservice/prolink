@@ -110,6 +110,48 @@ export async function restorePractitioner(formData: FormData) {
   revalidatePath('/admin', 'layout')
 }
 
+export async function togglePrivileged(formData: FormData) {
+  const practitionerId = formData.get('practitionerId') as string
+  const nextValue = formData.get('nextValue') === 'true'
+  const supabase = await createServerSupabaseClient()
+  const { error } = await supabase.from('practitioners').update({ is_privileged: nextValue }).eq('id', practitionerId)
+  if (error) throw new Error(`切換特權狀態失敗：${error.message}`)
+  revalidatePath('/admin', 'layout')
+}
+
+export async function registerSubscription(formData: FormData) {
+  const practitionerId = formData.get('practitionerId') as string
+  const startDate = formData.get('startDate') as string
+  const endDate = formData.get('endDate') as string
+  const amount = Number(formData.get('amount'))
+  const note = formData.get('note') as string
+
+  if (!startDate || !endDate || !Number.isFinite(amount)) {
+    throw new Error('請完整填寫訂閱起訖日與金額')
+  }
+
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const { error } = await supabase.from('practitioner_subscriptions').insert({
+    practitioner_id: practitionerId,
+    start_date: startDate,
+    end_date: endDate,
+    amount,
+    note: note || null,
+    created_by: user?.id ?? null,
+  })
+  if (error) throw new Error(`登記訂閱失敗：${error.message}`)
+
+  await notifyPractitioner(supabase, practitionerId, {
+    type: 'verification_result',
+    title: '訂閱已開通',
+    body: `訂閱期間：${startDate} ~ ${endDate}`,
+    link: '/practitioner/dashboard',
+  })
+  revalidatePath('/admin', 'layout')
+}
+
 export async function approveCancellation(formData: FormData) {
   const requestId = formData.get('requestId') as string
   const supabase = await createServerSupabaseClient()
