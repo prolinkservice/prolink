@@ -12,7 +12,12 @@ const WEEKDAY_LABELS = ['日', '一', '二', '三', '四', '五', '六']
 const SLOT_MINUTES = 30
 
 function formatDate(d: Date) {
-  return d.toISOString().split('T')[0]
+  // 不能用 toISOString()：它會先把時間轉成 UTC 才取日期，台灣是 UTC+8，
+  // 任何一天的「本地午夜」換算成 UTC 都會變成前一天下午，取出來的日期會少一天
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function startOfWeek(d: Date) {
