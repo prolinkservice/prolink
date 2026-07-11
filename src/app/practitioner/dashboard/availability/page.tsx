@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -85,6 +85,8 @@ export default function AvailabilityPage() {
   const [rangeTo, setRangeTo] = useState('')
   const [rangeWeekdays, setRangeWeekdays] = useState<number[]>([0, 1, 2, 3, 4, 5, 6])
   const [singleDate, setSingleDate] = useState('')
+  const [dragState, setDragState] = useState<{ startIndex: number; endIndex: number; targetOpen: boolean } | null>(null)
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -135,31 +137,88 @@ export default function AvailabilityPage() {
     })
   }, [weekStart])
 
-  async function toggleCell(time: string) {
-    if (!practitionerId || busy) return
-    const existing = slotByTime.get(time)
-    if (existing?.is_booked) return
+  // 批次把 gridTimes[loIndex..hiIndex] 這段連續時段一次設成 targetOpen；範圍只有一格時就等同單格點擊，
+  // 已被預約的格子維持不動（不能透過拖曳連動改掉）
+  async function applyRangeToggle(loIndex: number, hiIndex: number, targetOpen: boolean) {
+    if (!practitionerId) return
+    const times = gridTimes.slice(loIndex, hiIndex + 1).filter((t) => !slotByTime.get(t)?.is_booked)
+    if (times.length === 0) return
 
     setBusy(true)
     setErrorMsg(null)
     const supabase = createBrowserSupabaseClient()
 
-    if (existing) {
-      // 不直接刪除資料列，因為這個時段可能曾經有過預約（即便已取消/完成），刪除會違反外鍵限制；改成標記開放/關閉
-      const { error } = await supabase.from('availability_slots').update({ is_open: !existing.is_open }).eq('id', existing.id)
-      if (error) setErrorMsg(`${existing.is_open ? '關閉' : '開放'}失敗：${error.message}`)
-    } else {
-      const { error } = await supabase.from('availability_slots').insert({
+    const existingTimes = times.filter((t) => slotByTime.has(t))
+    const newTimes = times.filter((t) => !slotByTime.has(t))
+
+    if (existingTimes.length > 0) {
+      const ids = existingTimes.map((t) => slotByTime.get(t)!.id)
+      const { error } = await supabase.from('availability_slots').update({ is_open: targetOpen }).in('id', ids)
+      if (error) setErrorMsg(`${targetOpen ? '開放' : '關閉'}失敗：${error.message}`)
+    }
+    if (targetOpen && newTimes.length > 0) {
+      const rows = newTimes.map((t) => ({
         practitioner_id: practitionerId,
-        start_time: `${selectedDate}T${time}:00+08:00`,
-        end_time: `${selectedDate}T${addMinutes(time, SLOT_MINUTES)}:00+08:00`,
+        start_time: `${selectedDate}T${t}:00+08:00`,
+        end_time: `${selectedDate}T${addMinutes(t, SLOT_MINUTES)}:00+08:00`,
         is_booked: false,
         is_open: true,
-      })
+      }))
+      const { error } = await supabase.from('availability_slots').insert(rows)
       if (error) setErrorMsg(`開放失敗：${error.message}`)
     }
     await fetchSlots()
     setBusy(false)
+  }
+
+  function cellIndexFromPoint(x: number, y: number): number | null {
+    const el = document.elementFromPoint(x, y) as HTMLElement | null
+    const cell = el?.closest('[data-time-index]') as HTMLElement | null
+    if (!cell) return null
+    return Number(cell.dataset.timeIndex)
+  }
+
+  function startDragAt(index: number) {
+    if (busy) return
+    const time = gridTimes[index]
+    const slot = slotByTime.get(time)
+    if (slot?.is_booked) return
+    setDragState({ startIndex: index, endIndex: index, targetOpen: !slot?.is_open })
+  }
+
+  function handleCellPointerDown(e: React.PointerEvent, index: number) {
+    if (e.pointerType === 'touch') {
+      // 手機用長按進入框選模式，避免跟原生上下滑動捲動衝突；沒長按就是單純點擊
+      longPressTimer.current = setTimeout(() => startDragAt(index), 350)
+    } else {
+      startDragAt(index)
+    }
+  }
+
+  function handleGridPointerMove(e: React.PointerEvent) {
+    if (!dragState) return
+    const idx = cellIndexFromPoint(e.clientX, e.clientY)
+    if (idx === null) return
+    setDragState((prev) => (prev ? { ...prev, endIndex: idx } : prev))
+  }
+
+  async function handleGridPointerUp() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+    if (!dragState) return
+    const { startIndex, endIndex, targetOpen } = dragState
+    setDragState(null)
+    await applyRangeToggle(Math.min(startIndex, endIndex), Math.max(startIndex, endIndex), targetOpen)
+  }
+
+  function handleGridPointerCancel() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+    setDragState(null)
   }
 
   async function copyOpenPatternToDates(dates: string[]) {
@@ -307,25 +366,38 @@ export default function AvailabilityPage() {
           </div>
         </div>
 
-        {/* 時間格子 */}
-        <div className="bg-white border border-border rounded-xl p-3 max-h-[480px] overflow-y-auto">
+        {/* 時間格子：滑鼠可直接拖曳框選一段時間一次開放/關閉，手機長按 0.35 秒後也能拖曳框選 */}
+        <p className="text-xs text-muted-foreground -mb-1">💡 滑鼠拖曳（手機長按拖曳）可一次框選多個時段</p>
+        <div
+          className="bg-white border border-border rounded-xl p-3 max-h-[480px] overflow-y-auto select-none"
+          style={{ touchAction: dragState ? 'none' : 'auto' }}
+          onPointerMove={handleGridPointerMove}
+          onPointerUp={handleGridPointerUp}
+          onPointerCancel={handleGridPointerCancel}
+          onPointerLeave={handleGridPointerUp}
+        >
           <div className="grid grid-cols-3 gap-2">
-            {gridTimes.map((time) => {
+            {gridTimes.map((time, index) => {
               const slot = slotByTime.get(time)
               const isOpen = !!slot?.is_open
               const isBooked = !!slot?.is_booked
+              const inDragRange = !!dragState && index >= Math.min(dragState.startIndex, dragState.endIndex) && index <= Math.max(dragState.startIndex, dragState.endIndex)
+              const previewOpen = inDragRange && !isBooked ? dragState!.targetOpen : isOpen
+
               return (
                 <button
                   key={time}
-                  onClick={() => toggleCell(time)}
+                  type="button"
+                  data-time-index={index}
+                  onPointerDown={(e) => handleCellPointerDown(e, index)}
                   disabled={busy || isBooked}
                   className={`rounded-lg border px-2 py-2 text-sm font-medium transition-colors ${
                     isBooked
                       ? 'border-primary/40 bg-primary/10 text-primary cursor-not-allowed'
-                      : isOpen
+                      : previewOpen
                       ? 'border-destructive text-destructive bg-destructive/5'
                       : 'border-border text-muted-foreground bg-muted/40'
-                  }`}
+                  } ${inDragRange && !isBooked ? 'ring-2 ring-destructive/50' : ''}`}
                 >
                   {time}
                 </button>

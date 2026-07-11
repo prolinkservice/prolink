@@ -63,6 +63,7 @@ export default function PractitionerBookingsPage() {
   const [cancelOpenId, setCancelOpenId] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelSubmitting, setCancelSubmitting] = useState(false)
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createBrowserSupabaseClient()
@@ -113,8 +114,18 @@ export default function PractitionerBookingsPage() {
   useEffect(() => { fetchBookings() }, [fetchBookings])
 
   async function updateStatus(id: string, status: string) {
-    await updateBookingStatusAction(id, status)
-    await fetchBookings()
+    const previous = bookings
+    setStatusUpdatingId(id)
+    // 樂觀更新：先直接改本地狀態，畫面立刻反應不用等重抓整份清單造成閃爍；失敗再復原
+    setBookings(prev => prev.map(b => (b.id === id ? { ...b, status } : b)))
+    try {
+      await updateBookingStatusAction(id, status)
+    } catch (err) {
+      setBookings(previous)
+      alert(err instanceof Error ? err.message : '操作失敗，請再試一次')
+    } finally {
+      setStatusUpdatingId(null)
+    }
   }
 
   if (loading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">載入中...</div>
@@ -201,10 +212,25 @@ export default function PractitionerBookingsPage() {
                     </div>
 
                     {b.status === 'pending' && (
-                      <Button size="sm" className="w-full" onClick={() => updateStatus(b.id, 'confirmed')}>確認接單</Button>
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        disabled={statusUpdatingId === b.id}
+                        onClick={() => updateStatus(b.id, 'confirmed')}
+                      >
+                        {statusUpdatingId === b.id ? '確認中...' : '確認接單'}
+                      </Button>
                     )}
                     {b.status === 'confirmed' && (
-                      <Button size="sm" variant="outline" className="w-full" onClick={() => updateStatus(b.id, 'completed')}>標記完成</Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        disabled={statusUpdatingId === b.id}
+                        onClick={() => updateStatus(b.id, 'completed')}
+                      >
+                        {statusUpdatingId === b.id ? '處理中...' : '標記完成'}
+                      </Button>
                     )}
 
                     {(b.status === 'pending' || b.status === 'confirmed') && (
