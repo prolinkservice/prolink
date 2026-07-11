@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import { createBrowserSupabaseClient } from '@/lib/supabase'
+import type { DateRange } from 'react-day-picker'
 import { ChevronLeft, ChevronRight, ArrowLeft, Copy, CircleMinus, X, Layers, CalendarDays, CalendarRange } from 'lucide-react'
 import Link from 'next/link'
 import { BrandMark } from '@/components/BrandMark'
@@ -18,6 +20,12 @@ function formatDate(d: Date) {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
+}
+
+// 對應 formatDate：不能用 new Date('2026-07-11') 這種字串直接建構，那會被當UTC午夜解析，本地顯示可能跑掉一天
+function parseLocalDate(s: string) {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d)
 }
 
 function startOfWeek(d: Date) {
@@ -385,16 +393,20 @@ export default function AvailabilityPage() {
               <span className="font-semibold text-sm">複製到區間日期</span>
               <button onClick={() => setPanel(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">每次複製區間最多為 2 年。</p>
-            <div className="flex gap-2 mb-4">
-              <div className="flex-1">
-                <label className="text-xs text-muted-foreground">從</label>
-                <input type="date" value={rangeFrom} onChange={(e) => setRangeFrom(e.target.value)} className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs text-muted-foreground">到</label>
-                <input type="date" value={rangeTo} onChange={(e) => setRangeTo(e.target.value)} className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
-              </div>
+            <p className="text-xs text-muted-foreground mb-3">每次複製區間最多為 2 年，點兩天選出「從～到」區間。</p>
+            <div className="flex justify-center mb-2">
+              <Calendar
+                mode="range"
+                selected={{
+                  from: rangeFrom ? parseLocalDate(rangeFrom) : undefined,
+                  to: rangeTo ? parseLocalDate(rangeTo) : undefined,
+                }}
+                onSelect={(range: DateRange | undefined) => {
+                  setRangeFrom(range?.from ? formatDate(range.from) : '')
+                  setRangeTo(range?.to ? formatDate(range.to) : '')
+                }}
+                disabled={{ before: parseLocalDate(formatDate(today)) }}
+              />
             </div>
             <p className="text-xs text-muted-foreground mb-2">重複星期</p>
             <div className="flex gap-1.5 mb-4 flex-wrap">
@@ -430,8 +442,14 @@ export default function AvailabilityPage() {
               <span className="font-semibold text-sm">複製到指定日期</span>
               <button onClick={() => setPanel(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
-            <label className="text-xs text-muted-foreground">日期</label>
-            <input type="date" value={singleDate} onChange={(e) => setSingleDate(e.target.value)} className="w-full mt-1 mb-4 rounded-md border border-input px-2 py-1.5 text-sm" />
+            <div className="flex justify-center mb-2">
+              <Calendar
+                mode="single"
+                selected={singleDate ? parseLocalDate(singleDate) : undefined}
+                onSelect={(date) => setSingleDate(date ? formatDate(date) : '')}
+                disabled={{ before: parseLocalDate(formatDate(today)) }}
+              />
+            </div>
             <Button
               className="w-full"
               size="sm"
@@ -452,15 +470,20 @@ export default function AvailabilityPage() {
               <span className="font-semibold text-sm">區間關閉</span>
               <button onClick={() => setPanel(null)}><X className="w-4 h-4 text-muted-foreground" /></button>
             </div>
-            <div className="flex gap-2 mb-4">
-              <div className="flex-1">
-                <label className="text-xs text-muted-foreground">從</label>
-                <input type="date" value={rangeFrom} onChange={(e) => setRangeFrom(e.target.value)} className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
-              </div>
-              <div className="flex-1">
-                <label className="text-xs text-muted-foreground">到</label>
-                <input type="date" value={rangeTo} onChange={(e) => setRangeTo(e.target.value)} className="w-full mt-1 rounded-md border border-input px-2 py-1.5 text-sm" />
-              </div>
+            <p className="text-xs text-muted-foreground mb-2">點兩天選出「從～到」區間。</p>
+            <div className="flex justify-center mb-2">
+              <Calendar
+                mode="range"
+                selected={{
+                  from: rangeFrom ? parseLocalDate(rangeFrom) : undefined,
+                  to: rangeTo ? parseLocalDate(rangeTo) : undefined,
+                }}
+                onSelect={(range: DateRange | undefined) => {
+                  setRangeFrom(range?.from ? formatDate(range.from) : '')
+                  setRangeTo(range?.to ? formatDate(range.to) : '')
+                }}
+                disabled={{ before: parseLocalDate(formatDate(today)) }}
+              />
             </div>
             <Button
               className="w-full text-destructive border-destructive hover:bg-destructive/5"
