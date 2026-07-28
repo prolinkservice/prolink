@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 你的實際設定</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7;
+  --accent:#5d7f6e; --accent-bg:#e7efe9; --accent-ink:#fff;
+  --ok:#5d7f6e; --ok-bg:#e7efe9; --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6; --info:#5d7183; --info-bg:#e8eef2;
+  --r-xs:8px; --r-sm:14px; --r-md:22px; --r-pill:999px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --sh-3:0 30px 70px -34px rgba(35,38,42,.38);
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029; --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e; --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+    --sh-3:0 34px 76px -34px rgba(0,0,0,.85);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1180px;margin:0 auto;padding:52px 24px 100px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:var(--r-pill);font-weight:700;margin-bottom:18px}
+h1{font-size:clamp(26px,3.8vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.18}
+.lede{margin-top:14px;max-width:66ch;color:var(--ink-3);font-size:15px}
+
+section{margin-top:64px}
+.sec-title{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.sec-title .n{font-size:11px;font-weight:800;color:var(--ink-4);letter-spacing:.1em}
+.sec-title h2{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.sec-desc{color:var(--ink-3);font-size:14px;max-width:66ch;margin-bottom:20px}
+
+.panel{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);overflow:hidden;margin-bottom:16px}
+.pbar{display:flex;align-items:center;gap:11px;padding:16px 20px}
+.pbar h3{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.pbar .sub{font-size:11.5px;color:var(--ink-4);font-weight:700}
+.pbar .right{margin-left:auto}
+.body{padding:0 20px 18px}
+
+/* 據點卡 */
+.locs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;padding:0 20px 20px}
+.loc{background:var(--sunk);border-radius:var(--r-sm);padding:15px 17px;position:relative;overflow:hidden}
+.loc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+.loc.a::before{background:var(--accent)}
+.loc.b::before{background:var(--info)}
+.loc.m::before{background:var(--warn)}
+.loc .tagline{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.loc.a .tagline{color:var(--accent)}
+.loc.b .tagline{color:var(--info)}
+.loc.m .tagline{color:var(--warn)}
+.loc b{font-size:15px;font-weight:800;letter-spacing:-.02em;display:block}
+.loc p{font-size:12px;color:var(--ink-3);margin-top:3px}
+.loc .meta{font-size:11px;color:var(--ink-4);margin-top:8px;font-weight:600}
+
+/* 服務表 */
+.svc{width:100%;border-collapse:collapse}
+.svc th{text-align:left;font-size:10.5px;color:var(--ink-4);font-weight:800;letter-spacing:.06em;padding:0 10px 9px 0;border-bottom:1px solid var(--hairline)}
+.svc td{padding:13px 10px 13px 0;font-size:13.5px;border-bottom:1px solid var(--hairline);vertical-align:middle}
+.svc tr:last-child td{border-bottom:0}
+.svc td b{font-weight:700;font-size:14px}
+.svc td .s{font-size:11.5px;color:var(--ink-4);display:block;margin-top:1px}
+.svc td.n{font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:-.02em;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:var(--r-pill);white-space:nowrap}
+.chip .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.c-a{background:var(--accent-bg);color:var(--accent)}
+.c-b{background:var(--info-bg);color:var(--info)}
+.c-m{background:var(--warn-bg);color:var(--warn)}
+.c-mute{background:var(--sunk);color:var(--ink-3)}
+
+/* 排班 */
+.sched{padding:0 20px 16px}
+.shead{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding-bottom:8px}
+.shead span{text-align:center;font-size:11px;color:var(--ink-4);font-weight:800}
+.srow{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cell{border-radius:var(--r-xs);padding:11px 4px;text-align:center;font-size:11.5px;font-weight:800;line-height:1.35;min-height:58px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.cell small{font-size:9.5px;opacity:.85;font-weight:700;font-variant-numeric:tabular-nums}
+.cell.a{background:var(--accent-bg);color:var(--accent)}
+.cell.b{background:var(--info-bg);color:var(--info)}
+.cell.m{background:var(--warn-bg);color:var(--warn)}
+.cell.off{background:var(--sunk);color:var(--ink-4)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;padding:12px 20px 18px;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:4px;display:block}
+
+/* 移動時間 */
+.mtx{padding:0 20px 18px}
+.mtx table{width:100%;border-collapse:collapse}
+.mtx th,.mtx td{padding:10px 6px;text-align:center;font-size:12.5px}
+.mtx th{font-size:10.5px;color:var(--ink-4);font-weight:800}
+.mtx th.rowh{text-align:left;font-weight:800;color:var(--ink-2);font-size:12.5px}
+.mtx td{border-bottom:1px solid var(--hairline)}
+.mtx input{width:62px;background:var(--sunk);border:0;border-radius:var(--r-xs);padding:7px 0;text-align:center;font-family:var(--font);font-size:13px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.mtx input.guess{background:var(--warn-bg);color:var(--warn)}
+.mtx .self{color:var(--ink-4)}
+.hint{font-size:11.5px;color:var(--ink-4);line-height:1.6}
+
+/* 計算範例 */
+.calc{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:22px 24px}
+.calc .q{font-size:14.5px;font-weight:700;color:var(--ink);margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--hairline)}
+.step{display:grid;grid-template-columns:88px 1fr;gap:14px;align-items:baseline;padding:9px 0}
+.step .t{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.03em;text-align:right;color:var(--accent)}
+.step .d{font-size:13.5px;color:var(--ink-2)}
+.step .d b{font-weight:700;color:var(--ink)}
+.step.sum{border-top:2px solid var(--ink);margin-top:8px;padding-top:14px}
+.step.sum .t{font-size:19px}
+.step.sum .d{font-weight:700;color:var(--ink)}
+
+/* 客人端 */
+.phone{width:340px;flex:0 0 340px;border-radius:38px;padding:10px;background:linear-gradient(165deg,#33383a,#191c1d);box-shadow:var(--sh-3)}
+.screen{background:var(--bg);border-radius:29px;overflow:hidden}
+.pnav{display:flex;align-items:center;gap:10px;padding:15px 17px;background:var(--surface)}
+.pnav .ic{width:30px;height:30px;border-radius:11px;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-size:11px;font-weight:800}
+.pnav b{font-size:14px;font-weight:800;letter-spacing:-.02em}
+.mbody{padding:16px 15px 20px;min-height:400px}
+.svccard{background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:13px 15px;margin-bottom:9px;cursor:pointer;display:flex;align-items:center;gap:11px}
+.svccard b{font-size:14px;font-weight:700;display:block;letter-spacing:-.01em}
+.svccard .s{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.svccard .p{margin-left:auto;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.025em;white-space:nowrap}
+.mhint{font-size:11px;color:var(--ink-4);text-align:center;margin-top:12px;line-height:1.6}
+
+.stage{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.qbox{background:var(--warn-bg);color:var(--warn);border-radius:var(--r-md);padding:20px 24px;margin-top:16px}
+.qbox b{font-weight:800;font-size:14.5px;display:block;margin-bottom:6px}
+.qbox p{font-size:13.5px;opacity:.92}
+.qbox ol{margin:9px 0 0 18px;font-size:13.5px}
+.qbox ol li{padding:3px 0}
+.notes{margin-top:22px;display:grid;gap:9px}
+.n-i{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:15px 19px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1)}
+.n-i .n{font-size:12.5px;font-weight:800;color:var(--accent)}
+.n-i b{font-weight:700;font-size:13.5px}
+.n-i p{font-size:13px;color:var(--ink-3);margin-top:3px}
+
+@media(max-width:820px){
+  .phone{width:100%;max-width:340px;flex:1 1 auto}
+  .srow,.shead{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 09 · 你的實際設定</span>
+  <h1>五甲工作室 + 六合健身房 + 到府</h1>
+  <p class="lede">兩個實體據點加一種到府服務，所以「地點模式」「移動時間表」「服務區域」三樣會全部出現。以下是你的設定實際填起來的樣子。</p>
+</header>
+
+<!-- 01 據點 -->
+<section>
+  <div class="sec-title"><span class="n">01</span><h2>先建三個「地點」</h2></div>
+  <p class="sec-desc">到府雖然沒有固定地址，但在系統裡也算一種地點——它需要自己的移動時間設定。</p>
+
+  <div class="panel">
+    <div class="pbar"><h3>地點</h3><span class="sub">3 個</span></div>
+    <div class="locs">
+      <div class="loc a">
+        <p class="tagline">主要據點</p>
+        <b>五甲工作室</b>
+        <p>高雄市鳳山區</p>
+        <p class="meta">自有空間 · 時段完全自己控制</p>
+      </div>
+      <div class="loc b">
+        <p class="tagline">據點 B</p>
+        <b>六合健身房</b>
+        <p>高雄市新興區</p>
+        <p class="meta">場地非自有 · 見下方注意事項</p>
+      </div>
+      <div class="loc m">
+        <p class="tagline">到府</p>
+        <b>客人指定地點</b>
+        <p>依服務區域限制</p>
+        <p class="meta">沒有固定地址，用固定移動時間預留</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 服務 -->
+<section>
+  <div class="sec-title"><span class="n">02</span><h2>服務項目拆成三個，不要合成一個</h2></div>
+  <p class="sec-desc">同樣是一對一教練課，但三個地點的成本與定價本來就不同。拆開之後客人在預約頁上一眼看懂，你也能各自定價。</p>
+
+  <div class="panel">
+    <div class="pbar"><h3>服務項目</h3><span class="sub">3 項</span></div>
+    <div class="body">
+      <table class="svc">
+        <tr><th>服務</th><th>地點模式</th><th>時長</th><th>價格</th><th>定金</th></tr>
+        <tr>
+          <td><b>一對一教練課</b><span class="s">五甲工作室</span></td>
+          <td><span class="chip c-a"><span class="dot"></span>固定 · 五甲</span></td>
+          <td class="n">60 分</td>
+          <td class="n">1,200</td>
+          <td class="n">300</td>
+        </tr>
+        <tr>
+          <td><b>一對一教練課</b><span class="s">六合健身房</span></td>
+          <td><span class="chip c-b"><span class="dot"></span>固定 · 六合</span></td>
+          <td class="n">60 分</td>
+          <td class="n">1,400</td>
+          <td class="n">300</td>
+        </tr>
+        <tr>
+          <td><b>到府教練課</b><span class="s">客人家或社區健身房</span></td>
+          <td><span class="chip c-m"><span class="dot"></span>到府</span></td>
+          <td class="n">60 分</td>
+          <td class="n">1,800</td>
+          <td class="n">500</td>
+        </tr>
+      </table>
+      <p class="hint" style="margin-top:14px">
+        價格與定金是示意，你自己調。<b>六合比五甲貴</b>是因為場地成本；<b>到府最貴</b>是因為含車程與器材，定金也收高一點。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 03 排班 -->
+<section>
+  <div class="sec-title"><span class="n">03</span><h2>每週排班：你哪天在哪</h2></div>
+  <p class="sec-desc">系統靠這張表決定「客人選了六合的課，哪幾天才約得到」。</p>
+
+  <div class="panel">
+    <div class="pbar"><h3>每週排班</h3><span class="sub">示意，依你實際情況調整</span></div>
+    <div class="sched">
+      <div class="shead"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+      <div class="srow">
+        <div class="cell a">五甲<small>10–20</small></div>
+        <div class="cell b">六合<small>13–21</small></div>
+        <div class="cell a">五甲<small>10–20</small></div>
+        <div class="cell b">六合<small>13–21</small></div>
+        <div class="cell a">五甲<small>10–20</small></div>
+        <div class="cell m">到府<small>09–18</small></div>
+        <div class="cell off">休</div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--accent-bg)"></i>五甲工作室</span>
+      <span><i style="background:var(--info-bg)"></i>六合健身房</span>
+      <span><i style="background:var(--warn-bg)"></i>到府</span>
+      <span><i style="background:var(--sunk)"></i>休息</span>
+    </div>
+    <div class="body">
+      <p class="hint"><b>一格可以放不只一個地點。</b>例如週二上午在五甲、下午到六合，那格就會顯示兩段。上面畫的是最單純的版本。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 04 移動時間 -->
+<section>
+  <div class="sec-title"><span class="n">04</span><h2>移動時間：只要填三個數字</h2></div>
+  <p class="sec-desc">這張表填一次，之後系統每次算可預約時段都會自動帶進去。</p>
+
+  <div class="panel">
+    <div class="pbar"><h3>地點之間的移動時間</h3><span class="sub">分鐘</span></div>
+    <div class="mtx">
+      <table>
+        <tr><th></th><th>五甲工作室</th><th>六合健身房</th><th>到府</th></tr>
+        <tr><th class="rowh">五甲工作室</th><td class="self">—</td><td><input class="guess" value="25"></td><td><input class="guess" value="30"></td></tr>
+        <tr><th class="rowh">六合健身房</th><td><input class="guess" value="25"></td><td class="self">—</td><td><input class="guess" value="30"></td></tr>
+        <tr><th class="rowh">到府</th><td><input class="guess" value="30"></td><td><input class="guess" value="30"></td><td class="self">—</td></tr>
+      </table>
+      <p class="hint" style="margin-top:12px">
+        橘色是我先幫你填的<b>猜測值</b>，你自己最清楚實際要開多久，進系統後第一件事就改這三個數字。<br>
+        到府那一列是固定值，因為客人地址不固定，車程算不準，只能預留一個保守的數字。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 計算範例 -->
+<section>
+  <div class="sec-title"><span class="n">05</span><h2>系統實際怎麼算</h2></div>
+  <p class="sec-desc">設定完之後，這些事情就自動發生了，你不用再自己算。</p>
+
+  <div class="calc">
+    <p class="q">情境：週二你在五甲工作室，14:00 已經有一堂 60 分鐘的課。有客人想約當天到府，最早幾點可以？</p>
+    <div class="step"><span class="t">15:00</span><span class="d">五甲那堂課結束</span></div>
+    <div class="step"><span class="t">＋10 分</span><span class="d">服務後緩衝，<b>收器材、擦拭</b></span></div>
+    <div class="step"><span class="t">15:10</span><span class="d">你才能離開五甲</span></div>
+    <div class="step"><span class="t">＋30 分</span><span class="d">到府移動時間</span></div>
+    <div class="step"><span class="t">15:40</span><span class="d">抵達客人家</span></div>
+    <div class="step"><span class="t">＋5 分</span><span class="d">服務前緩衝，<b>擺器材、問狀況</b></span></div>
+    <div class="step"><span class="t">15:45</span><span class="d">理論上的最早時間</span></div>
+    <div class="step sum"><span class="t">16:00</span><span class="d">進位到 30 分刻度 · 客人實際看到的最早時段</span></div>
+  </div>
+
+  <div class="notes">
+    <div class="n-i"><span class="n">1</span><div><b>時段一律以 30 分鐘為單位</b><p>算出來是 15:45，但客人只會看到 16:00。多出的 15 分鐘變成額外緩衝，你更不會遲到，時段列表也乾淨。</p></div></div>
+    <div class="n-i"><span class="n">2</span><div><b>15:00 到 16:00 之間，客人根本看不到</b><p>不是看到後被拒絕，是從來沒出現過。客人不會有「為什麼我約不到」的困惑。</p></div></div>
+    <div class="n-i"><span class="n">3</span><div><b>你自己手動建單不受 30 分鐘限制</b><p>老客人只有 15:45 有空？你直接填 15:45 建單就好。30 分鐘的格點只約束線上預約，你自己排班可以填任意時間。</p></div></div>
+  </div>
+</section>
+
+<!-- 06 客人端 -->
+<section>
+  <div class="sec-title"><span class="n">06</span><h2>客人打開你的預約連結會看到</h2></div>
+  <p class="sec-desc">prolink.tw/p/你的網址</p>
+
+  <div class="stage">
+    <div class="phone"><div class="screen">
+      <div class="pnav"><span class="ic">教練</span><b>你的品牌名稱</b></div>
+      <div class="mbody">
+        <p style="font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--ink-4);margin-bottom:10px">選擇服務</p>
+        <div class="svccard"><div><b>一對一教練課</b><p class="s">五甲工作室 · 60 分</p></div><span class="p">1,200</span></div>
+        <div class="svccard"><div><b>一對一教練課</b><p class="s">六合健身房 · 60 分</p></div><span class="p">1,400</span></div>
+        <div class="svccard"><div><b>到府教練課</b><p class="s">三民 / 鳳山 / 前鎮 · 60 分</p></div><span class="p">1,800</span></div>
+        <p class="mhint">選好服務後才選時間。<br>系統只會列出你當天真的在那個地點、<br>而且來得及過去的時段。</p>
+      </div>
+    </div></div>
+
+    <div style="flex:1 1 340px;min-width:300px">
+      <div class="notes" style="margin-top:0">
+        <div class="n-i"><span class="n">1</span><div><b>先選服務，等於先選了地點</b><p>因為每個服務都綁死一個地點，客人不用面對「先選地點還是先選時間」的困惑。</p></div></div>
+        <div class="n-i"><span class="n">2</span><div><b>到府服務直接標出服務區域</b><p>不在區域內的客人一看就知道，不會約了才被退。</p></div></div>
+        <div class="n-i"><span class="n">3</span><div><b>週二只會出現六合的時段</b><p>客人點「五甲的課」看週二，會顯示沒有空檔——因為你那天不在五甲。</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 注意事項 -->
+<section>
+  <div class="sec-title"><span class="n">07</span><h2>一個限制，跟一個要問你的問題</h2></div>
+
+  <div class="qbox">
+    <b>限制：系統管得到你的時間，管不到六合的場地</b>
+    <p>你在六合是<b>用別人的場地</b>。系統知道「你週二 13–21 在六合」，但不知道六合那個時段的場地是不是被別人佔走了。如果六合當天有團體課或別的教練包場，系統還是會讓客人約——然後你到場才發現沒地方用。</p>
+    <p style="margin-top:10px">目前的解法只有：你自己在後台把六合那段時間標成「不開放」。<b>除非六合健身房自己也用這套系統</b>，那時候場地狀況就能直接同步——這剛好就是先前討論的健身房場租功能。</p>
+  </div>
+
+  <div class="qbox" style="background:var(--info-bg);color:var(--info)">
+    <b>想問你三件事</b>
+    <ol>
+      <li><b>你在六合是固定時段租，還是每次都要跟他們喬？</b>這決定要不要做上面說的同步。</li>
+      <li><b>到府的服務區域涵蓋哪些行政區？</b>我先填了三民、鳳山、前鎮當示意。</li>
+      <li><b>五甲工作室是你自己的空間嗎？</b>如果是，那邊的時段就完全由你控制，不會有上面的問題。</li>
+    </ol>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

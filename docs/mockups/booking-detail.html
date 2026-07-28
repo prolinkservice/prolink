@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 檢視切換與詳細卡片</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7;
+  --accent:#5d7f6e; --accent-bg:#e7efe9; --accent-ink:#fff;
+  --ok:#5d7f6e; --ok-bg:#e7efe9;
+  --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6;
+  --info:#5d7183; --info-bg:#e8eef2;
+  --r-xs:8px; --r-sm:14px; --r-md:22px; --r-lg:28px; --r-pill:999px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --sh-3:0 30px 70px -34px rgba(35,38,42,.38);
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029; --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e; --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+    --sh-3:0 34px 76px -34px rgba(0,0,0,.85);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1300px;margin:0 auto;padding:52px 24px 100px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:var(--r-pill);font-weight:700;margin-bottom:18px}
+h1{font-size:clamp(26px,3.8vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.18}
+.lede{margin-top:14px;max-width:64ch;color:var(--ink-3);font-size:15px}
+
+section{margin-top:72px}
+.sec-title{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.sec-title .n{font-size:11px;font-weight:800;color:var(--ink-4);letter-spacing:.1em}
+.sec-title h2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.sec-desc{color:var(--ink-3);font-size:14px;max-width:64ch;margin-bottom:22px}
+
+.plain{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:22px 26px;margin-bottom:30px}
+.plain h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:13px}
+.plain ul{list-style:none;font-size:14.5px;color:var(--ink-2)}
+.plain ul li{padding:6px 0 6px 20px;position:relative}
+.plain ul li::before{content:"";position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.plain ul li b{color:var(--ink);font-weight:700}
+.plain .note{margin-top:13px;padding:13px 16px;background:var(--accent-bg);color:var(--accent);border-radius:var(--r-sm);font-size:13.5px}
+.plain .note b{font-weight:800}
+
+.stage{display:flex;flex-wrap:wrap;gap:34px;align-items:flex-start}
+.cap{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);font-weight:700;margin-bottom:13px}
+
+/* 手機 */
+.phone{width:352px;flex:0 0 352px;border-radius:38px;padding:10px;background:linear-gradient(165deg,#33383a,#191c1d);box-shadow:var(--sh-3)}
+.screen{background:var(--bg);border-radius:29px;overflow:hidden;height:664px;display:flex;flex-direction:column;position:relative}
+.slim{display:flex;align-items:center;gap:10px;padding:13px 17px;background:var(--surface);flex:0 0 auto;z-index:2}
+.slim h3{font-size:16px;font-weight:800;letter-spacing:-.03em}
+.slim .st{display:flex;gap:11px;font-size:11px;font-weight:700;color:var(--ink-3);margin-left:12px}
+.slim .st b{color:var(--ink);font-variant-numeric:tabular-nums}
+.slim .st .w{color:var(--warn)}
+.viewtog{margin-left:auto;display:flex;background:var(--sunk);border-radius:var(--r-pill);padding:3px;flex:0 0 auto}
+.viewtog button{border:0;background:transparent;font-family:var(--font);font-size:11px;font-weight:800;color:var(--ink-4);padding:5px 11px;border-radius:var(--r-pill);cursor:pointer}
+.viewtog button.on{background:var(--surface);color:var(--accent);box-shadow:var(--sh-1)}
+.scroll{flex:1;overflow-y:auto;padding:14px 15px 18px}
+.scroll::-webkit-scrollbar{width:5px}
+.scroll::-webkit-scrollbar-thumb{background:var(--ink-4);border-radius:9px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:var(--r-pill)}
+.pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-info{background:var(--info-bg);color:var(--info)}
+.p-mute{background:var(--sunk);color:var(--ink-3)}
+.p-danger{background:var(--danger-bg);color:var(--danger)}
+
+.divider{display:flex;align-items:center;gap:10px;margin:6px 0 12px}
+.divider span{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--ink-4)}
+.divider i{flex:1;height:1px;background:var(--hairline)}
+
+/* 焦點模式 */
+.next{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:16px 17px;margin-bottom:15px;position:relative;overflow:hidden}
+.next::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.next .lbl{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.next .when{display:flex;align-items:baseline;gap:9px;margin-top:5px}
+.next .when .t{font-size:29px;font-weight:800;letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1}
+.next .when .rel{font-size:11.5px;color:var(--ink-3);font-weight:700}
+.next .nm{font-size:17px;font-weight:800;letter-spacing:-.02em;margin-top:10px}
+.next .sv{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.next .flags{display:flex;gap:5px;margin-top:9px;flex-wrap:wrap}
+.next .acts{display:flex;gap:8px;margin-top:13px}
+.next .acts button{flex:1;border:0;border-radius:var(--r-pill);padding:11px 0;font-family:var(--font);font-size:12.5px;font-weight:800;cursor:pointer}
+.next .acts .go{background:var(--accent);color:var(--accent-ink)}
+.next .acts .call{background:var(--sunk);color:var(--ink-2)}
+.leave{margin-top:10px;padding:9px 12px;background:var(--warn-bg);color:var(--warn);border-radius:var(--r-xs);font-size:11.5px;font-weight:700}
+.rest{display:grid;grid-template-columns:44px 1fr auto;gap:11px;align-items:center;padding:11px 4px;border-bottom:1px solid var(--hairline);cursor:pointer}
+.rest:last-child{border-bottom:0}
+.rest:active{background:var(--sunk)}
+.rest .tt{font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:var(--ink-3)}
+.rest b{font-size:13px;font-weight:700;display:block}
+.rest .sub{font-size:10.5px;color:var(--ink-4)}
+.rest.done{opacity:.5}
+.rest .mk{width:7px;height:7px;border-radius:50%}
+
+/* 列表模式 */
+.fold{display:flex;align-items:center;gap:9px;background:var(--sunk);border-radius:var(--r-sm);padding:11px 14px;margin-bottom:13px;cursor:pointer}
+.fold .cv{font-size:11px;font-weight:800;color:var(--ink-4)}
+.fold b{font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.fold .amt{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.lean{background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:11px 14px;margin-bottom:7px;display:grid;grid-template-columns:44px 1fr auto;gap:11px;align-items:center;cursor:pointer}
+.lean.now{box-shadow:var(--sh-2);outline:2px solid var(--accent)}
+.lean .tt{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:var(--ink-2)}
+.lean b{font-size:13.5px;font-weight:700;display:block;letter-spacing:-.01em}
+.lean .sub{font-size:11px;color:var(--ink-3);margin-top:1px}
+.movemini{font-size:10px;color:var(--ink-4);font-weight:600;padding:0 0 8px 55px}
+.movemini a{color:var(--accent);text-decoration:none;font-weight:800}
+
+/* Bottom sheet */
+.dim{position:absolute;inset:0;background:rgba(20,22,21,.45);z-index:3;border-radius:29px}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:0 -18px 50px -20px rgba(0,0,0,.5);z-index:4;max-height:88%;display:flex;flex-direction:column}
+.grab{width:38px;height:4px;border-radius:9px;background:var(--ink-4);opacity:.4;margin:10px auto 4px;flex:0 0 auto}
+.sh-body{overflow-y:auto;padding:8px 20px 0}
+.sh-body::-webkit-scrollbar{width:4px}
+.sh-body::-webkit-scrollbar-thumb{background:var(--ink-4);border-radius:9px}
+
+.sh-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.sh-time{font-size:27px;font-weight:800;letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1.1}
+.sh-date{font-size:12px;color:var(--ink-3);font-weight:700;margin-top:3px}
+.sh-top .pill{margin-left:auto;margin-top:4px}
+
+.linkrow{display:flex;align-items:center;gap:12px;background:var(--sunk);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:12px;cursor:pointer}
+.linkrow .av{width:42px;height:42px;border-radius:50%;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:14px;flex:0 0 42px}
+.linkrow b{font-size:15px;font-weight:800;letter-spacing:-.01em;display:block}
+.linkrow .ph{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.linkrow .arrow{margin-left:auto;color:var(--ink-4);font-size:16px;font-weight:700}
+.trustrow{display:flex;gap:5px;flex-wrap:wrap;margin:-6px 0 14px 2px}
+
+.dl{margin-bottom:14px}
+.dl .d{display:flex;align-items:baseline;gap:14px;padding:10px 0;border-bottom:1px solid var(--hairline)}
+.dl .d:last-child{border-bottom:0}
+.dl dt{font-size:11.5px;color:var(--ink-4);font-weight:700;flex:0 0 54px;letter-spacing:.04em}
+.dl dd{font-size:13.5px;color:var(--ink);flex:1;font-weight:500}
+.dl dd .go{color:var(--accent);font-weight:800;font-size:12px;margin-left:6px}
+.dl dd.num{font-weight:800;font-size:15px}
+.dl dd .strike{color:var(--ink-4);font-weight:500;font-size:12px}
+
+.memo{background:var(--sunk);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:14px}
+.memo .h{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--ink-4);margin-bottom:4px}
+.memo p{font-size:13px;color:var(--ink-2)}
+
+.sh-foot{padding:12px 20px 20px;flex:0 0 auto;display:flex;gap:8px;background:var(--surface)}
+.sh-foot .btn{border:0;border-radius:var(--r-pill);padding:14px 0;font-family:var(--font);font-size:13.5px;font-weight:800;cursor:pointer}
+.sh-foot .main{flex:1;background:var(--accent);color:var(--accent-ink)}
+.sh-foot .sub2{flex:0 0 auto;padding:14px 18px;background:var(--sunk);color:var(--ink-2)}
+.moreacts{display:flex;flex-wrap:wrap;gap:7px;padding:0 20px 6px}
+.moreacts button{border:0;background:var(--sunk);color:var(--ink-3);border-radius:var(--r-pill);padding:9px 15px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer}
+.moreacts button.warn{background:var(--danger-bg);color:var(--danger)}
+
+/* 客人檔案 */
+.pnav{display:flex;align-items:center;gap:10px;padding:14px 17px;background:var(--surface)}
+.pnav .back{font-size:17px;color:var(--ink-3);font-weight:700}
+.pnav h3{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.pnav .more{margin-left:auto;color:var(--ink-4);font-weight:800}
+.phead{padding:18px 17px 0;text-align:center}
+.phead .bigav{width:62px;height:62px;border-radius:50%;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:21px;margin:0 auto 10px}
+.phead h4{font-size:20px;font-weight:800;letter-spacing:-.025em}
+.phead .ph{font-size:13px;color:var(--ink-3);font-variant-numeric:tabular-nums;margin-top:1px}
+.phead .tg{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.quick{display:flex;gap:8px;padding:14px 17px 4px}
+.quick button{flex:1;border:0;border-radius:var(--r-pill);padding:11px 0;font-family:var(--font);font-size:12.5px;font-weight:800;cursor:pointer;background:var(--sunk);color:var(--ink-2)}
+.quick button.main{background:var(--accent);color:var(--accent-ink)}
+.trustgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:14px 17px 4px}
+.tg-i{background:var(--sunk);border-radius:var(--r-sm);padding:11px 6px;text-align:center}
+.tg-i .n{font-size:18px;font-weight:800;letter-spacing:-.035em;font-variant-numeric:tabular-nums;line-height:1.2}
+.tg-i .l{font-size:9.5px;color:var(--ink-4);font-weight:700;margin-top:1px}
+.tg-i.bad .n{color:var(--danger)}
+.tabs{display:flex;gap:4px;padding:16px 17px 10px}
+.tabs button{border:0;background:transparent;font-family:var(--font);font-size:13px;font-weight:800;color:var(--ink-4);padding:7px 13px;border-radius:var(--r-pill);cursor:pointer}
+.tabs button.on{background:var(--accent-bg);color:var(--accent)}
+.hist{padding:0 17px 18px}
+.hi{display:grid;grid-template-columns:56px 1fr auto;gap:11px;align-items:center;padding:11px 0;border-bottom:1px solid var(--hairline)}
+.hi:last-child{border-bottom:0}
+.hi .dt{font-size:11.5px;font-weight:800;color:var(--ink-3);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hi b{font-size:13px;font-weight:700;display:block}
+.hi .sub{font-size:10.5px;color:var(--ink-4)}
+.hi .amt{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hi.ns .amt{color:var(--danger);font-size:11px}
+
+.notes{margin-top:30px;display:grid;gap:9px}
+.n-i{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:15px 19px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1)}
+.n-i .n{font-size:12.5px;font-weight:800;color:var(--accent)}
+.n-i b{font-weight:700;font-size:13.5px}
+.n-i p{font-size:13px;color:var(--ink-3);margin-top:3px}
+
+.flow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:20px 24px;margin-top:8px;margin-bottom:30px}
+.fx{background:var(--sunk);border-radius:var(--r-sm);padding:12px 18px;font-size:13.5px;font-weight:700}
+.fx.acc{background:var(--accent-bg);color:var(--accent)}
+.fa{color:var(--ink-4);font-weight:800;font-size:15px}
+.fnote{font-size:12.5px;color:var(--ink-4);font-weight:600;width:100%;margin-top:2px}
+
+@media(max-width:1180px){.phone{width:100%;max-width:352px;flex:1 1 auto}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 06 · 檢視切換與詳細卡片</span>
+  <h1>兩種檢視自由切換，每一筆都點得開</h1>
+  <p class="lede">焦點模式給在外面跑的時候，列表模式給坐下來排班的時候。而不管哪一種，點任何一筆都能開出詳細大卡。</p>
+</header>
+
+<!-- ══ 01 切換 ══ -->
+<section>
+  <div class="sec-title"><span class="n">01</span><h2>檢視切換</h2></div>
+  <p class="sec-desc">切換鈕放在標題列右邊，切完會記住選擇，下次打開就是他習慣的那一種。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li><b>焦點</b>：把「下一筆」放到最大，附導航與建議出發時間，其餘壓成一行。在外面跑的時候用。</li>
+      <li><b>列表</b>：已完成的收成一行，接下來的每筆一行。坐下來看整天排程的時候用。</li>
+      <li>切換後<b>系統記住</b>，下次打開直接是他上次選的那一種，不用每天切。</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div>
+      <p class="cap">焦點模式 · 在外面跑</p>
+      <div class="phone"><div class="screen">
+        <div class="slim"><h3>今日</h3>
+          <div class="st"><span>8</span><span>12,400</span><span class="w">待結案 2</span></div>
+          <div class="viewtog"><button class="on">焦點</button><button>列表</button></div>
+        </div>
+        <div class="scroll">
+          <div class="next">
+            <p class="lbl">下一筆</p>
+            <div class="when"><span class="t">14:45</span><span class="rel">還有 55 分鐘</span></div>
+            <p class="nm">鄭小姐</p>
+            <p class="sv">深層按摩 60 分 · B 館 3F</p>
+            <div class="flags"><span class="pill p-ok"><span class="dot"></span>定金已付</span><span class="pill p-mute">到店 6 次</span></div>
+            <div class="acts"><button class="go">開啟導航</button><button class="call">撥電話</button></div>
+            <div class="leave">↓ 移動 30 分，建議 14:10 出發</div>
+          </div>
+          <div class="divider"><span>今天其餘</span><i></i></div>
+          <div class="rest done"><span class="tt">09:00</span><div><b>陳小姐</b><p class="sub">深層按摩 · A 館</p></div><span class="mk" style="background:var(--ink-4)"></span></div>
+          <div class="rest done"><span class="tt">10:15</span><div><b>吳先生</b><p class="sub">運動按摩 · A 館</p></div><span class="mk" style="background:var(--ink-4)"></span></div>
+          <div class="rest done"><span class="tt">11:15</span><div><b>周太太</b><p class="sub">推拿 · A 館</p></div><span class="mk" style="background:var(--ink-4)"></span></div>
+          <div class="rest done"><span class="tt">13:00</span><div><b>林先生</b><p class="sub">推拿 · B 館</p></div><span class="mk" style="background:var(--accent)"></span></div>
+          <div class="rest"><span class="tt">16:00</span><div><b>李太太</b><p class="sub">推拿 · 到府 三民區</p></div><span class="mk" style="background:var(--ok)"></span></div>
+          <div class="rest"><span class="tt">19:00</span><div><b>陳小姐</b><p class="sub">推拿 · 六合健身房</p></div><span class="mk" style="background:var(--warn)"></span></div>
+          <div class="rest"><span class="tt">20:30</span><div><b>張先生</b><p class="sub">運動按摩 · 六合健身房</p></div><span class="mk" style="background:var(--danger)"></span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div>
+      <p class="cap">列表模式 · 坐下來排班</p>
+      <div class="phone"><div class="screen">
+        <div class="slim"><h3>今日</h3>
+          <div class="st"><span>8</span><span>12,400</span><span class="w">待結案 2</span></div>
+          <div class="viewtog"><button>焦點</button><button class="on">列表</button></div>
+        </div>
+        <div class="scroll">
+          <div class="fold"><span class="cv">▸</span><b>上午 3 筆已完成</b><span class="amt">3,300</span></div>
+          <div class="divider"><span>接下來</span><i></i></div>
+          <div class="lean now"><span class="tt">13:00</span><div><b>林先生</b><p class="sub">推拿 90 分 · B 館</p></div><span class="pill p-ok"><span class="dot"></span>進行中</span></div>
+          <div class="lean"><span class="tt">14:45</span><div><b>鄭小姐</b><p class="sub">深層按摩 60 分 · B 館</p></div><span></span></div>
+          <div class="lean"><span class="tt">16:00</span><div><b>李太太</b><p class="sub">推拿 90 分 · 到府 三民區</p></div><span></span></div>
+          <div class="movemini">↓ 移動 45 分 · <a href="#">開啟導航</a></div>
+          <div class="lean"><span class="tt">19:00</span><div><b>陳小姐</b><p class="sub">推拿 90 分 · 六合健身房</p></div><span class="pill p-warn"><span class="dot"></span>定金待付</span></div>
+          <div class="lean"><span class="tt">20:30</span><div><b>張先生</b><p class="sub">運動按摩 60 分 · 六合健身房</p></div><span class="pill p-danger"><span class="dot"></span>放鳥 1</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 02 兩層卡片 ══ -->
+<section>
+  <div class="sec-title"><span class="n">02</span><h2>點開之後是兩層，不是一層</h2></div>
+  <p class="sec-desc">「這一筆預約」和「這個客人」是兩件不同的事，混在一起會又長又難找。</p>
+
+  <div class="flow">
+    <span class="fx">點任一筆預約</span><span class="fa">→</span>
+    <span class="fx acc">預約詳細</span><span class="fa">→</span>
+    <span class="fx">點客人名字</span><span class="fa">→</span>
+    <span class="fx acc">客人檔案</span>
+    <p class="fnote">預約詳細＝這次要做什麼、收多少、怎麼處理　　客人檔案＝這個人的全部歷史</p>
+  </div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>點任何一筆預約，<b>從下面滑出一張大卡</b>，蓋住畫面但不換頁——看完往下一撥就關掉，不會迷路。</li>
+      <li>大卡裡面是<b>這一次</b>的事：時間、服務、地點、金額、定金付了沒、內部備註。</li>
+      <li>下面一排按鈕就是<b>當下能做的動作</b>：結帳、改期、傳訊息、標記放鳥。</li>
+      <li>最上面那條客人資料是<b>可以點的</b>，點下去才進入客人檔案。</li>
+      <li>客人檔案是<b>整頁</b>，因為內容多：所有預約歷史、消費統計、標籤、備註、次卡。</li>
+    </ul>
+    <div class="note"><b>為什麼要分兩層：</b>老師 90% 的時候只想知道「這一筆怎麼處理」，不需要看到客人三年來的所有紀錄。真的要查再點進去。</div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <p class="cap">第一層 · 預約詳細（滑出式大卡）</p>
+      <div class="phone"><div class="screen">
+        <div class="slim"><h3>今日</h3>
+          <div class="st"><span>8</span><span>12,400</span></div>
+          <div class="viewtog"><button class="on">焦點</button><button>列表</button></div>
+        </div>
+        <div class="scroll">
+          <div class="next"><p class="lbl">下一筆</p>
+            <div class="when"><span class="t">14:45</span><span class="rel">還有 55 分鐘</span></div>
+            <p class="nm">鄭小姐</p><p class="sv">深層按摩 60 分 · B 館 3F</p></div>
+          <div class="divider"><span>今天其餘</span><i></i></div>
+          <div class="rest done"><span class="tt">09:00</span><div><b>陳小姐</b><p class="sub">深層按摩 · A 館</p></div><span class="mk" style="background:var(--ink-4)"></span></div>
+        </div>
+
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="sh-body">
+            <div class="sh-top">
+              <div><p class="sh-time">19:00 – 20:30</p><p class="sh-date">08 / 02 週六 · 90 分鐘</p></div>
+              <span class="pill p-info"><span class="dot"></span>已確認</span>
+            </div>
+
+            <div class="linkrow">
+              <span class="av">陳</span>
+              <div><b>陳小姐</b><span class="ph">0912-345-678</span></div>
+              <span class="arrow">›</span>
+            </div>
+            <div class="trustrow">
+              <span class="pill p-mute">到店 12 次</span>
+              <span class="pill p-danger"><span class="dot"></span>放鳥 1</span>
+              <span class="pill p-ok"><span class="dot"></span>VIP</span>
+            </div>
+
+            <dl class="dl">
+              <div class="d"><dt>服務</dt><dd>深層運動按摩 90 分</dd></div>
+              <div class="d"><dt>地點</dt><dd>六合健身房 3F<span class="go">導航 ›</span></dd></div>
+              <div class="d"><dt>金額</dt><dd class="num">NT$ 1,800</dd></div>
+              <div class="d"><dt>定金</dt><dd><span class="pill p-warn"><span class="dot"></span>NT$ 300 待付</span></dd></div>
+              <div class="d"><dt>來源</dt><dd><span class="pill p-mute">老師用 LINE 建立</span></dd></div>
+            </dl>
+
+            <div class="memo">
+              <p class="h">內部備註 · 客人看不到</p>
+              <p>右肩舊傷，力道放輕。上次反映精油味道太重。</p>
+            </div>
+          </div>
+
+          <div class="moreacts">
+            <button>改時間</button>
+            <button>傳 LINE 給客人</button>
+            <button>取消預約</button>
+            <button class="warn">標記放鳥</button>
+          </div>
+          <div class="sh-foot">
+            <button class="btn main">開始結帳</button>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div>
+      <p class="cap">第二層 · 客人檔案（整頁）</p>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><span class="back">‹</span><h3>客人檔案</h3><span class="more">⋯</span></div>
+        <div class="scroll" style="padding:0">
+          <div class="phead">
+            <div class="bigav">陳</div>
+            <h4>陳小姐</h4>
+            <p class="ph">0912-345-678 · LINE 已綁定</p>
+            <div class="tg">
+              <span class="pill p-ok"><span class="dot"></span>VIP</span>
+              <span class="pill p-mute">肩頸緊繃</span>
+              <span class="pill p-mute">偏好晚間</span>
+            </div>
+          </div>
+
+          <div class="quick">
+            <button class="main">新增預約</button>
+            <button>傳 LINE</button>
+            <button>撥電話</button>
+          </div>
+
+          <div class="trustgrid">
+            <div class="tg-i"><div class="n">12</div><div class="l">到店</div></div>
+            <div class="tg-i bad"><div class="n">1</div><div class="l">放鳥</div></div>
+            <div class="tg-i"><div class="n">2</div><div class="l">臨時取消</div></div>
+            <div class="tg-i"><div class="n">18.6k</div><div class="l">累計消費</div></div>
+          </div>
+
+          <div class="tabs">
+            <button class="on">預約紀錄</button>
+            <button>備註</button>
+            <button>次卡</button>
+          </div>
+
+          <div class="hist">
+            <div class="hi"><span class="dt">08/02</span><div><b>推拿 90 分</b><p class="sub">六合健身房 · 已確認</p></div><span class="amt">1,800</span></div>
+            <div class="hi"><span class="dt">07/12</span><div><b>深層按摩 60 分</b><p class="sub">A 館 · 已完成</p></div><span class="amt">1,200</span></div>
+            <div class="hi ns"><span class="dt">06/28</span><div><b>推拿 90 分</b><p class="sub">A 館 · 未到</p></div><span class="amt">放鳥</span></div>
+            <div class="hi"><span class="dt">06/05</span><div><b>推拿 90 分</b><p class="sub">A 館 · 已完成</p></div><span class="amt">1,800</span></div>
+            <div class="hi"><span class="dt">05/18</span><div><b>深層按摩 60 分</b><p class="sub">A 館 · 已完成</p></div><span class="amt">1,200</span></div>
+            <div class="hi"><span class="dt">04/30</span><div><b>療程 120 分</b><p class="sub">A 館 · 已完成</p></div><span class="amt">2,400</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="n-i"><span class="n">1</span><div><b>用滑出式大卡，不換頁</b><p>老師常常只是想確認一件小事。開新頁面要再按返回，滑出式往下一撥就關掉，快很多也不會迷路。</p></div></div>
+    <div class="n-i"><span class="n">2</span><div><b>主要動作只有一顆</b><p>「開始結帳」是綠色的，其他動作縮在上面一排灰色小鈕。老師九成的時候按的是結帳。</p></div></div>
+    <div class="n-i"><span class="n">3</span><div><b>「標記放鳥」用紅色但不放在主位</b><p>要按得到，但不能誤按。誤標一次放鳥會讓客人被扣點，嚴重的話直接進黑名單。</p></div></div>
+    <div class="n-i"><span class="n">4</span><div><b>客人檔案的預約紀錄要顯示放鳥那幾筆</b><p>不能只列成功的。老師要看到完整的信賴軌跡才判斷得準。</p></div></div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

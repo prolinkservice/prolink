@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 設計系統（方案 B 柔光日光）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   ProLink 設計系統 · 方案 B「柔光日光」
+   ─────────────────────────────────────────────────────────
+   核心語彙：大圓角 · 無邊框 · 柔和層次陰影 · 低彩度鼠尾草綠
+   分層靠陰影與留白，不靠線條。這是這套風格的靈魂，
+   除了表格與極高密度處，一律不要出現 1px 邊框。
+   ═══════════════════════════════════════════════════════════ */
+
+:root{
+  /* ── 顏色 ─────────────────────────── */
+  --bg:#f7f7f5;              /* 頁面底 · 瓷白微暖 */
+  --surface:#ffffff;         /* 卡片面 */
+  --sunk:#f1f2ef;            /* 凹陷區：輸入框、次要按鈕、狀態條 */
+  --ink:#23262a;             /* 主文字 */
+  --ink-2:#4b5158;           /* 次要文字 */
+  --ink-3:#7b828a;           /* 輔助說明 */
+  --ink-4:#aab0b6;           /* 標籤、停用 */
+  --hairline:#e9ebe7;        /* 僅用於高密度列表分隔 */
+
+  --accent:#5d7f6e;          /* 鼠尾草綠 · 主行動 */
+  --accent-hover:#4e6d5e;
+  --accent-bg:#e7efe9;       /* 強調底色 */
+  --accent-ink:#ffffff;      /* 綠底上的字 */
+
+  --ok:#5d7f6e;   --ok-bg:#e7efe9;
+  --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6;
+  --info:#5d7183; --info-bg:#e8eef2;
+
+  /* ── 圓角 ─────────────────────────── */
+  --r-xs:8px;    /* 標籤、小按鈕 */
+  --r-sm:14px;   /* 輸入框、內層區塊 */
+  --r-md:22px;   /* 卡片 · 主要圓角 */
+  --r-lg:28px;   /* 大面板、彈窗 */
+  --r-pill:999px;
+
+  /* ── 陰影（分層的唯一手段）────────── */
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --sh-3:0 30px 70px -34px rgba(35,38,42,.38), 0 4px 12px -6px rgba(35,38,42,.08);
+  --sh-focus:0 0 0 3px var(--accent-bg);
+
+  /* ── 間距節奏（4 的倍數）──────────── */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px;
+  --s6:24px; --s7:32px; --s8:40px; --s9:56px; --s10:72px;
+
+  /* ── 字體 ─────────────────────────── */
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --t-xs:11px; --t-sm:12.5px; --t-base:14px; --t-md:15.5px;
+  --t-lg:18px; --t-xl:22px; --t-2xl:28px; --t-3xl:36px;
+}
+
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-hover:#a3c6b3; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029;
+    --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e;
+    --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+    --sh-3:0 34px 76px -34px rgba(0,0,0,.85);
+    --sh-focus:0 0 0 3px var(--accent-bg);
+  }
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font);
+  font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased;
+}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+
+.page{max-width:1160px;margin:0 auto;padding:var(--s9) var(--s6) var(--s10)}
+
+/* ── 頁首 ─────────────────────────────── */
+.masthead{margin-bottom:var(--s9)}
+.kicker{
+  display:inline-block;font-size:var(--t-xs);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:var(--r-pill);
+  font-weight:600;margin-bottom:var(--s5);
+}
+h1{font-size:clamp(28px,4vw,var(--t-3xl));font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.masthead p{margin-top:var(--s4);max-width:60ch;color:var(--ink-3);font-size:var(--t-md)}
+
+/* ── 區塊 ─────────────────────────────── */
+section{margin-top:var(--s10)}
+.sec-title{display:flex;align-items:baseline;gap:var(--s3);margin-bottom:var(--s2)}
+.sec-title h2{font-size:var(--t-xl);font-weight:700;letter-spacing:-.02em}
+.sec-title .n{font-size:var(--t-xs);font-weight:700;color:var(--ink-4);letter-spacing:.1em}
+.sec-desc{color:var(--ink-3);font-size:var(--t-base);max-width:60ch;margin-bottom:var(--s6)}
+
+.panel{
+  background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);
+  padding:var(--s6);
+}
+.panel + .panel{margin-top:var(--s4)}
+.panel h3{font-size:var(--t-base);font-weight:600;margin-bottom:var(--s5);color:var(--ink-2)}
+
+/* ── 色票 ─────────────────────────────── */
+.swatch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:var(--s3)}
+.sw{border-radius:var(--r-sm);overflow:hidden;box-shadow:var(--sh-1)}
+.sw .chip{height:66px}
+.sw .meta{padding:10px 12px;background:var(--sunk)}
+.sw b{display:block;font-size:var(--t-sm);font-weight:600}
+.sw code{font-size:var(--t-xs);color:var(--ink-3);font-family:var(--font);letter-spacing:.02em}
+.sw small{display:block;font-size:var(--t-xs);color:var(--ink-4);margin-top:2px}
+
+/* ── 字級 ─────────────────────────────── */
+.type-row{display:flex;align-items:baseline;gap:var(--s5);padding:var(--s3) 0;border-bottom:1px solid var(--hairline)}
+.type-row:last-child{border-bottom:0}
+.type-row .tag{flex:0 0 128px;font-size:var(--t-xs);color:var(--ink-4);letter-spacing:.06em}
+.type-row .sample{color:var(--ink)}
+
+/* ── 圓角與陰影 ───────────────────────── */
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--s4)}
+.demo{
+  background:var(--surface);height:92px;display:grid;place-items:center;
+  font-size:var(--t-xs);color:var(--ink-3);text-align:center;line-height:1.4;
+}
+.demo.sunk{background:var(--sunk)}
+
+/* ── 按鈕 ─────────────────────────────── */
+.btn{
+  font-family:var(--font);font-size:var(--t-base);font-weight:600;letter-spacing:-.01em;
+  padding:12px 22px;border:0;border-radius:var(--r-pill);cursor:pointer;
+  transition:background .18s,color .18s,box-shadow .18s,transform .12s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:0;box-shadow:var(--sh-focus)}
+.btn-primary{background:var(--accent);color:var(--accent-ink);box-shadow:var(--sh-1)}
+.btn-primary:hover{background:var(--accent-hover)}
+.btn-secondary{background:var(--sunk);color:var(--ink)}
+.btn-secondary:hover{background:var(--accent-bg);color:var(--accent)}
+.btn-ghost{background:transparent;color:var(--ink-3);padding:12px 14px}
+.btn-ghost:hover{background:var(--sunk);color:var(--ink)}
+.btn-danger{background:var(--danger-bg);color:var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-sm{font-size:var(--t-sm);padding:8px 16px}
+.btn:disabled{background:var(--sunk);color:var(--ink-4);cursor:not-allowed;box-shadow:none}
+.btn-row{display:flex;flex-wrap:wrap;gap:var(--s3);align-items:center}
+
+/* ── 表單 ─────────────────────────────── */
+.field{margin-bottom:var(--s4)}
+.field label{display:block;font-size:var(--t-sm);font-weight:500;color:var(--ink-2);margin-bottom:6px}
+.input,.select,.textarea{
+  width:100%;font-family:var(--font);font-size:var(--t-base);color:var(--ink);
+  background:var(--sunk);border:0;border-radius:var(--r-sm);padding:13px 16px;
+  transition:box-shadow .18s,background .18s;
+}
+.input::placeholder{color:var(--ink-4)}
+.input:focus,.select:focus,.textarea:focus{outline:0;background:var(--surface);box-shadow:var(--sh-focus),var(--sh-1)}
+.textarea{min-height:88px;resize:vertical;line-height:1.6}
+.hint{font-size:var(--t-xs);color:var(--ink-4);margin-top:6px}
+.hint.err{color:var(--danger)}
+
+.switch{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:var(--t-base)}
+.switch input{display:none}
+.track{width:44px;height:26px;border-radius:var(--r-pill);background:var(--ink-4);position:relative;transition:background .2s}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:var(--sh-1)}
+.switch input:checked + .track{background:var(--accent)}
+.switch input:checked + .track::after{transform:translateX(18px)}
+
+/* ── 狀態標籤 ─────────────────────────── */
+.pill{
+  display:inline-flex;align-items:center;gap:6px;font-size:var(--t-xs);font-weight:600;
+  padding:5px 12px;border-radius:var(--r-pill);letter-spacing:.02em;
+}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-danger{background:var(--danger-bg);color:var(--danger)}
+.p-info{background:var(--info-bg);color:var(--info)}
+.p-mute{background:var(--sunk);color:var(--ink-3)}
+
+/* ── KPI 磚 ───────────────────────────── */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:var(--s4)}
+.kpi{background:var(--sunk);border-radius:var(--r-sm);padding:var(--s5)}
+.kpi .k{font-size:var(--t-xs);color:var(--ink-3);letter-spacing:.04em}
+.kpi .v{font-size:var(--t-2xl);font-weight:800;letter-spacing:-.035em;margin-top:6px;line-height:1.1}
+.kpi .d{font-size:var(--t-xs);color:var(--ok);margin-top:4px;font-weight:600}
+.kpi .d.down{color:var(--danger)}
+
+/* ── 高密度：時段列 ───────────────────── */
+.dense{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);overflow:hidden}
+.dense-head{padding:var(--s4) var(--s5);display:flex;align-items:center;gap:10px}
+.dense-head h4{font-size:var(--t-base);font-weight:600}
+.dense-head .sub{font-size:var(--t-xs);color:var(--ink-4);margin-left:auto}
+.daylabel{font-size:var(--t-xs);color:var(--ink-4);letter-spacing:.1em;padding:10px var(--s5) 4px;font-weight:600}
+.slot{
+  display:flex;align-items:center;gap:14px;padding:10px var(--s5);
+  border-bottom:1px solid var(--hairline);cursor:pointer;transition:background .15s;
+}
+.slot:last-child{border-bottom:0}
+.slot:hover{background:var(--sunk)}
+.slot .t{font-size:var(--t-md);font-weight:700;flex:0 0 52px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.slot .w{font-size:var(--t-sm);color:var(--ink-3);flex:1}
+.slot .a{font-size:var(--t-xs);color:var(--accent);font-weight:600}
+.slot.off{opacity:.4;cursor:default}
+.slot.off:hover{background:transparent}
+.slot.off .a{color:var(--ink-4)}
+
+/* ── 日曆 ─────────────────────────────── */
+.cal{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:var(--s5);max-width:328px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s4)}
+.cal-head b{font-size:var(--t-base);font-weight:700;letter-spacing:-.01em}
+.cal-nav{display:flex;gap:4px}
+.cal-nav button{width:32px;height:32px;border:0;border-radius:var(--r-pill);background:var(--sunk);color:var(--ink-2);cursor:pointer;font-size:13px;transition:background .15s}
+.cal-nav button:hover{background:var(--accent-bg);color:var(--accent)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-grid .wd{text-align:center;font-size:var(--t-xs);color:var(--ink-4);padding-bottom:6px;font-weight:600}
+.day{
+  aspect-ratio:1;display:grid;place-items:center;border-radius:var(--r-xs);
+  font-size:var(--t-sm);font-weight:500;cursor:pointer;position:relative;
+  font-variant-numeric:tabular-nums;transition:background .15s,color .15s;
+}
+.day:hover{background:var(--sunk)}
+.day.mute{color:var(--ink-4);cursor:default}
+.day.mute:hover{background:transparent}
+.day.has::after{content:"";position:absolute;bottom:5px;width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.day.sel{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.day.sel::after{background:var(--accent-ink)}
+.day.today{box-shadow:inset 0 0 0 1.5px var(--accent)}
+
+/* ── 客戶卡 ───────────────────────────── */
+.cust{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:var(--s5);max-width:352px}
+.cust-top{display:flex;align-items:center;gap:var(--s3)}
+.avatar{width:46px;height:46px;border-radius:var(--r-pill);background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:var(--t-md);flex:0 0 46px}
+.cust-top b{font-size:var(--t-md);font-weight:700;letter-spacing:-.01em;display:block}
+.cust-top .ph{font-size:var(--t-sm);color:var(--ink-3);font-variant-numeric:tabular-nums}
+.trust{display:flex;gap:var(--s4);margin-top:var(--s4);padding-top:var(--s4);border-top:1px solid var(--hairline)}
+.trust div{flex:1}
+.trust .n{font-size:var(--t-lg);font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.trust .l{font-size:var(--t-xs);color:var(--ink-4)}
+.trust .bad .n{color:var(--danger)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:var(--s4)}
+
+/* ── 提示條 ───────────────────────────── */
+.alert{display:flex;gap:var(--s3);padding:var(--s4) var(--s5);border-radius:var(--r-sm);font-size:var(--t-base);align-items:flex-start}
+.alert b{font-weight:600;display:block;margin-bottom:2px}
+.alert p{font-size:var(--t-sm);opacity:.85}
+.a-info{background:var(--info-bg);color:var(--info)}
+.a-warn{background:var(--warn-bg);color:var(--warn)}
+.a-ok{background:var(--ok-bg);color:var(--ok)}
+.icon{width:20px;height:20px;border-radius:50%;background:currentColor;opacity:.25;flex:0 0 20px;margin-top:2px}
+
+/* ── 空狀態 ───────────────────────────── */
+.empty{text-align:center;padding:var(--s9) var(--s5);background:var(--sunk);border-radius:var(--r-md)}
+.empty .blob{width:64px;height:64px;border-radius:var(--r-md);background:var(--accent-bg);margin:0 auto var(--s4)}
+.empty b{display:block;font-size:var(--t-md);font-weight:700;margin-bottom:6px}
+.empty p{font-size:var(--t-sm);color:var(--ink-3);max-width:38ch;margin:0 auto var(--s5)}
+
+/* ── 側欄 ─────────────────────────────── */
+.nav{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:var(--s3);max-width:236px}
+.nav a{
+  display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--r-sm);
+  font-size:var(--t-base);color:var(--ink-2);text-decoration:none;font-weight:500;transition:background .15s,color .15s;
+}
+.nav a:hover{background:var(--sunk);color:var(--ink)}
+.nav a.on{background:var(--accent-bg);color:var(--accent);font-weight:600}
+.nav a .sq{width:16px;height:16px;border-radius:5px;background:currentColor;opacity:.3}
+.nav a.on .sq{opacity:.7}
+.nav .grp{font-size:var(--t-xs);color:var(--ink-4);padding:var(--s4) 14px 6px;letter-spacing:.08em;font-weight:600}
+
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:var(--s4);align-items:start}
+
+/* ── 規則說明 ─────────────────────────── */
+.rules{display:grid;gap:var(--s3)}
+.rule{display:grid;grid-template-columns:30px 1fr;gap:var(--s3);padding:var(--s4);background:var(--sunk);border-radius:var(--r-sm)}
+.rule .n{font-size:var(--t-sm);font-weight:800;color:var(--accent)}
+.rule b{font-weight:600;font-size:var(--t-base)}
+.rule p{font-size:var(--t-sm);color:var(--ink-3);margin-top:3px}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="masthead">
+  <span class="kicker">方案 B · 柔光日光</span>
+  <h1>ProLink 設計系統</h1>
+  <p>所有頁面都從這一組代幣長出來。以後想調整整體感覺，只要改這裡的變數，不用一頁一頁動。深色模式已內建，會跟著使用者的系統設定自動切換。</p>
+</header>
+
+<!-- 01 顏色 -->
+<section>
+  <div class="sec-title"><span class="n">01</span><h2>顏色</h2></div>
+  <p class="sec-desc">一個主色（鼠尾草綠）、一組中性灰、四個語意色。刻意不用高彩度，讓畫面看久不累，也不會跟職人自己的品牌照片打架。</p>
+  <div class="panel">
+    <h3>介面基礎</h3>
+    <div class="swatch-grid">
+      <div class="sw"><div class="chip" style="background:var(--bg)"></div><div class="meta"><b>頁面底</b><code>--bg</code><small>整頁背景</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline)"></div><div class="meta"><b>卡片面</b><code>--surface</code><small>浮起的內容</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--sunk)"></div><div class="meta"><b>凹陷面</b><code>--sunk</code><small>輸入框、次要按鈕</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--ink)"></div><div class="meta"><b>主文字</b><code>--ink</code><small>標題與內文</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--ink-3)"></div><div class="meta"><b>輔助文字</b><code>--ink-3</code><small>說明、次要資訊</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--ink-4)"></div><div class="meta"><b>淡文字</b><code>--ink-4</code><small>欄位標籤、停用</small></div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>主色與語意色</h3>
+    <div class="swatch-grid">
+      <div class="sw"><div class="chip" style="background:var(--accent)"></div><div class="meta"><b>主色</b><code>--accent</code><small>主要行動按鈕</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--accent-bg)"></div><div class="meta"><b>主色底</b><code>--accent-bg</code><small>選中、強調區塊</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--ok)"></div><div class="meta"><b>成功</b><code>--ok</code><small>已確認、已付款</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--warn)"></div><div class="meta"><b>提醒</b><code>--warn</code><small>待處理、快額滿</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--danger)"></div><div class="meta"><b>警告</b><code>--danger</code><small>放鳥、封鎖、取消</small></div></div>
+      <div class="sw"><div class="chip" style="background:var(--info)"></div><div class="meta"><b>資訊</b><code>--info</code><small>中性提示</small></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 字體 -->
+<section>
+  <div class="sec-title"><span class="n">02</span><h2>字體與字級</h2></div>
+  <p class="sec-desc">中英數統一用 Plus Jakarta Sans + Noto Sans TC，圓潤但不幼稚。所有數字都開啟等寬對齊，時間與金額在列表裡會自動排成一直線。</p>
+  <div class="panel">
+    <div class="type-row"><span class="tag">3XL · 800 · 36px</span><span class="sample" style="font-size:var(--t-3xl);font-weight:800;letter-spacing:-.03em">今天有 6 筆預約</span></div>
+    <div class="type-row"><span class="tag">2XL · 800 · 28px</span><span class="sample num" style="font-size:var(--t-2xl);font-weight:800;letter-spacing:-.035em">NT$ 12,400</span></div>
+    <div class="type-row"><span class="tag">XL · 700 · 22px</span><span class="sample" style="font-size:var(--t-xl);font-weight:700;letter-spacing:-.02em">客戶管理</span></div>
+    <div class="type-row"><span class="tag">LG · 700 · 18px</span><span class="sample" style="font-size:var(--t-lg);font-weight:700">陳小姐 · 深層按摩</span></div>
+    <div class="type-row"><span class="tag">MD · 600 · 15.5px</span><span class="sample" style="font-size:var(--t-md);font-weight:600">卡片標題與重點</span></div>
+    <div class="type-row"><span class="tag">BASE · 400 · 14px</span><span class="sample" style="font-size:var(--t-base)">一般內文。這是最常出現的字級，行高 1.65 讓中文讀起來舒服。</span></div>
+    <div class="type-row"><span class="tag">SM · 400 · 12.5px</span><span class="sample" style="font-size:var(--t-sm);color:var(--ink-3)">輔助說明、次要資訊</span></div>
+    <div class="type-row"><span class="tag">XS · 600 · 11px</span><span class="sample" style="font-size:var(--t-xs);color:var(--ink-4);letter-spacing:.06em;font-weight:600">欄位標籤 · 狀態文字</span></div>
+  </div>
+</section>
+
+<!-- 03 圓角與陰影 -->
+<section>
+  <div class="sec-title"><span class="n">03</span><h2>圓角與陰影</h2></div>
+  <p class="sec-desc">這套風格<b>不用邊框線分層</b>，全部靠圓角與陰影。唯一的例外是高密度列表的分隔線，那裡用最淡的髮絲線。</p>
+  <div class="panel">
+    <h3>圓角尺度</h3>
+    <div class="demo-grid">
+      <div class="demo sunk" style="border-radius:var(--r-xs)">8px<br>標籤 · 日曆格</div>
+      <div class="demo sunk" style="border-radius:var(--r-sm)">14px<br>輸入框 · 內層</div>
+      <div class="demo sunk" style="border-radius:var(--r-md)">22px<br><b>卡片 · 主要</b></div>
+      <div class="demo sunk" style="border-radius:var(--r-lg)">28px<br>大面板 · 彈窗</div>
+      <div class="demo sunk" style="border-radius:var(--r-pill)">999px<br>按鈕 · 藥丸標籤</div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>陰影層級</h3>
+    <div class="demo-grid">
+      <div class="demo" style="border-radius:var(--r-md);box-shadow:var(--sh-1)">層級 1<br>貼近頁面</div>
+      <div class="demo" style="border-radius:var(--r-md);box-shadow:var(--sh-2)">層級 2<br><b>卡片預設</b></div>
+      <div class="demo" style="border-radius:var(--r-md);box-shadow:var(--sh-3)">層級 3<br>彈窗 · 浮層</div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 按鈕 -->
+<section>
+  <div class="sec-title"><span class="n">04</span><h2>按鈕</h2></div>
+  <p class="sec-desc">一律藥丸形。同一個畫面裡<b>只能有一顆綠色主按鈕</b>，其他都用次要或文字按鈕，讓使用者一眼知道該按哪裡。</p>
+  <div class="panel">
+    <div class="btn-row" style="margin-bottom:var(--s5)">
+      <button class="btn btn-primary">確認建立</button>
+      <button class="btn btn-secondary">修改</button>
+      <button class="btn btn-ghost">取消</button>
+      <button class="btn btn-danger">標記放鳥</button>
+      <button class="btn btn-primary" disabled>已額滿</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-sm">小尺寸主按鈕</button>
+      <button class="btn btn-secondary btn-sm">小尺寸次要</button>
+    </div>
+  </div>
+</section>
+
+<!-- 05 表單 -->
+<section>
+  <div class="sec-title"><span class="n">05</span><h2>表單</h2></div>
+  <p class="sec-desc">輸入框是「凹」下去的，跟浮起的卡片形成對比。點進去時會變白並浮起，讓使用者清楚知道游標在哪。</p>
+  <div class="panel two">
+    <div>
+      <div class="field">
+        <label>客人姓名</label>
+        <input class="input" placeholder="請輸入姓名" value="陳小姐">
+      </div>
+      <div class="field">
+        <label>手機號碼</label>
+        <input class="input num" placeholder="09xx-xxx-xxx">
+        <p class="hint">用來辨識老客人，也是黑名單的判斷依據</p>
+      </div>
+      <div class="field">
+        <label>服務項目</label>
+        <select class="select"><option>深層運動按摩 · 90 分 · NT$1,800</option></select>
+      </div>
+    </div>
+    <div>
+      <div class="field">
+        <label>內部備註<span style="color:var(--ink-4);font-weight:400"> · 客人看不到</span></label>
+        <textarea class="textarea" placeholder="例如：肩頸特別緊、不喜歡太大力"></textarea>
+      </div>
+      <div class="field">
+        <label>錯誤示範</label>
+        <input class="input" value="0912" style="box-shadow:0 0 0 3px var(--danger-bg)">
+        <p class="hint err">手機號碼格式不正確</p>
+      </div>
+      <label class="switch" style="margin-top:var(--s5)">
+        <input type="checkbox" checked><span class="track"></span>新客必須先加 LINE 好友才能預約
+      </label>
+    </div>
+  </div>
+</section>
+
+<!-- 06 狀態標籤 -->
+<section>
+  <div class="sec-title"><span class="n">06</span><h2>狀態標籤</h2></div>
+  <p class="sec-desc">預約的每一種狀態都有固定顏色，全站一致。顏色搭配小圓點，色盲使用者也能靠文字分辨。</p>
+  <div class="panel">
+    <div class="btn-row">
+      <span class="pill p-info"><span class="dot"></span>待確認</span>
+      <span class="pill p-ok"><span class="dot"></span>已確認</span>
+      <span class="pill p-mute"><span class="dot"></span>已完成</span>
+      <span class="pill p-warn"><span class="dot"></span>定金待付</span>
+      <span class="pill p-danger"><span class="dot"></span>放鳥未到</span>
+      <span class="pill p-mute"><span class="dot"></span>已取消</span>
+      <span class="pill p-danger"><span class="dot"></span>已封鎖</span>
+      <span class="pill p-ok"><span class="dot"></span>VIP</span>
+    </div>
+  </div>
+</section>
+
+<!-- 07 高密度 -->
+<section>
+  <div class="sec-title"><span class="n">07</span><h2>高密度模式</h2></div>
+  <p class="sec-desc">行事曆與時段列表這類「一天要看很多次」的地方，間距收緊、數字加粗並等寬對齊，讓時間排成一直線好掃讀。這仍然是同一套風格，只是密度調高。</p>
+  <div class="two">
+    <div class="dense">
+      <div class="dense-head"><h4>近期可約時段</h4><span class="sub">7 天內</span></div>
+      <p class="daylabel">08 / 02 週六</p>
+      <div class="slot"><span class="t num">19:00</span><span class="w">六合健身房</span><span class="a">選這個</span></div>
+      <div class="slot"><span class="t num">20:30</span><span class="w">六合健身房</span><span class="a">選這個</span></div>
+      <p class="daylabel">08 / 03 週日</p>
+      <div class="slot off"><span class="t num">10:00</span><span class="w">A 館</span><span class="a">已滿</span></div>
+      <div class="slot"><span class="t num">14:00</span><span class="w">到府服務</span><span class="a">選這個</span></div>
+      <div class="slot"><span class="t num">16:30</span><span class="w">A 館</span><span class="a">選這個</span></div>
+    </div>
+
+    <div class="cal">
+      <div class="cal-head"><b>2026 年 8 月</b><div class="cal-nav"><button>‹</button><button>›</button></div></div>
+      <div class="cal-grid">
+        <span class="wd">一</span><span class="wd">二</span><span class="wd">三</span><span class="wd">四</span><span class="wd">五</span><span class="wd">六</span><span class="wd">日</span>
+        <span class="day mute">28</span><span class="day mute">29</span><span class="day mute">30</span><span class="day mute">31</span>
+        <span class="day has">1</span><span class="day sel">2</span><span class="day has">3</span>
+        <span class="day">4</span><span class="day has">5</span><span class="day">6</span><span class="day has">7</span><span class="day today has">8</span><span class="day has">9</span><span class="day">10</span>
+        <span class="day has">11</span><span class="day">12</span><span class="day has">13</span><span class="day">14</span><span class="day has">15</span><span class="day has">16</span><span class="day">17</span>
+        <span class="day">18</span><span class="day has">19</span><span class="day">20</span><span class="day">21</span><span class="day has">22</span><span class="day">23</span><span class="day">24</span>
+      </div>
+      <p class="hint" style="margin-top:var(--s4)">綠點 = 當天還有空檔</p>
+    </div>
+  </div>
+</section>
+
+<!-- 08 卡片與數據 -->
+<section>
+  <div class="sec-title"><span class="n">08</span><h2>卡片與數據</h2></div>
+  <p class="sec-desc">客戶卡上直接顯示信賴紀錄，老師接電話時一眼就知道這個客人以前放過幾次鳥。</p>
+  <div class="two">
+    <div class="cust">
+      <div class="cust-top">
+        <span class="avatar">陳</span>
+        <div><b>陳小姐</b><span class="ph">0912-345-678</span></div>
+        <span class="pill p-ok" style="margin-left:auto"><span class="dot"></span>VIP</span>
+      </div>
+      <div class="trust">
+        <div><div class="n">12</div><div class="l">到店次數</div></div>
+        <div class="bad"><div class="n">1</div><div class="l">放鳥</div></div>
+        <div><div class="n">2</div><div class="l">臨時取消</div></div>
+        <div><div class="n">18.6k</div><div class="l">累計消費</div></div>
+      </div>
+      <div class="tags">
+        <span class="pill p-mute">肩頸緊繃</span>
+        <span class="pill p-mute">偏好晚間</span>
+        <span class="pill p-mute">不喜歡太大力</span>
+      </div>
+    </div>
+
+    <div>
+      <div class="kpis">
+        <div class="kpi"><div class="k">本月營收</div><div class="v num">124,800</div><div class="d">↑ 18% 較上月</div></div>
+        <div class="kpi"><div class="k">回頭客比例</div><div class="v num">68%</div><div class="d">↑ 4%</div></div>
+        <div class="kpi"><div class="k">放鳥率</div><div class="v num">3.2%</div><div class="d down">↑ 0.8%</div></div>
+        <div class="kpi"><div class="k">平均客單</div><div class="v num">1,640</div><div class="d">↑ 2%</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 提示與空狀態 -->
+<section>
+  <div class="sec-title"><span class="n">09</span><h2>提示與空狀態</h2></div>
+  <p class="sec-desc">空白畫面不要只寫「沒有資料」，要告訴使用者下一步該做什麼。</p>
+  <div class="panel" style="display:grid;gap:var(--s3)">
+    <div class="alert a-ok"><span class="icon"></span><div><b>預約已建立</b><p>已發送 LINE 通知給陳小姐，前一天會自動再提醒一次。</p></div></div>
+    <div class="alert a-warn"><span class="icon"></span><div><b>有 2 筆預約等你結案</b><p>昨天的預約還沒登記有沒有到，先處理完報表才會準。</p></div></div>
+    <div class="alert a-info"><span class="icon"></span><div><b>本月 LINE 訊息已用 168 / 200 則</b><p>快到免費額度上限了，超過的部分 LINE 會另外收費。</p></div></div>
+  </div>
+  <div class="panel">
+    <div class="empty">
+      <div class="blob"></div>
+      <b>還沒有任何客戶</b>
+      <p>可以從手邊的 Excel 或通訊錄一次匯入，也可以等客人自己從 LINE 預約後自動建立。</p>
+      <button class="btn btn-primary">匯入客戶名單</button>
+    </div>
+  </div>
+</section>
+
+<!-- 10 導覽 -->
+<section>
+  <div class="sec-title"><span class="n">10</span><h2>導覽</h2></div>
+  <div class="panel two">
+    <nav class="nav">
+      <p class="grp">每天要用</p>
+      <a href="#" class="on"><span class="sq"></span>今日行程</a>
+      <a href="#"><span class="sq"></span>行事曆</a>
+      <a href="#"><span class="sq"></span>客戶管理</a>
+      <p class="grp">設定</p>
+      <a href="#"><span class="sq"></span>服務項目</a>
+      <a href="#"><span class="sq"></span>營業時間與據點</a>
+      <a href="#"><span class="sq"></span>LINE 官方帳號</a>
+      <a href="#"><span class="sq"></span>定金與收款</a>
+    </nav>
+    <div class="rules">
+      <div class="rule"><span class="n">1</span><div><b>不用邊框線</b><p>要分層就用陰影或凹陷底色，不要畫 1px 的框。</p></div></div>
+      <div class="rule"><span class="n">2</span><div><b>一畫面一顆綠按鈕</b><p>主要行動只能有一個，其他一律次要或文字按鈕。</p></div></div>
+      <div class="rule"><span class="n">3</span><div><b>數字一律等寬對齊</b><p>時間、金額、電話都套 <code>.num</code>，列表才會排成一直線。</p></div></div>
+      <div class="rule"><span class="n">4</span><div><b>顏色不是唯一線索</b><p>狀態一定要有文字，不能只靠顏色分辨。</p></div></div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

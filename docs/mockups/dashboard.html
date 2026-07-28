@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 老師後台四張主畫面</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* 代幣與 design-system.html 同源 · 方案 B 柔光日光 */
+:root{
+  --bg:#f7f7f5; --surface:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7;
+  --accent:#5d7f6e; --accent-hover:#4e6d5e; --accent-bg:#e7efe9; --accent-ink:#fff;
+  --ok:#5d7f6e; --ok-bg:#e7efe9;
+  --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6;
+  --info:#5d7183; --info-bg:#e8eef2;
+  --r-xs:8px; --r-sm:14px; --r-md:22px; --r-lg:28px; --r-pill:999px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --sh-3:0 30px 70px -34px rgba(35,38,42,.38);
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-hover:#a3c6b3; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029; --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e; --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+    --sh-3:0 34px 76px -34px rgba(0,0,0,.85);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1280px;margin:0 auto;padding:56px 24px 110px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:var(--r-pill);font-weight:700;margin-bottom:20px}
+h1{font-size:clamp(27px,4vw,36px);font-weight:800;letter-spacing:-.03em;line-height:1.16}
+.lede{margin-top:16px;max-width:62ch;color:var(--ink-3);font-size:15.5px}
+
+section{margin-top:80px}
+.sec-title{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.sec-title .n{font-size:11px;font-weight:800;color:var(--ink-4);letter-spacing:.1em}
+.sec-title h2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.sec-title .dev{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--ink-4);background:var(--sunk);padding:4px 11px;border-radius:var(--r-pill)}
+.sec-desc{color:var(--ink-3);font-size:14px;max-width:64ch;margin-bottom:24px}
+
+.plain{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:24px 26px;margin-bottom:30px}
+.plain h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:14px}
+.plain ul{list-style:none;font-size:14.5px;color:var(--ink-2)}
+.plain ul li{padding:6px 0 6px 20px;position:relative}
+.plain ul li::before{content:"";position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.plain ul li b{color:var(--ink);font-weight:700}
+.plain .note{margin-top:14px;padding:13px 16px;background:var(--accent-bg);color:var(--accent);border-radius:var(--r-sm);font-size:13.5px}
+.plain .note b{font-weight:800}
+
+.stage{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+.cap{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4);font-weight:700;margin-bottom:14px}
+
+/* ── 手機 ── */
+.phone{width:356px;flex:0 0 356px;border-radius:40px;padding:11px;background:linear-gradient(165deg,#33383a,#191c1d);box-shadow:var(--sh-3)}
+.screen{background:var(--bg);border-radius:30px;overflow:hidden;min-height:640px;display:flex;flex-direction:column}
+.app-bar{padding:20px 20px 14px;background:var(--surface)}
+.app-bar .top{display:flex;align-items:center;gap:10px}
+.app-bar h3{font-size:19px;font-weight:800;letter-spacing:-.03em}
+.app-bar .d{font-size:12px;color:var(--ink-4);font-weight:700}
+.app-bar .me{margin-left:auto;width:34px;height:34px;border-radius:50%;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:13px}
+.mini-kpis{display:flex;gap:8px;margin-top:14px}
+.mk{flex:1;background:var(--sunk);border-radius:var(--r-sm);padding:10px 12px}
+.mk .k{font-size:10px;color:var(--ink-4);font-weight:700;letter-spacing:.04em}
+.mk .v{font-size:18px;font-weight:800;letter-spacing:-.03em;margin-top:1px;font-variant-numeric:tabular-nums}
+.mk.hot .v{color:var(--warn)}
+.body{flex:1;overflow:hidden;padding:16px 16px 20px}
+
+.alert{display:flex;gap:11px;padding:13px 15px;border-radius:var(--r-sm);align-items:center;margin-bottom:16px}
+.alert.warn{background:var(--warn-bg);color:var(--warn)}
+.alert b{font-weight:700;font-size:13.5px;display:block}
+.alert p{font-size:11.5px;opacity:.85}
+.alert .go{margin-left:auto;font-size:11.5px;font-weight:800;white-space:nowrap}
+.ico{width:22px;height:22px;border-radius:50%;background:currentColor;opacity:.2;flex:0 0 22px}
+
+/* 時間軸 */
+.tl{display:flex;flex-direction:column}
+.tlrow{display:grid;grid-template-columns:48px 1fr;gap:12px}
+.tlrow .hh{font-size:13px;font-weight:800;color:var(--ink-3);font-variant-numeric:tabular-nums;letter-spacing:-.03em;padding-top:14px;text-align:right}
+.bcard{background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:13px 15px;margin-bottom:8px}
+.bcard.now{box-shadow:var(--sh-2);outline:2px solid var(--accent)}
+.bcard .r1{display:flex;align-items:center;gap:8px}
+.bcard b{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.bcard .r2{font-size:12px;color:var(--ink-3);margin-top:3px}
+.bcard .r3{display:flex;align-items:center;gap:6px;margin-top:9px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:var(--r-pill);letter-spacing:.03em}
+.pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-info{background:var(--info-bg);color:var(--info)}
+.p-mute{background:var(--sunk);color:var(--ink-3)}
+.p-danger{background:var(--danger-bg);color:var(--danger)}
+.move{grid-column:2;font-size:11px;color:var(--ink-4);font-weight:600;padding:2px 0 10px 2px;display:flex;align-items:center;gap:8px}
+.move a{color:var(--accent);text-decoration:none;font-weight:800}
+.fab{position:relative;margin:4px 0 0 auto;width:auto;display:flex;justify-content:flex-end}
+.fab button{background:var(--accent);color:var(--accent-ink);border:0;border-radius:var(--r-pill);padding:13px 22px;font-family:var(--font);font-size:13.5px;font-weight:800;box-shadow:var(--sh-2);cursor:pointer}
+
+/* ── 桌機面板 ── */
+.desk{flex:1 1 620px;min-width:560px;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);overflow:hidden}
+.dbar{display:flex;align-items:center;gap:12px;padding:17px 22px}
+.dbar h3{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.dbar .sub{font-size:12px;color:var(--ink-4);font-weight:700}
+.dbar .right{margin-left:auto;display:flex;align-items:center;gap:7px}
+.seg{display:flex;background:var(--sunk);border-radius:var(--r-pill);padding:3px}
+.seg button{border:0;background:transparent;font-family:var(--font);font-size:12px;font-weight:700;color:var(--ink-3);padding:6px 14px;border-radius:var(--r-pill);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--sh-1)}
+.iconbtn{width:32px;height:32px;border:0;border-radius:var(--r-pill);background:var(--sunk);color:var(--ink-2);cursor:pointer;font-size:13px}
+.iconbtn:hover{background:var(--accent-bg);color:var(--accent)}
+
+/* 週檢視 */
+.wk{padding:0 18px 18px}
+.wkhead{display:grid;grid-template-columns:52px repeat(7,1fr);gap:4px;padding-bottom:10px}
+.wkhead div{text-align:center}
+.wkhead .wd{font-size:10.5px;color:var(--ink-4);font-weight:700;letter-spacing:.06em}
+.wkhead .dd{font-size:15px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:1px}
+.wkhead .today .dd{color:var(--accent-ink);background:var(--accent);border-radius:var(--r-pill);width:26px;height:26px;line-height:26px;margin:1px auto 0;font-size:13px}
+.wkgrid{display:grid;grid-template-columns:52px repeat(7,1fr);grid-auto-rows:44px;gap:4px;position:relative}
+.hlabel{font-size:11px;color:var(--ink-4);font-weight:700;font-variant-numeric:tabular-nums;text-align:right;padding-right:8px;margin-top:-7px}
+.slotbg{background:var(--sunk);border-radius:var(--r-xs)}
+.slotbg.closed{background:transparent}
+.evt{border-radius:var(--r-xs);padding:6px 8px;font-size:11px;line-height:1.3;overflow:hidden;cursor:grab}
+.evt b{display:block;font-weight:800;font-size:11.5px;letter-spacing:-.01em}
+.evt small{font-size:10px;opacity:.8;font-weight:600}
+.e-ok{background:var(--accent-bg);color:var(--accent)}
+.e-pend{background:var(--info-bg);color:var(--info)}
+.e-done{background:var(--sunk);color:var(--ink-3)}
+.e-block{background:var(--danger-bg);color:var(--danger);display:grid;place-items:center;font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:14px;padding:14px 22px 18px;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:4px;display:block}
+
+/* ── 表單 ── */
+.form{padding:4px 22px 22px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+.field label span{font-weight:500;color:var(--ink-4)}
+.input,.select{width:100%;font-family:var(--font);font-size:14px;color:var(--ink);background:var(--sunk);border:0;border-radius:var(--r-sm);padding:13px 16px}
+.input:focus,.select:focus{outline:0;background:var(--surface);box-shadow:0 0 0 3px var(--accent-bg),var(--sh-1)}
+.input::placeholder{color:var(--ink-4)}
+
+.custpick{background:var(--sunk);border-radius:var(--r-sm);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.custpick .av{width:40px;height:40px;border-radius:50%;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:14px;flex:0 0 40px}
+.custpick b{font-size:14.5px;font-weight:700;display:block}
+.custpick .ph{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.custpick .ch{margin-left:auto;font-size:12px;font-weight:800;color:var(--accent);cursor:pointer}
+.trust{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+.timepick{display:flex;flex-wrap:wrap;gap:7px}
+.tp{background:var(--sunk);border:0;border-radius:var(--r-pill);padding:9px 15px;font-family:var(--font);font-size:13px;font-weight:700;color:var(--ink-2);cursor:pointer;font-variant-numeric:tabular-nums}
+.tp:hover{background:var(--accent-bg);color:var(--accent)}
+.tp.on{background:var(--accent);color:var(--accent-ink)}
+.tp.off{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+
+.warnbox{display:flex;gap:11px;padding:14px 16px;border-radius:var(--r-sm);background:var(--warn-bg);color:var(--warn);margin-bottom:16px;align-items:flex-start}
+.warnbox b{font-weight:800;font-size:13.5px;display:block}
+.warnbox p{font-size:12.5px;opacity:.9;margin-top:2px}
+.dangerbox{background:var(--danger-bg);color:var(--danger)}
+
+.formfoot{display:flex;gap:10px;padding:16px 22px 22px;align-items:center}
+.formfoot .spacer{flex:1}
+.btn{padding:13px 24px;border:0;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font);font-size:13.5px;font-weight:800;transition:filter .18s,background .18s,color .18s}
+.btn-p{background:var(--accent);color:var(--accent-ink)}
+.btn-p:hover{filter:brightness(.93)}
+.btn-s{background:var(--sunk);color:var(--ink-2)}
+.btn-s:hover{background:var(--accent-bg);color:var(--accent)}
+.btn-g{background:transparent;color:var(--ink-3)}
+.btn-g:hover{color:var(--ink)}
+
+/* ── 結帳 ── */
+.checkout{padding:16px 16px 20px}
+.sum{background:var(--sunk);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:16px}
+.sum b{font-size:14.5px;font-weight:700}
+.sum p{font-size:12px;color:var(--ink-3);margin-top:2px}
+.money{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--hairline)}
+.money:last-of-type{border-bottom:0}
+.money .l{font-size:13.5px;color:var(--ink-2);font-weight:600}
+.money .l small{display:block;font-size:11px;color:var(--ink-4);font-weight:600}
+.money .v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+.money .v.minus{color:var(--accent)}
+.money.total{border-top:2px solid var(--ink);border-bottom:0;margin-top:6px;padding-top:14px}
+.money.total .l{font-weight:800;font-size:15px;color:var(--ink)}
+.money.total .v{font-size:24px}
+.editamt{background:var(--sunk);border:0;border-radius:var(--r-xs);padding:6px 10px;width:92px;text-align:right;font-family:var(--font);font-size:15px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.editamt:focus{outline:0;background:var(--surface);box-shadow:0 0 0 3px var(--accent-bg)}
+.paylist{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:6px}
+.pay{background:var(--sunk);border:0;border-radius:var(--r-sm);padding:12px 6px;font-family:var(--font);font-size:12.5px;font-weight:700;color:var(--ink-2);cursor:pointer;text-align:center;line-height:1.35}
+.pay small{display:block;font-size:9.5px;font-weight:700;opacity:.7;font-variant-numeric:tabular-nums}
+.pay.on{background:var(--accent);color:var(--accent-ink)}
+.pay.off{opacity:.35;cursor:not-allowed}
+.pay:hover:not(.on):not(.off){background:var(--accent-bg);color:var(--accent)}
+.balance{background:var(--accent-bg);color:var(--accent);border-radius:var(--r-sm);padding:10px 13px;font-size:11.5px;font-weight:700;margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.balance b{font-weight:800;font-variant-numeric:tabular-nums}
+.subhead{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin:18px 0 8px}
+.nextvisit{background:var(--accent-bg);border-radius:var(--r-sm);padding:13px 15px;display:flex;align-items:center;gap:11px;color:var(--accent)}
+.nextvisit b{font-size:13px;font-weight:800;display:block}
+.nextvisit p{font-size:11.5px;opacity:.9}
+.nextvisit .sw{margin-left:auto;width:40px;height:24px;border-radius:var(--r-pill);background:var(--accent);position:relative;flex:0 0 40px}
+.nextvisit .sw::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff}
+
+.notes{margin-top:30px;display:grid;gap:9px}
+.note-i{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:15px 19px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1)}
+.note-i .n{font-size:12.5px;font-weight:800;color:var(--accent)}
+.note-i b{font-weight:700;font-size:13.5px}
+.note-i p{font-size:13px;color:var(--ink-3);margin-top:2px}
+
+@media(max-width:1000px){
+  .desk{min-width:0;flex:1 1 100%}
+  .phone{width:100%;max-width:356px;flex:1 1 auto}
+  .frow{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 04 · Sprint 1 老師後台</span>
+  <h1>老師每天會用到的四張畫面</h1>
+  <p class="lede">照方案 B 的設計系統畫的。手機版給在外面跑的老師看，桌機版給坐在店裡的老師用——同一套風格，兩種密度。</p>
+</header>
+
+<!-- ══ 01 今日行程 ══ -->
+<section>
+  <div class="sec-title"><span class="n">01</span><h2>今日行程</h2><span class="dev">手機優先</span></div>
+  <p class="sec-desc">老師打開系統看到的第一個畫面。到府老師整天在外面，這一頁一定要在手機上好用。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>最上面三個數字：<b>今天幾筆、預計收多少、幾筆還沒結案</b>。一眼看完今天的狀況。</li>
+      <li>有待辦就跳橘色提示條，點進去直接處理，<b>不用自己記得要去哪裡找</b>。</li>
+      <li>下面是時間軸，每一筆顯示客人、服務、地點，以及定金付了沒。</li>
+      <li>跨據點的行程中間會插入<b>移動時間與導航連結</b>，出發前點一下就開地圖。</li>
+      <li>正在進行中的那一筆會加綠框，滑到那裡就知道現在該做什麼。</li>
+    </ul>
+    <div class="note"><b>右下角的「新增預約」永遠在。</b>老師接到電話的當下就要能登記，多按一層都嫌慢。</div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <p class="cap">手機版 · 老師在外面</p>
+      <div class="phone"><div class="screen">
+        <div class="app-bar">
+          <div class="top"><div><h3>今日行程</h3><span class="d">08 / 02 週六</span></div><span class="me">王</span></div>
+          <div class="mini-kpis">
+            <div class="mk"><div class="k">預約</div><div class="v">4</div></div>
+            <div class="mk"><div class="k">預計收入</div><div class="v">6,600</div></div>
+            <div class="mk hot"><div class="k">待結案</div><div class="v">2</div></div>
+          </div>
+        </div>
+        <div class="body">
+          <div class="alert warn"><span class="ico"></span><div><b>有 2 筆預約還沒結案</b><p>昨天的預約沒登記有沒有到</p></div><span class="go">去處理 ›</span></div>
+
+          <div class="tl">
+            <div class="tlrow"><span class="hh">09:00</span>
+              <div class="bcard">
+                <div class="r1"><b>陳小姐</b><span class="pill p-mute" style="margin-left:auto"><span class="dot"></span>已完成</span></div>
+                <p class="r2">深層按摩 60 分 · A 館 2F</p>
+                <div class="r3"><span class="pill p-ok"><span class="dot"></span>實收 1,200</span></div>
+              </div></div>
+            <div class="move">↓ 移動 30 分 · A 館 → B 館 · <a href="#">開啟導航</a></div>
+
+            <div class="tlrow"><span class="hh">11:00</span>
+              <div class="bcard now">
+                <div class="r1"><b>林先生</b><span class="pill p-ok" style="margin-left:auto"><span class="dot"></span>進行中</span></div>
+                <p class="r2">推拿 90 分 · B 館</p>
+                <div class="r3"><span class="pill p-warn"><span class="dot"></span>現場付款 1,800</span></div>
+              </div></div>
+            <div class="move">↓ 移動 45 分 · B 館 → 六合健身房 · <a href="#">開啟導航</a></div>
+
+            <div class="tlrow"><span class="hh">19:00</span>
+              <div class="bcard">
+                <div class="r1"><b>陳小姐</b><span class="pill p-info" style="margin-left:auto"><span class="dot"></span>已確認</span></div>
+                <p class="r2">推拿 90 分 · 六合健身房 3F</p>
+                <div class="r3"><span class="pill p-warn"><span class="dot"></span>定金 300 待付</span><span class="pill p-mute">LINE 建立</span></div>
+              </div></div>
+
+            <div class="tlrow"><span class="hh">20:30</span>
+              <div class="bcard">
+                <div class="r1"><b>張先生</b><span class="pill p-info" style="margin-left:auto"><span class="dot"></span>已確認</span></div>
+                <p class="r2">運動按摩 60 分 · 六合健身房 3F</p>
+                <div class="r3"><span class="pill p-ok"><span class="dot"></span>定金已付</span><span class="pill p-danger"><span class="dot"></span>放鳥 1 次</span></div>
+              </div></div>
+          </div>
+
+          <div class="fab"><button>＋ 新增預約</button></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="notes" style="flex:1 1 380px;min-width:320px;margin-top:38px">
+      <div class="note-i"><span class="n">1</span><div><b>為什麼把「待結案」放在最上面</b><p>現場付款沒有線上金流，營收數字完全靠老師結案時登記。不催他，報表就是空的。</p></div></div>
+      <div class="note-i"><span class="n">2</span><div><b>為什麼顯示「放鳥 1 次」</b><p>讓老師出發前心裡有數，可以決定要不要先打個電話確認。這是黑名單以外的軟性提醒。</p></div></div>
+      <div class="note-i"><span class="n">3</span><div><b>為什麼移動時間要獨立一行</b><p>到府老師最常出的事就是低估車程。把它變成畫面上看得見的一段，而不是藏在計算裡。</p></div></div>
+      <div class="note-i"><span class="n">4</span><div><b>為什麼標「LINE 建立」</b><p>用打字建的單有誤判風險，標記來源讓老師知道哪幾筆值得再看一眼。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 02 行事曆 ══ -->
+<section>
+  <div class="sec-title"><span class="n">02</span><h2>行事曆 · 週檢視</h2><span class="dev">桌機優先</span></div>
+  <p class="sec-desc">安排下週班表、調整時段、看整體滿載程度用的。資訊量大，適合坐下來用電腦看。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>左邊是時間，上面是一週七天，中間的色塊就是預約。</li>
+      <li><b>色塊可以直接拖曳改時間</b>，放開就是改期，系統會自動檢查有沒有撞到。</li>
+      <li>顏色代表狀態：綠色已確認、灰藍待確認、淺灰已完成、紅色是不開放（維修、休假）。</li>
+      <li>右上角可以切換<b>要看哪一位老師或哪一個場地</b>——多據點的老師切一下就知道自己哪天在哪。</li>
+      <li>空白格點一下就能直接在那個時段建立預約。</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div class="desk">
+      <div class="dbar">
+        <h3>行事曆</h3><span class="sub">08/02 – 08/08</span>
+        <div class="right">
+          <div class="seg"><button>日</button><button class="on">週</button><button>月</button></div>
+          <select class="select" style="width:auto;padding:8px 14px;font-size:12.5px;font-weight:700"><option>王老師</option><option>主訓練區</option></select>
+          <button class="iconbtn">‹</button><button class="iconbtn">›</button>
+        </div>
+      </div>
+
+      <div class="wk">
+        <div class="wkhead">
+          <div></div>
+          <div class="today"><p class="wd">六</p><p class="dd">2</p></div>
+          <div><p class="wd">日</p><p class="dd">3</p></div>
+          <div><p class="wd">一</p><p class="dd">4</p></div>
+          <div><p class="wd">二</p><p class="dd">5</p></div>
+          <div><p class="wd">三</p><p class="dd">6</p></div>
+          <div><p class="wd">四</p><p class="dd">7</p></div>
+          <div><p class="wd">五</p><p class="dd">8</p></div>
+        </div>
+
+        <div class="wkgrid">
+          <!-- 09:00 -->
+          <span class="hlabel" style="grid-row:1">09:00</span>
+          <div class="evt e-done" style="grid-column:2;grid-row:1/span 2"><b>陳小姐</b><small>深層按摩 · A館</small></div>
+          <div class="slotbg" style="grid-column:3;grid-row:1"></div>
+          <div class="slotbg" style="grid-column:4;grid-row:1"></div>
+          <div class="evt e-ok" style="grid-column:5;grid-row:1/span 3"><b>吳小姐</b><small>療程 120 分 · A館</small></div>
+          <div class="slotbg" style="grid-column:6;grid-row:1"></div>
+          <div class="slotbg" style="grid-column:7;grid-row:1"></div>
+          <div class="slotbg" style="grid-column:8;grid-row:1"></div>
+
+          <!-- 10:00 -->
+          <span class="hlabel" style="grid-row:2">10:00</span>
+          <div class="slotbg" style="grid-column:3;grid-row:2"></div>
+          <div class="evt e-ok" style="grid-column:4;grid-row:2/span 2"><b>黃先生</b><small>推拿 90 分 · B館</small></div>
+          <div class="slotbg" style="grid-column:6;grid-row:2"></div>
+          <div class="slotbg" style="grid-column:7;grid-row:2"></div>
+          <div class="slotbg" style="grid-column:8;grid-row:2"></div>
+
+          <!-- 11:00 -->
+          <span class="hlabel" style="grid-row:3">11:00</span>
+          <div class="evt e-ok" style="grid-column:2;grid-row:3/span 2"><b>林先生</b><small>推拿 90 分 · B館</small></div>
+          <div class="slotbg" style="grid-column:3;grid-row:3"></div>
+          <div class="slotbg" style="grid-column:6;grid-row:3"></div>
+          <div class="evt e-pend" style="grid-column:7;grid-row:3/span 2"><b>待確認</b><small>周小姐 · 到府</small></div>
+          <div class="slotbg" style="grid-column:8;grid-row:3"></div>
+
+          <!-- 12:00 -->
+          <span class="hlabel" style="grid-row:4">12:00</span>
+          <div class="slotbg" style="grid-column:3;grid-row:4"></div>
+          <div class="slotbg" style="grid-column:4;grid-row:4"></div>
+          <div class="slotbg" style="grid-column:5;grid-row:4"></div>
+          <div class="slotbg" style="grid-column:6;grid-row:4"></div>
+          <div class="slotbg" style="grid-column:8;grid-row:4"></div>
+
+          <!-- 13:00 休息 -->
+          <span class="hlabel" style="grid-row:5">13:00</span>
+          <div class="evt e-block" style="grid-column:2/span 7;grid-row:5">午休</div>
+
+          <!-- 14:00 -->
+          <span class="hlabel" style="grid-row:6">14:00</span>
+          <div class="slotbg" style="grid-column:2;grid-row:6"></div>
+          <div class="evt e-ok" style="grid-column:3;grid-row:6/span 2"><b>李太太</b><small>推拿 90 分 · 到府</small></div>
+          <div class="slotbg" style="grid-column:4;grid-row:6"></div>
+          <div class="slotbg" style="grid-column:5;grid-row:6"></div>
+          <div class="evt e-block" style="grid-column:6/span 2;grid-row:6/span 3">休假</div>
+          <div class="slotbg" style="grid-column:8;grid-row:6"></div>
+
+          <!-- 15:00 -->
+          <span class="hlabel" style="grid-row:7">15:00</span>
+          <div class="slotbg" style="grid-column:2;grid-row:7"></div>
+          <div class="slotbg" style="grid-column:4;grid-row:7"></div>
+          <div class="evt e-ok" style="grid-column:5;grid-row:7/span 2"><b>鄭先生</b><small>運動按摩 · A館</small></div>
+          <div class="slotbg" style="grid-column:8;grid-row:7"></div>
+
+          <!-- 16:00 -->
+          <span class="hlabel" style="grid-row:8">16:00</span>
+          <div class="slotbg" style="grid-column:2;grid-row:8"></div>
+          <div class="slotbg" style="grid-column:3;grid-row:8"></div>
+          <div class="slotbg" style="grid-column:4;grid-row:8"></div>
+          <div class="slotbg" style="grid-column:8;grid-row:8"></div>
+
+          <!-- 17:00 -->
+          <span class="hlabel" style="grid-row:9">17:00</span>
+          <div class="slotbg" style="grid-column:2;grid-row:9"></div>
+          <div class="slotbg" style="grid-column:3;grid-row:9"></div>
+          <div class="evt e-ok" style="grid-column:4;grid-row:9/span 2"><b>團體班</b><small>6 / 12 人 · 教室</small></div>
+          <div class="slotbg" style="grid-column:5;grid-row:9"></div>
+          <div class="slotbg" style="grid-column:8;grid-row:9"></div>
+
+          <!-- 18:00 -->
+          <span class="hlabel" style="grid-row:10">18:00</span>
+          <div class="slotbg" style="grid-column:2;grid-row:10"></div>
+          <div class="slotbg" style="grid-column:3;grid-row:10"></div>
+          <div class="slotbg" style="grid-column:5;grid-row:10"></div>
+          <div class="slotbg" style="grid-column:6;grid-row:10"></div>
+          <div class="slotbg" style="grid-column:7;grid-row:10"></div>
+          <div class="slotbg" style="grid-column:8;grid-row:10"></div>
+
+          <!-- 19:00 -->
+          <span class="hlabel" style="grid-row:11">19:00</span>
+          <div class="evt e-ok" style="grid-column:2;grid-row:11/span 2"><b>陳小姐</b><small>推拿 90 分 · 六合</small></div>
+          <div class="slotbg" style="grid-column:3;grid-row:11"></div>
+          <div class="slotbg" style="grid-column:4;grid-row:11"></div>
+          <div class="slotbg" style="grid-column:5;grid-row:11"></div>
+          <div class="slotbg" style="grid-column:6;grid-row:11"></div>
+          <div class="slotbg" style="grid-column:7;grid-row:11"></div>
+          <div class="slotbg" style="grid-column:8;grid-row:11"></div>
+
+          <!-- 20:00 -->
+          <span class="hlabel" style="grid-row:12">20:00</span>
+          <div class="slotbg" style="grid-column:3;grid-row:12"></div>
+          <div class="slotbg" style="grid-column:4;grid-row:12"></div>
+          <div class="slotbg" style="grid-column:5;grid-row:12"></div>
+          <div class="slotbg" style="grid-column:6;grid-row:12"></div>
+          <div class="slotbg" style="grid-column:7;grid-row:12"></div>
+          <div class="slotbg" style="grid-column:8;grid-row:12"></div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><i style="background:var(--accent-bg)"></i>已確認</span>
+        <span><i style="background:var(--info-bg)"></i>待確認</span>
+        <span><i style="background:var(--sunk)"></i>已完成 / 空檔</span>
+        <span><i style="background:var(--danger-bg)"></i>不開放</span>
+        <span style="margin-left:auto;color:var(--ink-4)">拖曳色塊即可改時間</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 03 手動建立預約 ══ -->
+<section>
+  <div class="sec-title"><span class="n">03</span><h2>手動建立預約</h2><span class="dev">桌機 / 手機通用</span></div>
+  <p class="sec-desc">老師接到電話當下就要能登記。這是 SaaS 的必備功能，沒有它整套系統不能用。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>先找客人：<b>打手機號碼或名字就會跳出既有客人</b>，找不到就直接新增。</li>
+      <li>選到客人後，下面會顯示他的<b>信賴紀錄</b>——到店幾次、放過幾次鳥。老師心裡有數再決定收不收定金。</li>
+      <li>選服務項目，時長和價格會自動帶。</li>
+      <li>選日期後，<b>只有真的可以約的時段才亮著</b>，被約走的、來不及移動的都是劃掉的。</li>
+      <li>如果硬要選一個有問題的時段，系統會跳警告說明原因，但<b>還是讓老師強制建立</b>——他可能就住在附近。</li>
+    </ul>
+    <div class="note"><b>系統提醒但不擋路。</b>後台是給專業人士用的工具，最終判斷權在老師手上。</div>
+  </div>
+
+  <div class="stage">
+    <div class="desk">
+      <div class="dbar"><h3>新增預約</h3><span class="sub">手動建立</span>
+        <div class="right"><button class="iconbtn">✕</button></div></div>
+
+      <div class="form">
+        <div class="field">
+          <label>客人</label>
+          <div class="custpick">
+            <span class="av">張</span>
+            <div><b>張先生</b><span class="ph">0928-114-527</span></div>
+            <span class="ch">更換</span>
+          </div>
+          <div class="trust">
+            <span class="pill p-mute">到店 5 次</span>
+            <span class="pill p-danger"><span class="dot"></span>放鳥 1 次</span>
+            <span class="pill p-mute">臨時取消 1 次</span>
+            <span class="pill p-mute">累計 8,400</span>
+          </div>
+        </div>
+
+        <div class="frow">
+          <div class="field">
+            <label>服務項目</label>
+            <select class="select"><option>運動按摩 60 分 · NT$1,200</option></select>
+          </div>
+          <div class="field">
+            <label>地點</label>
+            <select class="select"><option>六合健身房 3F</option></select>
+          </div>
+        </div>
+
+        <div class="frow">
+          <div class="field">
+            <label>日期</label>
+            <input class="input num" value="2026 / 08 / 02（六）">
+          </div>
+          <div class="field">
+            <label>定金 <span>· 依服務設定自動帶入</span></label>
+            <input class="input num" value="NT$ 300">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>時段 <span>· 劃掉的表示無法預約</span></label>
+          <div class="timepick">
+            <button class="tp">10:00</button>
+            <button class="tp off">11:00</button>
+            <button class="tp off">12:00</button>
+            <button class="tp">15:00</button>
+            <button class="tp">16:00</button>
+            <button class="tp off">19:00</button>
+            <button class="tp on">20:30</button>
+            <button class="tp">21:30</button>
+          </div>
+        </div>
+
+        <div class="warnbox">
+          <span class="ico"></span>
+          <div><b>19:00 已有預約，20:30 才接得上</b>
+          <p>19:00 在六合健身房有陳小姐的 90 分鐘推拿，結束後需要 10 分鐘整理。</p></div>
+        </div>
+
+        <div class="field">
+          <label>備註 <span>· 客人看不到</span></label>
+          <input class="input" placeholder="例如：這次要加強右肩">
+        </div>
+      </div>
+
+      <div class="formfoot">
+        <button class="btn btn-g">取消</button>
+        <span class="spacer"></span>
+        <button class="btn btn-s">建立並發 LINE 通知</button>
+        <button class="btn btn-p">建立預約</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 04 結帳登記 ══ -->
+<section>
+  <div class="sec-title"><span class="n">04</span><h2>結帳登記</h2><span class="dev">手機優先</span></div>
+  <p class="sec-desc">服務做完當下、客人還在面前的時候用。所以一定要在手機上，而且要快。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>金額<b>預先帶入服務定價</b>，臨時加購或給折扣就直接改數字。</li>
+      <li>已經付過的定金<b>自動扣掉</b>，畫面上直接顯示「還要收多少」。</li>
+      <li>選付款方式，一鍵完成。<b>整個流程三秒。</b></li>
+      <li>下面可以順手設定<b>建議回訪時間</b>，系統會在那之前自動發 LINE 提醒客人。</li>
+    </ul>
+    <div class="note"><b>這一步是整個報表的資料來源。</b>沒有線上金流，營收、客單價、VIP 分群全部靠這裡登記的數字。</div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <p class="cap">手機版 · 客人還在面前</p>
+      <div class="phone"><div class="screen">
+        <div class="app-bar"><div class="top"><div><h3>結帳</h3><span class="d">08 / 02 · 11:00 那筆</span></div><span class="me">✕</span></div></div>
+        <div class="checkout">
+          <div class="sum">
+            <b>林先生 · 推拿 90 分</b>
+            <p>B 館 · 11:00 – 12:30 · 第 8 次到店</p>
+          </div>
+
+          <div class="money"><span class="l">服務定價</span><input class="editamt" value="1,800"></div>
+          <div class="money"><span class="l">加購<small>精油升級</small></span><input class="editamt" value="300"></div>
+          <div class="money"><span class="l">折扣</span><input class="editamt" value="-100"></div>
+          <div class="money"><span class="l">已付定金<small>2026/07/28 LINE Pay</small></span><span class="v minus">− 300</span></div>
+          <div class="money total"><span class="l">現場應收</span><span class="v">1,700</span></div>
+
+          <p class="subhead">付款方式</p>
+          <div class="balance">
+            <span>林先生持有</span>
+            <b>1hr 券 ×3</b>·<b>30min 券 ×1</b>·<b>儲值金 1,200</b>
+          </div>
+          <div class="paylist">
+            <button class="pay on">現金</button>
+            <button class="pay">轉帳</button>
+            <button class="pay">刷卡</button>
+            <button class="pay">1hr 券<small>剩 3 張</small></button>
+            <button class="pay">30min 券<small>剩 1 張</small></button>
+            <button class="pay">儲值金<small>1,200</small></button>
+          </div>
+
+          <p class="subhead">下次回訪</p>
+          <div class="nextvisit">
+            <div><b>4 週後提醒他</b><p>09/01 自動發 LINE 邀約</p></div>
+            <span class="sw"></span>
+          </div>
+
+          <div style="margin-top:20px"><button class="btn btn-p" style="width:100%;padding:15px">完成結帳</button></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="notes" style="flex:1 1 380px;min-width:320px;margin-top:38px">
+      <div class="note-i"><span class="n">1</span><div><b>金額欄位一律可改</b><p>現場付款的世界裡，定價只是參考。加購、折扣、湊整數都是常態，不能鎖死。</p></div></div>
+      <div class="note-i"><span class="n">2</span><div><b>定金要顯示付款時間與管道</b><p>客人若質疑「我有付訂金啊」，老師當場調得出來。</p></div></div>
+      <div class="note-i"><span class="n">3</span><div><b>回訪提醒放在結帳頁</b><p>這是唯一能確定老師「剛做完、還記得客人狀況」的時刻，設定回訪週期最準。</p></div></div>
+      <div class="note-i"><span class="n">4</span><div><b>時數券與儲值金也在同一個流程</b><p>不要另外做一套核銷介面。按鈕上直接顯示剩幾張、剩多少，老師不用先去查餘額再回來結帳。</p></div></div>
+      <div class="note-i"><span class="n">5</span><div><b>券不夠時可以混合付款</b><p>90 分鐘的服務用掉 1hr 券 + 30min 券；若只剩 1hr 券，剩下 30 分鐘就用現金或儲值金補，不能卡住老師。</p></div></div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

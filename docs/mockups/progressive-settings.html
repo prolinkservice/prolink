@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 設定畫面的漸進顯示</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7;
+  --accent:#5d7f6e; --accent-bg:#e7efe9; --accent-ink:#fff;
+  --ok:#5d7f6e; --ok-bg:#e7efe9; --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6; --info:#5d7183; --info-bg:#e8eef2;
+  --r-xs:8px; --r-sm:14px; --r-md:22px; --r-pill:999px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029; --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e; --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1240px;margin:0 auto;padding:52px 24px 100px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:var(--r-pill);font-weight:700;margin-bottom:18px}
+h1{font-size:clamp(26px,3.8vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.18}
+.lede{margin-top:14px;max-width:66ch;color:var(--ink-3);font-size:15px}
+
+.rulebox{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:24px 26px;margin-top:34px}
+.rulebox h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:15px}
+table.rules{width:100%;border-collapse:collapse}
+table.rules th{text-align:left;font-size:11px;color:var(--ink-4);font-weight:800;letter-spacing:.05em;padding-bottom:9px;border-bottom:1px solid var(--hairline)}
+table.rules td{padding:13px 12px 13px 0;font-size:13.5px;border-bottom:1px solid var(--hairline);vertical-align:top}
+table.rules tr:last-child td{border-bottom:0}
+table.rules td:first-child{font-weight:700;width:180px}
+.yes{color:var(--accent);font-weight:800}
+.no{color:var(--ink-4);font-weight:700}
+
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px;align-items:start}
+@media(max-width:1080px){.cols{grid-template-columns:1fr;max-width:520px;margin-left:auto;margin-right:auto}}
+
+.hd{margin-bottom:14px}
+.hd .id{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.1em;padding:4px 10px;border-radius:var(--r-xs);background:var(--accent-bg);color:var(--accent);margin-bottom:9px}
+.hd h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.hd p{font-size:13px;color:var(--ink-3);margin-top:5px;min-height:40px}
+
+.panel{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);overflow:hidden;margin-bottom:16px}
+.pbar{display:flex;align-items:center;gap:10px;padding:14px 18px}
+.pbar h3{font-size:14px;font-weight:800;letter-spacing:-.02em}
+.pbar .sub{font-size:11px;color:var(--ink-4);font-weight:700;margin-left:auto}
+.form{padding:0 18px 18px}
+.field{margin-bottom:13px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:5px}
+.input,.select{width:100%;font-family:var(--font);font-size:13.5px;color:var(--ink);background:var(--sunk);border:0;border-radius:var(--r-sm);padding:11px 14px}
+.select.acc{background:var(--accent-bg);color:var(--accent);font-weight:700}
+.hint{font-size:11px;color:var(--ink-4);margin-top:5px;line-height:1.5}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.ghost{background:var(--sunk);border-radius:var(--r-sm);padding:14px 16px;text-align:center;color:var(--ink-4);font-size:12px;font-weight:700;line-height:1.6}
+.ghost b{display:block;color:var(--ink-3);font-size:12.5px;margin-bottom:3px}
+
+.mtx{padding:0 18px 18px}
+.mtx table{width:100%;border-collapse:collapse}
+.mtx th,.mtx td{padding:8px 5px;text-align:center;font-size:11.5px}
+.mtx th{font-size:10px;color:var(--ink-4);font-weight:800}
+.mtx th.rowh{text-align:left;font-weight:800;color:var(--ink-2);font-size:11.5px}
+.mtx td{border-bottom:1px solid var(--hairline)}
+.mtx input{width:50px;background:var(--sunk);border:0;border-radius:var(--r-xs);padding:6px 0;text-align:center;font-family:var(--font);font-size:12.5px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.mtx .self{color:var(--ink-4)}
+
+.arealist{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:var(--accent-bg);color:var(--accent);border-radius:var(--r-pill);padding:6px 12px;font-size:11.5px;font-weight:700}
+.tag.add{background:var(--sunk);color:var(--ink-3)}
+
+.newtag{display:inline-block;background:var(--warn-bg);color:var(--warn);font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:2px 7px;border-radius:var(--r-pill);margin-left:6px;vertical-align:middle}
+
+.notes{margin-top:52px;display:grid;gap:9px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.n-i{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:16px 19px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1)}
+.n-i .n{font-size:12.5px;font-weight:800;color:var(--accent)}
+.n-i b{font-weight:700;font-size:13.5px}
+.n-i p{font-size:13px;color:var(--ink-3);margin-top:3px}
+.big{margin-top:26px;background:var(--accent-bg);color:var(--accent);border-radius:var(--r-md);padding:22px 26px}
+.big b{font-weight:800;font-size:15px;display:block;margin-bottom:7px}
+.big p{font-size:14px;opacity:.92}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 08 · 設定畫面的漸進顯示</span>
+  <h1>設定畫面要跟著這家店的複雜度長大</h1>
+  <p class="lede">單人單店的老師不該看到「多據點移動時間」這種東西。同一個系統，三種店看到的畫面應該完全不同——而且系統可以自己判斷，不用問他。</p>
+</header>
+
+<div class="rulebox">
+  <h3>顯示規則</h3>
+  <table class="rules">
+    <tr><th>設定項目</th><th>什麼時候才出現</th><th>單店</th><th>多據點</th><th>有到府</th></tr>
+    <tr>
+      <td>地點模式</td>
+      <td>據點 ≥ 2 個，或已建立到府服務</td>
+      <td class="no">不顯示</td><td class="yes">顯示</td><td class="yes">顯示</td>
+    </tr>
+    <tr>
+      <td>固定在哪一間</td>
+      <td>地點模式選「固定店面」且據點 ≥ 2 個</td>
+      <td class="no">不顯示</td><td class="yes">顯示</td><td class="no">—</td>
+    </tr>
+    <tr>
+      <td>據點之間的移動時間</td>
+      <td><b>據點 ≥ 2 個</b>（跟服務的地點模式無關）</td>
+      <td class="no">不顯示</td><td class="yes">顯示</td><td class="yes">顯示</td>
+    </tr>
+    <tr>
+      <td>到府移動時間</td>
+      <td>有任一服務的地點模式是「到府」</td>
+      <td class="no">不顯示</td><td class="no">不顯示</td><td class="yes">顯示</td>
+    </tr>
+    <tr>
+      <td>服務區域</td>
+      <td>該服務的地點模式是「到府」</td>
+      <td class="no">不顯示</td><td class="no">不顯示</td><td class="yes">顯示</td>
+    </tr>
+  </table>
+</div>
+
+<div class="cols">
+
+  <!-- A 單人單店 -->
+  <div>
+    <div class="hd">
+      <span class="id">情況 A</span>
+      <h2>單人 · 一個店面</h2>
+      <p>最多的一種老師。整個地點的概念對他不存在。</p>
+    </div>
+
+    <div class="panel">
+      <div class="pbar"><h3>服務項目</h3><span class="sub">深層按摩</span></div>
+      <div class="form">
+        <div class="field"><label>服務名稱</label><input class="input" value="深層運動按摩"></div>
+        <div class="frow">
+          <div class="field"><label>時長</label><input class="input num" value="90 分鐘"></div>
+          <div class="field"><label>價格</label><input class="input num" value="1,800"></div>
+        </div>
+        <div class="ghost"><b>沒有「地點模式」這一欄</b>只有一個店面，沒得選也不用選</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="pbar"><h3>營業時間與據點</h3></div>
+      <div class="form">
+        <div class="field"><label>店面地址</label><input class="input" value="高雄市三民區○○路 12 號"></div>
+        <div class="ghost"><b>沒有移動時間表</b>只有一個據點，沒有「之間」可言</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B 多據點 -->
+  <div>
+    <div class="hd">
+      <span class="id">情況 B</span>
+      <h2>單人 · 三個據點</h2>
+      <p>建立第二個據點的那一刻，這些設定才自動出現。</p>
+    </div>
+
+    <div class="panel">
+      <div class="pbar"><h3>服務項目</h3><span class="sub">深層按摩</span></div>
+      <div class="form">
+        <div class="field"><label>服務名稱</label><input class="input" value="深層運動按摩"></div>
+        <div class="frow">
+          <div class="field"><label>時長</label><input class="input num" value="90 分鐘"></div>
+          <div class="field"><label>價格</label><input class="input num" value="1,800"></div>
+        </div>
+        <div class="field">
+          <label>地點模式 <span class="newtag">新出現</span></label>
+          <select class="select acc"><option>固定店面</option><option>多據點巡迴</option><option>到府服務</option></select>
+        </div>
+        <div class="field">
+          <label>固定在哪一間 <span class="newtag">選了固定才出現</span></label>
+          <select class="select"><option>A 館</option><option>B 館</option><option>六合健身房</option></select>
+          <p class="hint">這項服務只在這一間做。客人不用選地點，系統直接帶。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="pbar"><h3>據點之間的移動時間</h3><span class="sub">分鐘</span></div>
+      <div class="mtx">
+        <table>
+          <tr><th></th><th>A 館</th><th>B 館</th><th>六合</th></tr>
+          <tr><th class="rowh">A 館</th><td class="self">—</td><td><input value="30"></td><td><input value="45"></td></tr>
+          <tr><th class="rowh">B 館</th><td><input value="30"></td><td class="self">—</td><td><input value="20"></td></tr>
+          <tr><th class="rowh">六合</th><td><input value="45"></td><td><input value="20"></td><td class="self">—</td></tr>
+        </table>
+        <p class="hint" style="margin-top:9px"><b>就算每個服務都選「固定店面」，這張表還是要留。</b>同一天上午在 A 館、下午在 B 館，中間一樣要開車。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- C 到府 -->
+  <div>
+    <div class="hd">
+      <span class="id">情況 C</span>
+      <h2>有到府服務</h2>
+      <p>選了「到府」才會冒出服務區域與到府移動時間。</p>
+    </div>
+
+    <div class="panel">
+      <div class="pbar"><h3>服務項目</h3><span class="sub">到府推拿</span></div>
+      <div class="form">
+        <div class="field"><label>服務名稱</label><input class="input" value="到府推拿"></div>
+        <div class="frow">
+          <div class="field"><label>時長</label><input class="input num" value="90 分鐘"></div>
+          <div class="field"><label>價格</label><input class="input num" value="2,200"></div>
+        </div>
+        <div class="field">
+          <label>地點模式</label>
+          <select class="select acc"><option>到府服務</option></select>
+        </div>
+        <div class="field">
+          <label>服務區域 <span class="newtag">選了到府才出現</span></label>
+          <div class="arealist">
+            <span class="tag">三民區</span><span class="tag">左營區</span>
+            <span class="tag">鼓山區</span><span class="tag">苓雅區</span>
+            <span class="tag add">＋ 加區域</span>
+          </div>
+          <p class="hint">超出區域的客人在預約頁上會直接看不到這項服務。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="pbar"><h3>到府移動時間</h3></div>
+      <div class="form">
+        <div class="field">
+          <label>每趟預留 <span class="newtag">有到府服務才出現</span></label>
+          <input class="input num" value="30 分鐘">
+          <p class="hint">到府沒有固定據點，車程算不準，所以用一個固定值預留。老師覺得不夠可以自己調大。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <div class="n-i"><span class="n">1</span><div><b>判斷條件是「據點數量」，不是「地點模式」</b><p>移動時間表跟服務怎麼設定無關。只要這家店有兩個以上據點，老師就可能同一天跑兩地，就需要這張表。</p></div></div>
+  <div class="n-i"><span class="n">2</span><div><b>系統自己判斷，不要問老師</b><p>不做「請問你是單店還是多店？」這種設定精靈。老師建立第二個據點的那一刻，該出現的東西自己出現就好。</p></div></div>
+  <div class="n-i"><span class="n">3</span><div><b>從簡變複雜可以，反過來要小心</b><p>老師刪到只剩一個據點時，移動時間表要隱藏但<b>資料保留</b>。哪天他又開第二家，設定還在。</p></div></div>
+  <div class="n-i"><span class="n">4</span><div><b>新出現的欄位要標記一下</b><p>建立第二個據點後回到服務頁，突然多兩欄會嚇到人。第一次出現時給個提示，讓他知道為什麼多了東西。</p></div></div>
+</div>
+
+<div class="big">
+  <b>一句話原則</b>
+  <p>設定畫面的複雜度，永遠等於這家店<b>實際的</b>複雜度。單人單店的老師從頭到尾不該看到「據點」兩個字，多據點的老師則不該被要求自己去找那些設定藏在哪裡。</p>
+</div>
+
+</div>
+</body>
+</html>

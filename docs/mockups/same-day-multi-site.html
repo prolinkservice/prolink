@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 同一天跨據點的排班與銜接</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7;
+  --accent:#5d7f6e; --accent-bg:#e7efe9; --accent-ink:#fff;
+  --ok:#5d7f6e; --ok-bg:#e7efe9; --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6; --info:#5d7183; --info-bg:#e8eef2;
+  --r-xs:8px; --r-sm:14px; --r-md:22px; --r-pill:999px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --sh-3:0 30px 70px -34px rgba(35,38,42,.38);
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029; --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e; --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+    --sh-3:0 34px 76px -34px rgba(0,0,0,.85);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1180px;margin:0 auto;padding:52px 24px 100px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--warn);background:var(--warn-bg);padding:5px 12px;border-radius:var(--r-pill);font-weight:700;margin-bottom:18px}
+h1{font-size:clamp(26px,3.8vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.18}
+.lede{margin-top:14px;max-width:66ch;color:var(--ink-3);font-size:15px}
+
+section{margin-top:66px}
+.sec-title{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.sec-title .n{font-size:11px;font-weight:800;color:var(--ink-4);letter-spacing:.1em}
+.sec-title h2{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.sec-desc{color:var(--ink-3);font-size:14px;max-width:66ch;margin-bottom:20px}
+
+.panel{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);overflow:hidden;margin-bottom:16px}
+.pbar{display:flex;align-items:center;gap:11px;padding:16px 20px}
+.pbar h3{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.pbar .sub{font-size:11.5px;color:var(--ink-4);font-weight:700}
+.body{padding:0 20px 18px}
+.hint{font-size:11.5px;color:var(--ink-4);line-height:1.6}
+
+/* 舊 vs 新 */
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:820px){.vs{grid-template-columns:1fr}}
+.vhead{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.vhead .b{font-size:10px;font-weight:800;letter-spacing:.08em;padding:3px 9px;border-radius:var(--r-xs)}
+.vhead.old .b{background:var(--danger-bg);color:var(--danger)}
+.vhead.new .b{background:var(--accent-bg);color:var(--accent)}
+.vhead h4{font-size:14px;font-weight:800;letter-spacing:-.01em}
+.vnote{font-size:12.5px;color:var(--ink-3);margin-top:10px;line-height:1.6}
+
+/* 排班列 */
+.dayrow{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--hairline)}
+.dayrow:last-child{border-bottom:0}
+.dayrow .d{font-size:13px;font-weight:800;color:var(--ink-2)}
+.dayrow .cfg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.time{background:var(--sunk);border-radius:var(--r-xs);padding:6px 12px;font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--ink-2)}
+.locchip{border-radius:var(--r-pill);padding:6px 13px;font-size:11.5px;font-weight:700;border:0;cursor:pointer;font-family:var(--font)}
+.locchip.on-a{background:var(--accent);color:var(--accent-ink)}
+.locchip.on-b{background:var(--info);color:#fff}
+.locchip.on-m{background:var(--warn);color:#fff}
+.locchip.off{background:var(--sunk);color:var(--ink-4)}
+.dayrow.rest .cfg{color:var(--ink-4);font-size:12.5px;font-weight:700}
+
+/* 時間軸 */
+.tl{padding:6px 20px 20px}
+.tlrow{display:grid;grid-template-columns:66px 1fr;gap:14px;align-items:stretch}
+.tlrow .t{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.03em;text-align:right;color:var(--ink-3);padding-top:12px}
+.blk{border-radius:var(--r-sm);padding:11px 15px;margin-bottom:6px}
+.blk b{font-size:13.5px;font-weight:800;display:block;letter-spacing:-.01em}
+.blk p{font-size:11.5px;margin-top:2px;opacity:.85}
+.blk.job-b{background:var(--info-bg);color:var(--info)}
+.blk.job-a{background:var(--accent-bg);color:var(--accent)}
+.blk.lock{background:var(--sunk);color:var(--ink-4);border:1px dashed var(--ink-4)}
+.blk.free{background:transparent;color:var(--ink-4);border:1px dashed var(--hairline);text-align:center;font-size:11.5px;font-weight:700;padding:9px}
+.seq{display:grid;grid-template-columns:66px 1fr;gap:14px;font-size:11px;color:var(--ink-4);font-weight:700;padding:0 0 6px}
+.seq .x{grid-column:2}
+
+/* 判斷情境 */
+.cases{display:grid;gap:12px}
+.case{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-1);overflow:hidden}
+.case .ch{display:flex;align-items:center;gap:11px;padding:14px 19px}
+.case .ch .v{font-size:10.5px;font-weight:800;letter-spacing:.06em;padding:4px 11px;border-radius:var(--r-pill)}
+.case.ok .ch .v{background:var(--ok-bg);color:var(--ok)}
+.case.no .ch .v{background:var(--danger-bg);color:var(--danger)}
+.case .ch b{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.case .cb{padding:0 19px 16px;font-size:13px;color:var(--ink-2)}
+.math{background:var(--sunk);border-radius:var(--r-sm);padding:12px 15px;margin-top:9px;font-size:12.5px;font-variant-numeric:tabular-nums;line-height:1.9;color:var(--ink-2)}
+.math b{font-weight:800;color:var(--ink)}
+.math .r{color:var(--danger);font-weight:800}
+.math .g{color:var(--accent);font-weight:800}
+
+/* 客人端 */
+.phone{width:340px;flex:0 0 340px;border-radius:38px;padding:10px;background:linear-gradient(165deg,#33383a,#191c1d);box-shadow:var(--sh-3)}
+.screen{background:var(--bg);border-radius:29px;overflow:hidden}
+.pnav{display:flex;align-items:center;gap:10px;padding:15px 17px;background:var(--surface)}
+.pnav .ic{width:30px;height:30px;border-radius:11px;display:grid;place-items:center;font-size:11px;font-weight:800}
+.pnav b{font-size:13.5px;font-weight:800;letter-spacing:-.02em;display:block}
+.pnav small{font-size:10.5px;color:var(--ink-4);font-weight:700}
+.mbody{padding:14px 15px 20px;min-height:330px}
+.daylabel{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--ink-4);padding:8px 2px 6px}
+.slot{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-sm);background:var(--surface);box-shadow:var(--sh-1);margin-bottom:6px}
+.slot .t{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.03em;flex:0 0 48px}
+.slot .w{font-size:11.5px;color:var(--ink-3);flex:1}
+.slot .a{font-size:11px;color:var(--accent);font-weight:800}
+.slot.off{background:transparent;box-shadow:none;opacity:.4}
+.slot.off .a{color:var(--ink-4);font-weight:700}
+.stage{display:flex;flex-wrap:wrap;gap:30px;align-items:flex-start}
+
+.notes{margin-top:20px;display:grid;gap:9px}
+.n-i{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:15px 19px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1)}
+.n-i .n{font-size:12.5px;font-weight:800;color:var(--accent)}
+.n-i b{font-weight:700;font-size:13.5px}
+.n-i p{font-size:13px;color:var(--ink-3);margin-top:3px}
+.big{margin-top:24px;background:var(--accent-bg);color:var(--accent);border-radius:var(--r-md);padding:22px 26px}
+.big b{font-weight:800;font-size:15px;display:block;margin-bottom:7px}
+.big p{font-size:14px;opacity:.92}
+@media(max-width:820px){.phone{width:100%;max-width:340px;flex:1 1 auto}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 10 · 修正：同一天跨據點</span>
+  <h1>你不是「週二整天在六合」<br>而是「週二兩邊都可能跑」</h1>
+  <p class="lede">上一版排班表要求每天綁定一個據點，這跟你的實際情況不符。你是<b>去哪裡由客人的預約決定</b>——18:00 在六合、20:30 回五甲，同一天來回。排班模型要改。</p>
+</header>
+
+<!-- 01 排班改法 -->
+<section>
+  <div class="sec-title"><span class="n">01</span><h2>排班改成「這天有空的時間 + 哪些地點可去」</h2></div>
+  <p class="sec-desc">你不是先決定去哪裡，是先決定有空，地點由客人選。</p>
+
+  <div class="vs">
+    <div>
+      <div class="vhead old"><span class="b">上一版</span><h4>一天綁一個地點</h4></div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="body" style="padding-top:16px">
+          <div class="dayrow"><span class="d">週一</span><div class="cfg"><span class="time">10:00–20:00</span><span class="locchip on-a">五甲</span></div></div>
+          <div class="dayrow"><span class="d">週二</span><div class="cfg"><span class="time">13:00–21:00</span><span class="locchip on-b">六合</span></div></div>
+          <div class="dayrow"><span class="d">週三</span><div class="cfg"><span class="time">10:00–20:00</span><span class="locchip on-a">五甲</span></div></div>
+        </div>
+      </div>
+      <p class="vnote">問題：週二想在五甲接客人就約不到，因為系統認定你整天都在六合。</p>
+    </div>
+
+    <div>
+      <div class="vhead new"><span class="b">改成這樣</span><h4>一天可以有多個地點</h4></div>
+      <div class="panel" style="margin-bottom:0">
+        <div class="body" style="padding-top:16px">
+          <div class="dayrow"><span class="d">週一</span><div class="cfg"><span class="time">10:00–21:00</span><span class="locchip on-a">五甲</span><span class="locchip on-b">六合</span><span class="locchip off">到府</span></div></div>
+          <div class="dayrow"><span class="d">週二</span><div class="cfg"><span class="time">13:00–22:00</span><span class="locchip on-a">五甲</span><span class="locchip on-b">六合</span><span class="locchip on-m">到府</span></div></div>
+          <div class="dayrow"><span class="d">週三</span><div class="cfg"><span class="time">10:00–21:00</span><span class="locchip on-a">五甲</span><span class="locchip off">六合</span><span class="locchip on-m">到府</span></div></div>
+          <div class="dayrow rest"><span class="d">週日</span><div class="cfg">休息</div></div>
+        </div>
+      </div>
+      <p class="vnote">你只要設定「這天幾點到幾點有空」跟「這天哪些地點願意跑」。<b>剩下的交給移動時間去算。</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- 02 你的例子 -->
+<section>
+  <div class="sec-title"><span class="n">02</span><h2>你舉的例子，系統實際的樣子</h2></div>
+  <p class="sec-desc">18:00 六合接按摩客人、20:30 回五甲接按摩客人。中間那段時間系統會自動鎖住。</p>
+
+  <div class="panel">
+    <div class="pbar"><h3>週二</h3><span class="sub">六合 → 五甲，車程 25 分</span></div>
+    <div class="tl">
+      <div class="tlrow"><span class="t">16:00</span><div class="blk free">可約 · 五甲或六合都行（做完剛好趕得上 18:00）</div></div>
+
+      <div class="tlrow"><span class="t">17:00</span><div class="blk lock"><b>不開放</b><p>在五甲做完趕不到六合；在六合做則會撞到 18:00 那筆</p></div></div>
+
+      <div class="tlrow"><span class="t">18:00</span>
+        <div class="blk job-b"><b>陳先生 · 按摩 60 分</b><p>六合健身房</p></div></div>
+
+      <div class="tlrow"><span class="t">19:00</span>
+        <div class="blk lock"><b>系統自動鎖住 19:00 – 20:00</b>
+          <p>後緩衝 10 分 → 車程 25 分 → 前緩衝 5 分 ＝ 19:40，<b>進位到 20:00</b></p></div></div>
+
+      <div class="tlrow"><span class="t">20:00</span>
+        <div class="blk free">可約 · 只剩五甲，且最多 30 分鐘（20:30 要接下一位）</div></div>
+
+      <div class="tlrow"><span class="t">20:30</span>
+        <div class="blk job-a"><b>王小姐 · 按摩 60 分</b><p>五甲工作室</p></div></div>
+
+      <div class="tlrow"><span class="t">22:00</span><div class="blk free">可約 · 五甲（21:30 結束＋10 分緩衝，進位到 22:00）</div></div>
+    </div>
+    <div class="body">
+      <p class="hint"><b>19:00 到 19:40 這段在客人端根本不存在。</b>不是看到了被拒絕，是從來沒出現過。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 03 前後雙向 -->
+<section>
+  <div class="sec-title"><span class="n">03</span><h2>系統要同時看「前一筆」和「後一筆」</h2></div>
+  <p class="sec-desc">這是上一版漏掉的：不只要算得及過去，還要算得及離開。</p>
+
+  <div class="cases">
+    <div class="case ok">
+      <div class="ch"><span class="v">可以約</span><b>16:00 想約五甲，60 分</b></div>
+      <div class="cb">
+        前面沒有東西，後面 18:00 要到六合——剛剛好趕得上。
+        <div class="math">
+          16:00 開始 → <b>17:00</b> 結束<br>
+          ＋後緩衝 10 ＋車程 25 ＋前緩衝 5 ＝ 17:40<br>
+          進位到 30 分刻度 ＝ <b>18:00</b> → 剛好接上六合那筆 <span class="g">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="case no">
+      <div class="ch"><span class="v">約不到</span><b>19:00 想約五甲</b></div>
+      <div class="cb">
+        六合那筆 19:00 才結束，人還在六合。
+        <div class="math">
+          19:00 六合結束 ＋10 ＋25 ＋5 ＝ 19:40 → 進位 <b>20:00</b><br>
+          19:00 <span class="r">來不及</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="case no">
+      <div class="ch"><span class="v">約不到</span><b>19:30 想約六合，60 分</b></div>
+      <div class="cb">
+        前面沒問題（19:00 結束＋10 分緩衝＝19:10，進位 19:30 剛好可以開始），<b>但後面 20:30 五甲那筆趕不回去</b>。這就是「往後看」的檢查。
+        <div class="math">
+          20:30 五甲開始 − 前緩衝 5 ＝ 20:25 要抵達五甲<br>
+          − 車程 25 ＝ <b>20:00</b> 要離開六合<br>
+          − 後緩衝 10 ＝ <b>19:50</b> 六合那筆必須結束<br>
+          19:30 ＋ 60 分 ＝ 20:30 <span class="r">來不及，擋掉</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="n-i"><span class="n">1</span><div><b>只往前看會出事</b><p>若只檢查「趕不趕得過來」，客人就能在六合約 19:30，然後你 20:30 的五甲客人就被放鴿子了。</p></div></div>
+    <div class="n-i"><span class="n">2</span><div><b>所以每個候選時段要檢查三件事</b><p>①前一筆到得了嗎 ②後一筆走得了嗎 ③這個時段本身有沒有被佔用。三個都過才顯示給客人。</p></div></div>
+  </div>
+</section>
+
+<!-- 04 客人端 -->
+<section>
+  <div class="sec-title"><span class="n">04</span><h2>兩個客人同一天看到的時段不一樣</h2></div>
+  <p class="sec-desc">同一天、同一個你，但選不同地點的服務，看到的可約時段完全不同。</p>
+
+  <div class="stage">
+    <div class="phone"><div class="screen">
+      <div class="pnav"><span class="ic" style="background:var(--info-bg);color:var(--info)">六合</span>
+        <div><b>按摩 60 分 · 六合健身房</b><small>週二 08/04</small></div></div>
+      <div class="mbody">
+        <p class="daylabel">可約時段</p>
+        <div class="slot"><span class="t">13:00</span><span class="w">六合健身房</span><span class="a">選這個</span></div>
+        <div class="slot"><span class="t">14:00</span><span class="w">六合健身房</span><span class="a">選這個</span></div>
+        <div class="slot"><span class="t">16:00</span><span class="w">六合健身房</span><span class="a">選這個</span></div>
+        <div class="slot off"><span class="t">18:00</span><span class="w">六合健身房</span><span class="a">已預約</span></div>
+        <div class="slot off"><span class="t">19:30</span><span class="w">六合健身房</span><span class="a">不開放</span></div>
+        <p class="hint" style="margin-top:12px;text-align:center">19:30 之後六合就沒有時段了，<br>因為 20:30 要趕回五甲。</p>
+      </div>
+    </div></div>
+
+    <div class="phone"><div class="screen">
+      <div class="pnav"><span class="ic" style="background:var(--accent-bg);color:var(--accent)">五甲</span>
+        <div><b>按摩 60 分 · 五甲工作室</b><small>週二 08/04</small></div></div>
+      <div class="mbody">
+        <p class="daylabel">可約時段</p>
+        <div class="slot"><span class="t">13:00</span><span class="w">五甲工作室</span><span class="a">選這個</span></div>
+        <div class="slot"><span class="t">14:00</span><span class="w">五甲工作室</span><span class="a">選這個</span></div>
+        <div class="slot off"><span class="t">17:00</span><span class="w">五甲工作室</span><span class="a">不開放</span></div>
+        <div class="slot off"><span class="t">19:00</span><span class="w">五甲工作室</span><span class="a">不開放</span></div>
+        <div class="slot off"><span class="t">20:30</span><span class="w">五甲工作室</span><span class="a">已預約</span></div>
+        <div class="slot"><span class="t">22:00</span><span class="w">五甲工作室</span><span class="a">選這個</span></div>
+        <p class="hint" style="margin-top:12px;text-align:center">17:00 不開放是因為 18:00 要到六合，<br>做完會來不及趕過去。</p>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 05 三種型態 -->
+<section>
+  <div class="sec-title"><span class="n">05</span><h2>同一個介面，三種老師都裝得下</h2></div>
+  <p class="sec-desc">有些老師確實是「週二整天在六合」那種固定型。不需要為此做兩套設定介面——彈性的做法本來就包含固定的做法。</p>
+
+  <div class="panel">
+    <div class="pbar"><h3>型態一 · 固定型</h3><span class="sub">每天只勾一個地點</span></div>
+    <div class="body" style="padding-top:14px">
+      <div class="dayrow"><span class="d">週一</span><div class="cfg"><span class="time">10:00–20:00</span><span class="locchip on-a">五甲</span><span class="locchip off">六合</span><span class="locchip off">到府</span></div></div>
+      <div class="dayrow"><span class="d">週二</span><div class="cfg"><span class="time">13:00–21:00</span><span class="locchip off">五甲</span><span class="locchip on-b">六合</span><span class="locchip off">到府</span></div></div>
+      <div class="dayrow"><span class="d">週三</span><div class="cfg"><span class="time">10:00–20:00</span><span class="locchip on-a">五甲</span><span class="locchip off">六合</span><span class="locchip off">到府</span></div></div>
+      <p class="hint" style="margin-top:12px"><b>只勾一個，行為就跟原本的固定模式一模一樣。</b>週二客人只約得到六合，五甲完全不出現。這種老師甚至感覺不到「可以複選」這件事。</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pbar"><h3>型態二 · 彈性型</h3><span class="sub">你的情況：勾多個地點</span></div>
+    <div class="body" style="padding-top:14px">
+      <div class="dayrow"><span class="d">週一</span><div class="cfg"><span class="time">10:00–21:00</span><span class="locchip on-a">五甲</span><span class="locchip on-b">六合</span><span class="locchip off">到府</span></div></div>
+      <div class="dayrow"><span class="d">週二</span><div class="cfg"><span class="time">13:00–22:00</span><span class="locchip on-a">五甲</span><span class="locchip on-b">六合</span><span class="locchip on-m">到府</span></div></div>
+      <div class="dayrow"><span class="d">週三</span><div class="cfg"><span class="time">10:00–21:00</span><span class="locchip on-a">五甲</span><span class="locchip off">六合</span><span class="locchip on-m">到府</span></div></div>
+      <p class="hint" style="margin-top:12px">哪裡都可能跑，去哪由客人決定。系統靠移動時間自動把接不上的時段收起來。</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pbar"><h3>型態三 · 分時段型</h3><span class="sub">一天切成兩段，各綁各的地點</span></div>
+    <div class="body" style="padding-top:14px">
+      <div class="dayrow"><span class="d">週二</span><div class="cfg"><span class="time">10:00–14:00</span><span class="locchip on-a">五甲</span></div></div>
+      <div class="dayrow" style="border-top:0"><span class="d"></span><div class="cfg"><span class="time">15:30–21:00</span><span class="locchip on-b">六合</span></div></div>
+      <div class="dayrow"><span class="d">週三</span><div class="cfg"><span class="time">10:00–21:00</span><span class="locchip on-a">五甲</span><span class="locchip on-m">到府</span></div></div>
+      <p class="hint" style="margin-top:12px">同一天可以加第二段時間，各自綁自己的地點。<b>中間 14:00–15:30 那段是刻意留的移動與休息時間</b>，客人約不到。</p>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="n-i"><span class="n">1</span><div><b>不做「請選擇你的排班模式」這種問題</b><p>三種型態用同一個介面。老師想固定就每天勾一個，想彈性就勾多個，想分段就按「加一段時間」。他不需要知道自己屬於哪一型。</p></div></div>
+    <div class="n-i"><span class="n">2</span><div><b>資料表不用改</b><p>底層就是一列「星期幾 · 幾點到幾點 · 哪個地點」。一天可以有很多列，時間可以重疊也可以不重疊，三種型態都是這張表的不同填法。</p></div></div>
+  </div>
+</section>
+
+<div class="big">
+  <b>一句話</b>
+  <p>你只要告訴系統「這天幾點到幾點有空」跟「這天願意去哪些地點」，<b>剩下的銜接全部自動算</b>。你不用預先切好上午在哪、下午在哪，客人約了什麼，系統就自己把來不及的時段收起來。而想要固定式的老師，每天只勾一個地點就是了。</p>
+</div>
+
+</div>
+</body>
+</html>

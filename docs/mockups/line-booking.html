@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · LINE 預約流程草稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ───────────────────────────────────────────────
+   設計方向：方案 B「柔光日光」（已定案）
+   大圓角 · 無邊框 · 柔和層次陰影 · 低彩度鼠尾草綠
+   代幣與 design-system.html 同源，改這裡等於改全站
+   ─────────────────────────────────────────────── */
+:root{
+  --ink:#23262a;        --ink-2:#4b5158;     --ink-3:#7b828a;
+  --ink-4:#aab0b6;      --line:transparent;  --line-2:#e9ebe7;
+  --paper:#f7f7f5;      --card:#ffffff;      --sunk:#f1f2ef;
+  --accent:#5d7f6e;     --accent-soft:#e7efe9;
+  --ok:#5d7f6e;         --warn:#b6795a;      --line-green:#06c755;
+  --mono:"Plus Jakarta Sans","Noto Sans TC",sans-serif;
+  --sans:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --r:22px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ink:#eef1ee;      --ink-2:#c2c8c4;     --ink-3:#8e9691;
+    --ink-4:#636b67;    --line:transparent;  --line-2:#2a2f2c;
+    --paper:#131614;    --card:#1c201e;      --sunk:#232725;
+    --accent:#8fb8a2;   --accent-soft:#233029;
+    --ok:#8fb8a2;       --warn:#d09b7c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+  }
+}
+/* 數字等寬對齊：時間、金額、電話一律套用 */
+.num,.f dd.num,.slot .t,.ev .clock{font-variant-numeric:tabular-nums}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:var(--sans);font-weight:300;line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px 120px}
+
+/* ── 頁首 ───────────────────────────────── */
+.masthead{padding:72px 0 40px;border-bottom:1px solid var(--line)}
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--accent);margin-bottom:20px;
+}
+h1{font-size:clamp(30px,4.6vw,46px);font-weight:300;letter-spacing:-.02em;line-height:1.18}
+h1 b{font-weight:700}
+.lede{margin-top:18px;max-width:56ch;color:var(--ink-3);font-size:15px}
+
+.specs{display:flex;flex-wrap:wrap;gap:0;margin-top:36px;border-top:1px solid var(--line)}
+.spec{flex:1 1 190px;padding:16px 20px 16px 0;border-right:1px solid var(--line)}
+.spec:last-child{border-right:0}
+.spec dt{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4)}
+.spec dd{margin-top:6px;font-size:13.5px;color:var(--ink-2)}
+
+/* ── 章節 ───────────────────────────────── */
+section{padding-top:76px}
+.sec-head{display:flex;align-items:baseline;gap:18px;border-bottom:1px solid var(--line);padding-bottom:14px}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.1em}
+.sec-head h2{font-size:23px;font-weight:500;letter-spacing:-.01em}
+.sec-head .who{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-4);letter-spacing:.1em}
+
+/* 白話說明 */
+.plain{
+  margin-top:28px;padding:22px 26px;background:var(--sunk);
+  border-left:2px solid var(--accent);border-radius:0 var(--r) var(--r) 0;
+}
+.plain h3{font-size:12px;font-family:var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:12px}
+.plain ol{margin-left:18px;font-size:14.5px;color:var(--ink-2)}
+.plain ol li{margin-bottom:7px;padding-left:4px}
+.plain ol li::marker{font-family:var(--mono);color:var(--ink-4);font-size:12px}
+.plain p{font-size:14.5px;color:var(--ink-2)}
+.plain .note{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);color:var(--ink-3);font-size:13.5px}
+
+.stage{display:flex;flex-wrap:wrap;gap:44px;margin-top:40px;align-items:flex-start}
+.caption{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin-bottom:14px}
+
+/* ── 手機外框 ───────────────────────────── */
+.phone{
+  width:348px;flex:0 0 348px;border-radius:38px;padding:11px;
+  background:linear-gradient(160deg,#3a3733,#1a1817);
+  box-shadow:0 30px 60px -28px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.05) inset;
+}
+.screen{background:#e9e5df;border-radius:29px;overflow:hidden}
+@media (prefers-color-scheme:dark){.screen{background:#141311}}
+.nav{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
+  background:var(--card);border-bottom:1px solid var(--line);
+}
+.nav .dot{width:26px;height:26px;border-radius:9px;background:var(--line-green);flex:0 0 26px}
+.nav b{font-size:13.5px;font-weight:500}
+.nav small{font-family:var(--mono);font-size:9.5px;color:var(--ink-4);margin-left:auto;letter-spacing:.1em}
+.chat{padding:18px 14px 22px;display:flex;flex-direction:column;gap:14px;min-height:430px}
+
+.row{display:flex;gap:9px;align-items:flex-end}
+.row.me{justify-content:flex-end}
+.ava{width:28px;height:28px;border-radius:50%;background:var(--ink-3);flex:0 0 28px;
+     font-family:var(--mono);font-size:9px;color:var(--card);display:grid;place-items:center;letter-spacing:.02em}
+.bub{
+  max-width:236px;padding:10px 13px;border-radius:16px;font-size:13.5px;line-height:1.62;
+  background:var(--card);color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:5px;
+}
+.bub.me{background:var(--line-green);color:#04331a;border-color:transparent;border-radius:16px;border-bottom-right-radius:5px}
+@media (prefers-color-scheme:dark){.bub.me{color:#052b16}}
+.ts{font-family:var(--mono);font-size:9px;color:var(--ink-4);align-self:flex-end;padding-bottom:3px}
+
+/* ── Flex 訊息卡 ────────────────────────── */
+.flex-card{
+  width:262px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r);overflow:hidden;box-shadow:0 10px 24px -18px rgba(0,0,0,.5);
+}
+.fc-head{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.fc-head h4{font-size:13px;font-weight:500;letter-spacing:.01em}
+.pill{
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 7px;border-radius:20px;background:var(--accent-soft);color:var(--accent);margin-left:auto;
+}
+.fields{padding:4px 15px 12px}
+.f{display:flex;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px solid var(--line-2)}
+.f:last-child{border-bottom:0}
+.f dt{font-size:11.5px;color:var(--ink-4);flex:0 0 40px;letter-spacing:.06em}
+.f dd{font-size:13px;color:var(--ink);flex:1}
+.f dd.num{font-family:var(--mono);font-size:13px;letter-spacing:-.01em;font-weight:500}
+.f dd em{font-style:normal;color:var(--warn);font-size:12px}
+.f.miss dd{color:var(--warn)}
+
+.verdict{display:flex;align-items:center;gap:8px;padding:11px 15px;border-top:1px solid var(--line);font-size:12px}
+.verdict.ok{background:var(--sunk);color:var(--ok)}
+.verdict.bad{background:var(--sunk);color:var(--warn)}
+.tick{width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 6px}
+.acts{display:flex;border-top:1px solid var(--line)}
+.acts button{
+  flex:1;padding:12px 0;border:0;background:transparent;cursor:pointer;
+  font-family:var(--sans);font-size:12.5px;font-weight:500;color:var(--ink-3);
+  border-right:1px solid var(--line);transition:background .15s,color .15s;
+}
+.acts button:last-child{border-right:0}
+.acts button.primary{color:var(--accent)}
+.acts button:hover{background:var(--sunk);color:var(--ink)}
+
+/* ── 時刻表列（學生端可約時段）──────────── */
+.tt-day{
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink-4);
+  padding:11px 15px 6px;text-transform:uppercase;
+}
+.slot{
+  display:flex;align-items:center;gap:12px;padding:9px 15px;
+  border-bottom:1px solid var(--line-2);cursor:pointer;transition:background .15s;
+}
+.slot:hover{background:var(--sunk)}
+.slot .t{font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:-.02em;flex:0 0 46px}
+.slot .where{font-size:12px;color:var(--ink-3);flex:1}
+.slot .go{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.08em}
+.slot.full{opacity:.36;cursor:default}
+.slot.full .go{color:var(--ink-4)}
+.slot.full:hover{background:transparent}
+.more{padding:11px 15px;text-align:center;font-size:12px;color:var(--ink-3);border-top:1px solid var(--line);cursor:pointer}
+.more:hover{color:var(--accent)}
+
+/* ── 後台：今日行程時間軸 ───────────────── */
+.desk{
+  flex:1 1 440px;min-width:400px;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--r);overflow:hidden;
+  box-shadow:0 24px 50px -34px rgba(0,0,0,.45);
+}
+.desk-bar{display:flex;align-items:center;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line)}
+.desk-bar h4{font-size:14px;font-weight:500}
+.desk-bar .date{font-family:var(--mono);font-size:11px;color:var(--ink-4);letter-spacing:.08em}
+.desk-bar .live{
+  margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;
+  color:var(--ok);display:flex;align-items:center;gap:6px;text-transform:uppercase;
+}
+.timeline{padding:6px 0 12px}
+.ev{display:grid;grid-template-columns:66px 1px 1fr;gap:0;align-items:stretch}
+.ev .clock{
+  font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:-.02em;
+  padding:16px 14px 0 20px;text-align:right;color:var(--ink-2);
+}
+.ev .rail{background:var(--line);position:relative}
+.ev .rail::before{
+  content:"";position:absolute;top:21px;left:-3.5px;width:8px;height:8px;
+  border-radius:50%;background:var(--ink-4);border:2px solid var(--card);
+}
+.ev.new .rail::before{background:var(--accent);width:10px;height:10px;left:-4.5px}
+.ev .body{padding:14px 20px 16px 18px}
+.ev .body b{font-size:13.5px;font-weight:500;display:block}
+.ev .body .meta{font-size:12px;color:var(--ink-3);margin-top:3px}
+.ev.new .body{background:var(--accent-soft);border-radius:10px;margin:8px 14px 8px 8px;padding:12px 16px}
+.src{
+  display:inline-flex;align-items:center;gap:5px;margin-top:8px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);padding:3px 8px;border:1px solid var(--accent);border-radius:20px;
+}
+.travel{
+  grid-column:3;font-family:var(--mono);font-size:10px;color:var(--ink-4);
+  padding:0 20px 4px 18px;letter-spacing:.08em;
+}
+.travel a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+.travel a:hover{border-bottom-color:var(--accent)}
+
+/* ── 風險註記 ───────────────────────────── */
+.risks{margin-top:44px;border-top:1px solid var(--line);padding-top:26px}
+.risks h3{font-size:13px;font-weight:500;margin-bottom:16px;letter-spacing:.02em}
+.risk{display:grid;grid-template-columns:26px 1fr;gap:14px;padding:13px 0;border-bottom:1px solid var(--line-2);font-size:14px}
+.risk .n{font-family:var(--mono);font-size:11px;color:var(--warn);padding-top:3px}
+.risk b{font-weight:500}
+.risk p{color:var(--ink-3);font-size:13.5px;margin-top:3px}
+
+@media(max-width:860px){
+  .stage{gap:32px}
+  .phone{width:100%;max-width:348px;flex:1 1 auto}
+  .desk{min-width:0}
+  .spec{border-right:0;border-bottom:1px solid var(--line-2)}
+}
+
+/* ── 方案 B 結構調整：分層改用陰影，框線只留高密度分隔 ── */
+.masthead,.sec-head,.risks,.specs,.spec,.nav,.more{border-color:var(--line-2)}
+.flex-card,.desk{border:0;box-shadow:var(--sh-2)}
+.bub{border:0;box-shadow:var(--sh-1)}
+.verdict{border-top:0}
+.plain{border-radius:var(--r)}
+.eyebrow,.caption,.sec-num,.who,.pill,.src,.spec dt,.tt-day,.desk-bar .live,.risk .n{letter-spacing:.1em;font-weight:600}
+.slot .t,.f dd.num,.ev .clock{font-weight:700;letter-spacing:-.025em}
+
+/* 動作按鈕改藥丸，主行動一律綠底 */
+.acts{border-top:0;gap:8px;padding:4px 15px 15px}
+.acts button{border-right:0;border-radius:999px;background:var(--sunk);font-weight:600;padding:12px 0}
+.acts button.primary{background:var(--accent);color:#fff}
+.acts button.primary:hover{background:var(--accent);filter:brightness(.93)}
+.acts button:hover{background:var(--accent-soft);color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="masthead">
+  <p class="eyebrow">Draft 01 · 使用流程草稿</p>
+  <h1>老師用<b>講的</b>就能開單<br>客人用<b>點的</b>就能預約</h1>
+  <p class="lede">兩個都發生在 LINE 裡面，不用打開任何 App。這份草稿只畫「長什麼樣、怎麼操作」，還沒有寫任何程式。</p>
+
+  <dl class="specs">
+    <div class="spec"><dt>Aesthetic</dt><dd>時刻表精準主義</dd></div>
+    <div class="spec"><dt>Anchor</dt><dd>等寬時間 · 髮絲分隔 · 狀態色點</dd></div>
+    <div class="spec"><dt>Palette</dt><dd>暖中性石墨 + 單一琥珀</dd></div>
+    <div class="spec"><dt>Type</dt><dd>IBM Plex Mono / Noto Sans TC</dd></div>
+  </dl>
+</header>
+
+<!-- ══════════ 01 老師端 ══════════ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-num">01</span>
+    <h2>老師在 LINE 打一句話，預約就進系統</h2>
+    <span class="who">老師端</span>
+  </div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ol>
+      <li>老師接到電話，客人說「8/2 晚上七點想約」。</li>
+      <li>老師不用開後台，直接在 LINE 跟系統說一句：<b>「8/2 晚上7點 六合健身房 陳小姐 推拿90分」</b>。</li>
+      <li>系統把這句話拆成一張卡：日期、時間、地點、客人、服務，並且<b>順便檢查那個時段有沒有撞到別的預約</b>。</li>
+      <li>沒抓到的欄位（例如電話）會用紅字標出來，老師可以直接補，也可以先跳過。</li>
+      <li>老師按「確認建立」，預約就出現在後台行事曆，客人也會收到 LINE 通知。</li>
+    </ol>
+    <p class="note">重點：系統<b>永遠不會自己直接建立</b>，一定先出卡片給老師確認。聽錯一個字就開錯單，比多按一下嚴重得多。</p>
+  </div>
+
+  <div class="stage">
+    <div>
+      <p class="caption">A · 正常建立</p>
+      <div class="phone"><div class="screen">
+        <div class="nav"><span class="dot"></span><b>ProLink 助理</b><small>官方帳號</small></div>
+        <div class="chat">
+          <div class="row me">
+            <span class="ts">18:42</span>
+            <div class="bub me">8/2 晚上7點 六合健身房 陳小姐 推拿90分</div>
+          </div>
+
+          <div class="row">
+            <span class="ava">PL</span>
+            <div class="flex-card">
+              <div class="fc-head"><h4>新增預約</h4><span class="pill">待確認</span></div>
+              <dl class="fields">
+                <div class="f"><dt>日期</dt><dd class="num">08/02 <span style="color:var(--ink-4)">週六</span></dd></div>
+                <div class="f"><dt>時間</dt><dd class="num">19:00 – 20:30</dd></div>
+                <div class="f"><dt>地點</dt><dd>六合健身房</dd></div>
+                <div class="f"><dt>客人</dt><dd>陳小姐</dd></div>
+                <div class="f"><dt>服務</dt><dd>推拿 90 分 · NT$1,800</dd></div>
+                <div class="f miss"><dt>電話</dt><dd><em>未提供 · 點我補上</em></dd></div>
+              </dl>
+              <div class="verdict ok"><span class="tick"></span>時段無衝突，前後行程也來得及</div>
+              <div class="acts">
+                <button class="primary">確認建立</button>
+                <button>修改</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="ava">PL</span>
+            <div class="bub">已建立 ✓<br>08/02（六）19:00 六合健身房 · 陳小姐<br><span style="color:var(--ink-4);font-size:12px">已同步到行事曆</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div>
+      <p class="caption">B · 撞到既有行程</p>
+      <div class="phone"><div class="screen">
+        <div class="nav"><span class="dot"></span><b>ProLink 助理</b><small>官方帳號</small></div>
+        <div class="chat">
+          <div class="row me">
+            <span class="ts">21:07</span>
+            <div class="bub me">明天下午2點 A館 林先生 60分</div>
+          </div>
+
+          <div class="row">
+            <span class="ava">PL</span>
+            <div class="flex-card">
+              <div class="fc-head"><h4>新增預約</h4><span class="pill" style="background:transparent;border:1px solid var(--warn);color:var(--warn)">有衝突</span></div>
+              <dl class="fields">
+                <div class="f"><dt>日期</dt><dd class="num">07/29 <span style="color:var(--ink-4)">週三</span></dd></div>
+                <div class="f"><dt>時間</dt><dd class="num">14:00 – 15:00</dd></div>
+                <div class="f"><dt>地點</dt><dd>A 館</dd></div>
+                <div class="f"><dt>客人</dt><dd>林先生</dd></div>
+              </dl>
+              <div class="verdict bad"><span class="tick"></span>14:30 你在 B 館有預約，中間也不夠移動</div>
+              <div class="acts">
+                <button>看空檔</button>
+                <button class="primary">仍要建立</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="ava">PL</span>
+            <div class="bub">當天離 A 館最近的空檔：<br><span style="font-family:var(--mono);font-size:13px">10:00 · 11:30 · 16:30</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="risks">
+    <h3>這個功能的三個關鍵決定</h3>
+    <div class="risk"><span class="n">01</span><div><b>永遠先出確認卡，不直接建單</b><p>語意理解一定會有誤判，多按一次「確認」換來零開錯單，划算。</p></div></div>
+    <div class="risk"><span class="n">02</span><div><b>看不懂就問，不要猜</b><p>缺日期或缺時間就直接反問「請問是幾號？」，不要自作聰明填預設值。</p></div></div>
+    <div class="risk"><span class="n">03</span><div><b>地點與服務要對得上老師自己的設定</b><p>「六合健身房」要能對到他建立的據點，「推拿90分」要對到他的服務項目。對不到就列出清單讓他點選。</p></div></div>
+  </div>
+</section>
+
+<!-- ══════════ 02 學生端 ══════════ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-num">02</span>
+    <h2>客人在 LINE 看時段，點一下就約好</h2>
+    <span class="who">客人端</span>
+  </div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ol>
+      <li>客人加了老師的 LINE 官方帳號，下面有一排圖文選單，按<b>「我要預約」</b>。</li>
+      <li>系統直接把老師<b>接下來還沒被約走的時段</b>列出來，像時刻表一樣。</li>
+      <li>灰掉的是已經滿了；亮的是可以約。點一下就進到確認畫面。</li>
+      <li>確認畫面填名字和電話（老客人自動帶入），需要付定金的話在這裡付。</li>
+      <li>約好之後，前一天晚上和當天出發前，系統各發一次提醒。</li>
+    </ol>
+    <p class="note">全程不用註冊、不用下載 App、不用記帳號密碼。客人只是在跟老師的 LINE 講話。</p>
+  </div>
+
+  <div class="stage">
+    <div>
+      <p class="caption">A · 可約時段一覽</p>
+      <div class="phone"><div class="screen">
+        <div class="nav"><span class="dot"></span><b>王老師 · 運動按摩</b><small>官方帳號</small></div>
+        <div class="chat">
+          <div class="row me"><span class="ts">10:12</span><div class="bub me">我要預約</div></div>
+
+          <div class="row">
+            <span class="ava">王</span>
+            <div class="flex-card">
+              <div class="fc-head"><h4>近期可約時段</h4><span class="pill">7 天內</span></div>
+              <p class="tt-day">08 / 02 週六</p>
+              <div class="slot"><span class="t">19:00</span><span class="where">六合健身房</span><span class="go">選這個</span></div>
+              <div class="slot"><span class="t">20:30</span><span class="where">六合健身房</span><span class="go">選這個</span></div>
+              <p class="tt-day">08 / 03 週日</p>
+              <div class="slot full"><span class="t">10:00</span><span class="where">A 館</span><span class="go">已滿</span></div>
+              <div class="slot"><span class="t">14:00</span><span class="where">到府服務</span><span class="go">選這個</span></div>
+              <div class="slot"><span class="t">16:30</span><span class="where">A 館</span><span class="go">選這個</span></div>
+              <div class="more">看更多日期 →</div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div>
+      <p class="caption">B · 點選後的確認畫面</p>
+      <div class="phone"><div class="screen">
+        <div class="nav"><span class="dot"></span><b>王老師 · 運動按摩</b><small>LIFF</small></div>
+        <div class="chat">
+          <div class="row">
+            <span class="ava">王</span>
+            <div class="flex-card">
+              <div class="fc-head"><h4>確認預約內容</h4></div>
+              <dl class="fields">
+                <div class="f"><dt>時間</dt><dd class="num">08/02 19:00</dd></div>
+                <div class="f"><dt>時長</dt><dd class="num">90 分鐘</dd></div>
+                <div class="f"><dt>地點</dt><dd>六合健身房 3F</dd></div>
+                <div class="f"><dt>項目</dt><dd>深層運動按摩</dd></div>
+                <div class="f"><dt>金額</dt><dd class="num">NT$1,800</dd></div>
+                <div class="f"><dt>定金</dt><dd class="num">NT$300 <span style="color:var(--ink-4);font-size:11px">線上支付</span></dd></div>
+              </dl>
+              <div class="verdict ok"><span class="tick"></span>定金由「王老師運動按摩」收取</div>
+              <div class="acts"><button class="primary">付定金並送出</button></div>
+            </div>
+          </div>
+
+          <div class="row">
+            <span class="ava">王</span>
+            <div class="bub">預約成功 ✓<br>08/02（六）19:00 六合健身房<br><span style="color:var(--ink-4);font-size:12px">前一天會再提醒你一次，不能來請點通知裡的取消</span></div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="risks">
+    <h3>這個功能的三個關鍵決定</h3>
+    <div class="risk"><span class="n">01</span><div><b>只列「真的可以約」的時段</b><p>已經被約走的、老師不在那個據點的、來不及移動的，通通不出現。看到就能約，不會白按。</p></div></div>
+    <div class="risk"><span class="n">02</span><div><b>先選時間，再選地點</b><p>老師到處跑，時段本來就綁著地點。硬要客人先選地點反而多一步。</p></div></div>
+    <div class="risk"><span class="n">03</span><div><b>提醒訊息裡一定要有「取消」按鈕</b><p>取消愈好按，放鳥愈少。客人臨時不能來，讓他能一鍵告訴你，時段才救得回來。</p></div></div>
+  </div>
+</section>
+
+<!-- ══════════ 03 後台 ══════════ -->
+<section>
+  <div class="sec-head">
+    <span class="sec-num">03</span>
+    <h2>不管從哪裡進來，都落在同一張行事曆</h2>
+    <span class="who">老師後台</span>
+  </div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <p>LINE 打字建立的、客人自己點的、老師在後台手動加的 —— 三種來源全部進到同一張今日行程。每一筆都會標明是誰建立的，跨據點的還會算好中間的移動時間，直接給導航連結。</p>
+  </div>
+
+  <div class="stage">
+    <div class="desk">
+      <div class="desk-bar">
+        <h4>今日行程</h4><span class="date">08 / 02 週六</span>
+        <span class="live"><span class="tick" style="background:var(--ok)"></span>即時同步</span>
+      </div>
+      <div class="timeline">
+
+        <div class="ev">
+          <div class="clock">09:00</div><div class="rail"></div>
+          <div class="body">
+            <b>陳小姐 · 深層按摩 60 分</b>
+            <p class="meta">A 館 2F · NT$1,200 · 定金已付</p>
+          </div>
+        </div>
+        <div class="ev"><div></div><div class="rail"></div>
+          <p class="travel">↓ 移動 30 分 · A 館 → B 館 · <a href="#">開啟導航</a></p>
+        </div>
+
+        <div class="ev">
+          <div class="clock">11:00</div><div class="rail"></div>
+          <div class="body">
+            <b>林先生 · 推拿 90 分</b>
+            <p class="meta">B 館 · NT$1,800 · 現場付款</p>
+          </div>
+        </div>
+        <div class="ev"><div></div><div class="rail"></div>
+          <p class="travel">↓ 移動 45 分 · B 館 → 六合健身房 · <a href="#">開啟導航</a></p>
+        </div>
+
+        <div class="ev new">
+          <div class="clock">19:00</div><div class="rail"></div>
+          <div class="body">
+            <b>陳小姐 · 推拿 90 分</b>
+            <p class="meta">六合健身房 3F · NT$1,800 · 定金 NT$300 待付</p>
+            <span class="src">◆ 由 LINE 建立</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

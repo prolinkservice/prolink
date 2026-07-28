@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 今日行程長度問題三版對照</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7;
+  --accent:#5d7f6e; --accent-bg:#e7efe9; --accent-ink:#fff;
+  --ok:#5d7f6e; --ok-bg:#e7efe9;
+  --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6;
+  --info:#5d7183; --info-bg:#e8eef2;
+  --r-xs:8px; --r-sm:14px; --r-md:22px; --r-pill:999px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --sh-3:0 30px 70px -34px rgba(35,38,42,.38);
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029; --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e; --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+    --sh-3:0 34px 76px -34px rgba(0,0,0,.85);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1300px;margin:0 auto;padding:52px 24px 100px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:var(--r-pill);font-weight:700;margin-bottom:18px}
+h1{font-size:clamp(26px,3.8vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.18}
+.lede{margin-top:14px;max-width:64ch;color:var(--ink-3);font-size:15px}
+
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:44px;align-items:start}
+@media(max-width:1150px){.cols{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto}}
+
+.hd{margin-bottom:14px}
+.hd .row{display:flex;align-items:baseline;gap:10px}
+.hd .id{font-size:11.5px;font-weight:800;letter-spacing:.1em;padding:3px 9px;border-radius:var(--r-xs)}
+.hd.now .id{background:var(--danger-bg);color:var(--danger)}
+.hd.b1 .id{background:var(--accent-bg);color:var(--accent)}
+.hd.b2 .id{background:var(--accent-bg);color:var(--accent)}
+.hd h2{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.hd p{font-size:13px;color:var(--ink-3);margin-top:6px;min-height:42px}
+.metric{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;padding:6px 12px;border-radius:var(--r-pill);margin-top:4px}
+.m-bad{background:var(--danger-bg);color:var(--danger)}
+.m-ok{background:var(--ok-bg);color:var(--ok)}
+
+/* 手機 */
+.phone{width:100%;max-width:352px;border-radius:38px;padding:10px;background:linear-gradient(165deg,#33383a,#191c1d);box-shadow:var(--sh-3);margin:0 auto}
+.screen{background:var(--bg);border-radius:29px;overflow:hidden;height:640px;display:flex;flex-direction:column}
+.abar{padding:16px 18px 12px;background:var(--surface);flex:0 0 auto}
+.abar .t{display:flex;align-items:center;gap:9px}
+.abar h3{font-size:18px;font-weight:800;letter-spacing:-.03em}
+.abar .d{font-size:11.5px;color:var(--ink-4);font-weight:700}
+.abar .me{margin-left:auto;width:32px;height:32px;border-radius:50%;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:12.5px}
+.kpis{display:flex;gap:7px;margin-top:12px}
+.kp{flex:1;background:var(--sunk);border-radius:var(--r-sm);padding:9px 11px}
+.kp .k{font-size:9.5px;color:var(--ink-4);font-weight:700}
+.kp .v{font-size:17px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.kp.hot .v{color:var(--warn)}
+/* 精簡版頂條 */
+.slim{display:flex;align-items:center;gap:10px;padding:12px 18px;background:var(--surface);flex:0 0 auto}
+.slim h3{font-size:16px;font-weight:800;letter-spacing:-.03em}
+.slim .st{margin-left:auto;display:flex;gap:12px;font-size:11.5px;font-weight:700;color:var(--ink-3)}
+.slim .st b{color:var(--ink);font-variant-numeric:tabular-nums}
+.slim .st .w{color:var(--warn)}
+
+.scroll{flex:1;overflow-y:auto;padding:14px 15px 18px;scrollbar-width:thin}
+.scroll::-webkit-scrollbar{width:5px}
+.scroll::-webkit-scrollbar-thumb{background:var(--ink-4);border-radius:9px;opacity:.4}
+
+.alert{display:flex;gap:10px;padding:11px 13px;border-radius:var(--r-sm);align-items:center;margin-bottom:13px;background:var(--warn-bg);color:var(--warn)}
+.alert b{font-weight:700;font-size:13px;display:block}
+.alert p{font-size:11px;opacity:.85}
+.alert .go{margin-left:auto;font-size:11px;font-weight:800;white-space:nowrap}
+.ico{width:20px;height:20px;border-radius:50%;background:currentColor;opacity:.2;flex:0 0 20px}
+
+/* A：原本的卡 */
+.tlrow{display:grid;grid-template-columns:44px 1fr;gap:10px}
+.hh{font-size:12.5px;font-weight:800;color:var(--ink-3);font-variant-numeric:tabular-nums;letter-spacing:-.03em;padding-top:13px;text-align:right}
+.bcard{background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:12px 14px;margin-bottom:7px}
+.bcard.now{box-shadow:var(--sh-2);outline:2px solid var(--accent)}
+.bcard .r1{display:flex;align-items:center;gap:8px}
+.bcard b{font-size:13.5px;font-weight:700;letter-spacing:-.01em}
+.bcard .r2{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.bcard .r3{display:flex;align-items:center;gap:5px;margin-top:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:var(--r-pill)}
+.pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-info{background:var(--info-bg);color:var(--info)}
+.p-mute{background:var(--sunk);color:var(--ink-3)}
+.p-danger{background:var(--danger-bg);color:var(--danger)}
+.move{grid-column:2;font-size:10.5px;color:var(--ink-4);font-weight:600;padding:1px 0 9px 2px}
+.move a{color:var(--accent);text-decoration:none;font-weight:800}
+
+/* B：收合 + 瘦身 */
+.fold{display:flex;align-items:center;gap:9px;background:var(--sunk);border-radius:var(--r-sm);padding:11px 14px;margin-bottom:14px;cursor:pointer}
+.fold .cv{font-size:11px;font-weight:800;color:var(--ink-4)}
+.fold b{font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.fold .amt{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.divider{display:flex;align-items:center;gap:10px;margin:4px 0 12px}
+.divider span{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--ink-4)}
+.divider i{flex:1;height:1px;background:var(--hairline)}
+.lean{background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:11px 14px;margin-bottom:7px;display:grid;grid-template-columns:44px 1fr auto;gap:11px;align-items:center}
+.lean.now{box-shadow:var(--sh-2);outline:2px solid var(--accent)}
+.lean .tt{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:var(--ink-2)}
+.lean b{font-size:13.5px;font-weight:700;display:block;letter-spacing:-.01em}
+.lean .sub{font-size:11px;color:var(--ink-3);margin-top:1px}
+.lean .flag{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.movemini{font-size:10px;color:var(--ink-4);font-weight:600;padding:0 0 8px 55px}
+.movemini a{color:var(--accent);text-decoration:none;font-weight:800}
+
+/* C：下一筆大卡 */
+.next{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:16px 17px;margin-bottom:16px;position:relative;overflow:hidden}
+.next::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.next .lbl{font-size:10px;font-weight:800;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.next .when{display:flex;align-items:baseline;gap:9px;margin-top:6px}
+.next .when .t{font-size:30px;font-weight:800;letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1}
+.next .when .rel{font-size:11.5px;color:var(--ink-3);font-weight:700}
+.next .nm{font-size:17px;font-weight:800;letter-spacing:-.02em;margin-top:11px}
+.next .sv{font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.next .flags{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+.next .acts{display:flex;gap:8px;margin-top:14px}
+.next .acts button{flex:1;border:0;border-radius:var(--r-pill);padding:11px 0;font-family:var(--font);font-size:12.5px;font-weight:800;cursor:pointer}
+.next .acts .go{background:var(--accent);color:var(--accent-ink)}
+.next .acts .call{background:var(--sunk);color:var(--ink-2)}
+.leave{margin-top:11px;padding:9px 12px;background:var(--warn-bg);color:var(--warn);border-radius:var(--r-xs);font-size:11.5px;font-weight:700}
+.rest{display:grid;grid-template-columns:44px 1fr auto;gap:11px;align-items:center;padding:11px 4px;border-bottom:1px solid var(--hairline)}
+.rest:last-child{border-bottom:0}
+.rest .tt{font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.03em;color:var(--ink-3)}
+.rest b{font-size:13px;font-weight:700;display:block}
+.rest .sub{font-size:10.5px;color:var(--ink-4)}
+.rest.done{opacity:.5}
+.rest .mk{width:7px;height:7px;border-radius:50%}
+
+.fabwrap{display:flex;justify-content:flex-end;padding-top:12px}
+.fabwrap button{background:var(--accent);color:var(--accent-ink);border:0;border-radius:var(--r-pill);padding:12px 20px;font-family:var(--font);font-size:13px;font-weight:800;box-shadow:var(--sh-2);cursor:pointer}
+
+/* 說明 */
+.notes{margin-top:64px;border-top:1px solid var(--hairline);padding-top:32px}
+.notes h3{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.n-i{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:16px 19px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1)}
+.n-i .n{font-size:12.5px;font-weight:800;color:var(--accent)}
+.n-i b{font-weight:700;font-size:13.5px}
+.n-i p{font-size:13px;color:var(--ink-3);margin-top:3px}
+.rec{margin-top:26px;background:var(--accent-bg);color:var(--accent);border-radius:var(--r-md);padding:22px 26px}
+.rec b{font-weight:800;font-size:15px;display:block;margin-bottom:7px}
+.rec p{font-size:14px;opacity:.92}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 05 · 手機畫面長度</span>
+  <h1>忙的日子 8 筆預約，畫面會多長？</h1>
+  <p class="lede">三支手機都是真的可以捲的，內容一模一樣（8 筆預約、3 筆已完成）。直接在裡面滑一下，感受哪一版在外面單手用最順。</p>
+</header>
+
+<div class="cols">
+
+  <!-- ══════ A 現況 ══════ -->
+  <div>
+    <div class="hd now">
+      <div class="row"><span class="id">現況</span><h2>全部展開</h2></div>
+      <p>每筆都是三行卡片，已完成的也照樣佔滿位置。</p>
+      <span class="metric m-bad">需捲動約 2.6 屏</span>
+    </div>
+
+    <div class="phone"><div class="screen">
+      <div class="abar">
+        <div class="t"><div><h3>今日行程</h3><span class="d">08 / 02 週六</span></div><span class="me">王</span></div>
+        <div class="kpis">
+          <div class="kp"><div class="k">預約</div><div class="v">8</div></div>
+          <div class="kp"><div class="k">預計收入</div><div class="v">12,400</div></div>
+          <div class="kp hot"><div class="k">待結案</div><div class="v">2</div></div>
+        </div>
+      </div>
+      <div class="scroll">
+        <div class="alert"><span class="ico"></span><div><b>有 2 筆預約還沒結案</b><p>昨天的預約沒登記有沒有到</p></div><span class="go">去處理 ›</span></div>
+
+        <div class="tlrow"><span class="hh">09:00</span><div class="bcard">
+          <div class="r1"><b>陳小姐</b><span class="pill p-mute" style="margin-left:auto"><span class="dot"></span>已完成</span></div>
+          <p class="r2">深層按摩 60 分 · A 館 2F</p>
+          <div class="r3"><span class="pill p-ok"><span class="dot"></span>實收 1,200</span></div></div></div>
+
+        <div class="tlrow"><span class="hh">10:15</span><div class="bcard">
+          <div class="r1"><b>吳先生</b><span class="pill p-mute" style="margin-left:auto"><span class="dot"></span>已完成</span></div>
+          <p class="r2">運動按摩 45 分 · A 館 2F</p>
+          <div class="r3"><span class="pill p-ok"><span class="dot"></span>實收 900</span></div></div></div>
+
+        <div class="tlrow"><span class="hh">11:15</span><div class="bcard">
+          <div class="r1"><b>周太太</b><span class="pill p-mute" style="margin-left:auto"><span class="dot"></span>已完成</span></div>
+          <p class="r2">推拿 60 分 · A 館 2F</p>
+          <div class="r3"><span class="pill p-ok"><span class="dot"></span>實收 1,200</span></div></div></div>
+        <div class="move">↓ 移動 30 分 · A 館 → B 館 · <a href="#">開啟導航</a></div>
+
+        <div class="tlrow"><span class="hh">13:00</span><div class="bcard now">
+          <div class="r1"><b>林先生</b><span class="pill p-ok" style="margin-left:auto"><span class="dot"></span>進行中</span></div>
+          <p class="r2">推拿 90 分 · B 館</p>
+          <div class="r3"><span class="pill p-warn"><span class="dot"></span>現場付款 1,800</span></div></div></div>
+
+        <div class="tlrow"><span class="hh">14:45</span><div class="bcard">
+          <div class="r1"><b>鄭小姐</b><span class="pill p-info" style="margin-left:auto"><span class="dot"></span>已確認</span></div>
+          <p class="r2">深層按摩 60 分 · B 館</p>
+          <div class="r3"><span class="pill p-ok"><span class="dot"></span>定金已付</span></div></div></div>
+
+        <div class="tlrow"><span class="hh">16:00</span><div class="bcard">
+          <div class="r1"><b>李太太</b><span class="pill p-info" style="margin-left:auto"><span class="dot"></span>已確認</span></div>
+          <p class="r2">推拿 90 分 · 到府 · 三民區</p>
+          <div class="r3"><span class="pill p-ok"><span class="dot"></span>定金已付</span></div></div></div>
+        <div class="move">↓ 移動 45 分 · 三民區 → 六合健身房 · <a href="#">開啟導航</a></div>
+
+        <div class="tlrow"><span class="hh">19:00</span><div class="bcard">
+          <div class="r1"><b>陳小姐</b><span class="pill p-info" style="margin-left:auto"><span class="dot"></span>已確認</span></div>
+          <p class="r2">推拿 90 分 · 六合健身房 3F</p>
+          <div class="r3"><span class="pill p-warn"><span class="dot"></span>定金 300 待付</span><span class="pill p-mute">LINE 建立</span></div></div></div>
+
+        <div class="tlrow"><span class="hh">20:30</span><div class="bcard">
+          <div class="r1"><b>張先生</b><span class="pill p-info" style="margin-left:auto"><span class="dot"></span>已確認</span></div>
+          <p class="r2">運動按摩 60 分 · 六合健身房 3F</p>
+          <div class="r3"><span class="pill p-ok"><span class="dot"></span>定金已付</span><span class="pill p-danger"><span class="dot"></span>放鳥 1 次</span></div></div></div>
+
+        <div class="fabwrap"><button>＋ 新增預約</button></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ══════ B 收合瘦身 ══════ -->
+  <div>
+    <div class="hd b1">
+      <div class="row"><span class="id">改法 B</span><h2>收合已完成 + 卡片瘦身</h2></div>
+      <p>過去的收成一行，每筆只留一行，狀態標籤只在「有事」時才出現。</p>
+      <span class="metric m-ok">需捲動約 1.1 屏</span>
+    </div>
+
+    <div class="phone"><div class="screen">
+      <div class="slim">
+        <h3>今日行程</h3>
+        <div class="st"><span>預約 <b>8</b></span><span>收入 <b>12,400</b></span><span class="w">待結案 <b>2</b></span></div>
+      </div>
+      <div class="scroll">
+        <div class="alert"><span class="ico"></span><div><b>2 筆預約還沒結案</b></div><span class="go">去處理 ›</span></div>
+
+        <div class="fold"><span class="cv">▸</span><b>上午 3 筆已完成</b><span class="amt">3,300</span></div>
+
+        <div class="divider"><span>接下來</span><i></i></div>
+
+        <div class="lean now">
+          <span class="tt">13:00</span>
+          <div><b>林先生</b><p class="sub">推拿 90 分 · B 館</p></div>
+          <div class="flag"><span class="pill p-ok"><span class="dot"></span>進行中</span></div>
+        </div>
+
+        <div class="lean">
+          <span class="tt">14:45</span>
+          <div><b>鄭小姐</b><p class="sub">深層按摩 60 分 · B 館</p></div>
+          <div class="flag"></div>
+        </div>
+
+        <div class="lean">
+          <span class="tt">16:00</span>
+          <div><b>李太太</b><p class="sub">推拿 90 分 · 到府 · 三民區</p></div>
+          <div class="flag"></div>
+        </div>
+        <div class="movemini">↓ 移動 45 分 · <a href="#">開啟導航</a></div>
+
+        <div class="lean">
+          <span class="tt">19:00</span>
+          <div><b>陳小姐</b><p class="sub">推拿 90 分 · 六合健身房</p></div>
+          <div class="flag"><span class="pill p-warn"><span class="dot"></span>定金待付</span></div>
+        </div>
+
+        <div class="lean">
+          <span class="tt">20:30</span>
+          <div><b>張先生</b><p class="sub">運動按摩 60 分 · 六合健身房</p></div>
+          <div class="flag"><span class="pill p-danger"><span class="dot"></span>放鳥 1</span></div>
+        </div>
+
+        <div class="fabwrap"><button>＋ 新增預約</button></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- ══════ C 下一筆大卡 ══════ -->
+  <div>
+    <div class="hd b2">
+      <div class="row"><span class="id">改法 C</span><h2>下一筆大卡 + 一行一筆</h2></div>
+      <p>把「接下來要做什麼」放到最大，其餘全部壓成一行清單。</p>
+      <span class="metric m-ok">不用捲動</span>
+    </div>
+
+    <div class="phone"><div class="screen">
+      <div class="slim">
+        <h3>今日行程</h3>
+        <div class="st"><span>預約 <b>8</b></span><span>收入 <b>12,400</b></span><span class="w">待結案 <b>2</b></span></div>
+      </div>
+      <div class="scroll">
+        <div class="next">
+          <p class="lbl">下一筆</p>
+          <div class="when"><span class="t">14:45</span><span class="rel">還有 55 分鐘</span></div>
+          <p class="nm">鄭小姐</p>
+          <p class="sv">深層按摩 60 分 · B 館 3F</p>
+          <div class="flags"><span class="pill p-ok"><span class="dot"></span>定金已付</span><span class="pill p-mute">到店 6 次</span></div>
+          <div class="acts"><button class="go">開啟導航</button><button class="call">撥電話</button></div>
+          <div class="leave">↓ 移動 30 分，建議 14:10 出發</div>
+        </div>
+
+        <div class="divider"><span>今天其餘</span><i></i></div>
+
+        <div class="rest done"><span class="tt">09:00</span><div><b>陳小姐</b><p class="sub">深層按摩 · A 館</p></div><span class="mk" style="background:var(--ink-4)"></span></div>
+        <div class="rest done"><span class="tt">10:15</span><div><b>吳先生</b><p class="sub">運動按摩 · A 館</p></div><span class="mk" style="background:var(--ink-4)"></span></div>
+        <div class="rest done"><span class="tt">11:15</span><div><b>周太太</b><p class="sub">推拿 · A 館</p></div><span class="mk" style="background:var(--ink-4)"></span></div>
+        <div class="rest done"><span class="tt">13:00</span><div><b>林先生</b><p class="sub">推拿 · B 館</p></div><span class="mk" style="background:var(--accent)"></span></div>
+        <div class="rest"><span class="tt">16:00</span><div><b>李太太</b><p class="sub">推拿 · 到府 三民區</p></div><span class="mk" style="background:var(--ok)"></span></div>
+        <div class="rest"><span class="tt">19:00</span><div><b>陳小姐</b><p class="sub">推拿 · 六合健身房</p></div><span class="mk" style="background:var(--warn)"></span></div>
+        <div class="rest"><span class="tt">20:30</span><div><b>張先生</b><p class="sub">運動按摩 · 六合健身房</p></div><span class="mk" style="background:var(--danger)"></span></div>
+
+        <div class="fabwrap"><button>＋ 新增預約</button></div>
+      </div>
+    </div></div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h3>三版的取捨</h3>
+  <div class="grid2">
+    <div class="n-i"><span class="n">A</span><div><b>現況：資訊最完整，但太長</b><p>每筆都能看到全部細節，不用點開。代價是 8 筆就要捲 2.6 屏，在外面單手滑很累，而且「現在該做什麼」被埋在中間。</p></div></div>
+    <div class="n-i"><span class="n">B</span><div><b>收合瘦身：長度砍一半，習慣不變</b><p>已完成的收成一行，每筆瘦成一行。<b>關鍵是狀態標籤只在「有事」時才出現</b>——定金已付就不顯示，沒消息就是好消息。改動小，風險低。</p></div></div>
+    <div class="n-i"><span class="n">C</span><div><b>下一筆大卡：一屏搞定，但要多點一下</b><p>老師在外面其實只想知道「下一個是誰、幾點、在哪、怎麼去」。把那件事放到最大，其餘壓成一行。要看細節就點開。</p></div></div>
+    <div class="n-i"><span class="n">＋</span><div><b>三版共用的兩個修正</b><p>①頂部三個數字改成一條細橫排，省下 70px。②打開時<b>自動捲到現在的時間</b>，已完成的自然在視線之外。</p></div></div>
+  </div>
+
+  <div class="rec">
+    <b>我的建議：C 當預設，B 當備案</b>
+    <p>到府與多據點的老師一天在外面看這頁十幾次，他每次要的答案都是同一個：「下一個去哪」。C 把那個答案放到最大、還附導航與出發時間，一屏就解決。而坐在店裡的老師比較想看整天的排程，那種情況 B 比較合適——所以右上角給一個切換鈕，讓老師自己選要哪種檢視，記住他的選擇。</p>
+  </div>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 三種 UI 風格草稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;800&family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   同一個畫面 × 三種風格，只換設計語彙不換內容
+   所有差異都收在 CSS 變數裡：圓角／邊框／陰影／字體／
+   色溫／字重／密度。選定後全站沿用同一組。
+   ═══════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#0e0e10;color:#e8e6e3;
+  font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased;
+}
+.page{max-width:1400px;margin:0 auto;padding:56px 28px 110px}
+
+/* ── 頁首 ─────────────────────────────── */
+.top{border-bottom:1px solid #2a2a2e;padding-bottom:32px;margin-bottom:52px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:#8a8478;margin-bottom:16px}
+.top h1{font-size:clamp(26px,3.6vw,38px);font-weight:300;letter-spacing:-.02em;line-height:1.2}
+.top h1 b{font-weight:700}
+.top p{margin-top:14px;max-width:62ch;color:#9a968f;font-size:14.5px}
+
+/* ── 三欄 ─────────────────────────────── */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;align-items:start}
+@media(max-width:1120px){.grid{grid-template-columns:1fr;max-width:520px;margin:0 auto}}
+
+.col{display:flex;flex-direction:column}
+.label{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.label .id{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.12em;
+  color:#0e0e10;background:#c9a227;padding:2px 9px;border-radius:3px;font-weight:600;
+}
+.label h2{font-size:19px;font-weight:500;letter-spacing:-.01em;color:#f2f0ed}
+.tagline{font-size:13.5px;color:#8f8b84;margin-bottom:8px;min-height:44px}
+.forwho{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6a665f;margin-bottom:20px}
+
+/* 色票條 */
+.swatches{display:flex;gap:0;margin-bottom:6px;border-radius:4px;overflow:hidden;height:26px}
+.swatches i{flex:1;display:block}
+.specline{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;color:#6a665f;
+  letter-spacing:.06em;margin-bottom:22px;display:flex;justify-content:space-between;
+}
+
+/* ═══ 風格代幣 ═══════════════════════════ */
+/* A · 時刻表精準 */
+.s-a{
+  --bg:#faf8f5; --card:#ffffff; --sunk:#f3f0eb;
+  --ink:#101010; --ink-2:#3d3b38; --ink-3:#6f6b65; --ink-4:#a09a92;
+  --line:#e2ded7; --line-2:#efece7;
+  --accent:#a86a1f; --accent-bg:#f6ead6; --ok:#2f6b46; --warn:#a8451f;
+  --r:14px; --r-sm:8px; --pad:15px;
+  --bd:1px solid var(--line); --sh:0 10px 28px -20px rgba(0,0,0,.45);
+  --f-num:"IBM Plex Mono",monospace; --f-ui:"Noto Sans TC",sans-serif;
+  --w-title:500; --track:-.01em; --num-size:14px;
+}
+/* B · 柔光日光 */
+.s-b{
+  --bg:#f7f7f5; --card:#ffffff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --line:transparent; --line-2:#edefec;
+  --accent:#5d7f6e; --accent-bg:#e7efe9; --ok:#5d7f6e; --warn:#b6795a;
+  --r:22px; --r-sm:14px; --pad:18px;
+  --bd:none; --sh:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --f-num:"Plus Jakarta Sans",sans-serif; --f-ui:"Plus Jakarta Sans","Noto Sans TC",sans-serif;
+  --w-title:600; --track:-.015em; --num-size:15px;
+}
+/* C · 高對比編輯 */
+.s-c{
+  --bg:#ffffff; --card:#ffffff; --sunk:#f2f2f2;
+  --ink:#000000; --ink-2:#1a1a1a; --ink-3:#5c5c5c; --ink-4:#8f8f8f;
+  --line:#000000; --line-2:#dcdcdc;
+  --accent:#e3462f; --accent-bg:#ffe9e4; --ok:#0b6b3a; --warn:#e3462f;
+  --r:0px; --r-sm:0px; --pad:16px;
+  --bd:1.5px solid var(--line); --sh:5px 5px 0 var(--ink);
+  --f-num:"Space Grotesk",sans-serif; --f-ui:"Space Grotesk","Noto Sans TC",sans-serif;
+  --w-title:700; --track:-.03em; --num-size:16px;
+}
+@media (prefers-color-scheme:dark){
+  .s-a{--bg:#0d0c0b;--card:#161513;--sunk:#1c1a18;--ink:#f2efea;--ink-2:#c8c3bb;--ink-3:#8e8880;--ink-4:#5f5a53;--line:#2a2825;--line-2:#211f1d;--accent:#d9a24e;--accent-bg:#2a2118;--ok:#6bbd8c;--warn:#e08356}
+  .s-b{--bg:#131614;--card:#1c201e;--sunk:#232725;--ink:#eef1ee;--ink-2:#c2c8c4;--ink-3:#8e9691;--ink-4:#636b67;--line:transparent;--line-2:#2a2f2c;--accent:#8fb8a2;--accent-bg:#233029;--ok:#8fb8a2;--warn:#d09b7c;--sh:0 20px 50px -28px rgba(0,0,0,.75)}
+  .s-c{--bg:#0a0a0a;--card:#101010;--sunk:#191919;--ink:#ffffff;--ink-2:#e8e8e8;--ink-3:#a3a3a3;--ink-4:#6e6e6e;--line:#ffffff;--line-2:#2e2e2e;--accent:#ff6a4d;--accent-bg:#2a1611;--sh:5px 5px 0 var(--ink)}
+}
+
+/* ═══ 共用元件（讀取上面的代幣）═══════════ */
+.frame{
+  background:var(--bg);border-radius:calc(var(--r) + 8px);
+  padding:20px 18px 24px;border:var(--bd);
+  display:flex;flex-direction:column;gap:18px;
+}
+.s-c .frame{box-shadow:6px 6px 0 var(--ink)}
+
+/* 預約確認卡 */
+.card{
+  background:var(--card);border:var(--bd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;font-family:var(--f-ui);
+}
+.c-head{
+  display:flex;align-items:center;gap:9px;padding:var(--pad);
+  border-bottom:1px solid var(--line-2);
+}
+.s-c .c-head{border-bottom:1.5px solid var(--ink)}
+.c-head h3{font-size:14px;font-weight:var(--w-title);color:var(--ink);letter-spacing:var(--track)}
+.tag{
+  margin-left:auto;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  padding:3px 9px;border-radius:var(--r-sm);background:var(--accent-bg);color:var(--accent);
+  font-family:var(--f-num);font-weight:600;
+}
+.s-c .tag{border:1.5px solid var(--accent);border-radius:0}
+
+.fields{padding:4px var(--pad) 10px}
+.f{display:flex;align-items:baseline;gap:14px;padding:9px 0;border-bottom:1px solid var(--line-2)}
+.f:last-child{border-bottom:0}
+.f dt{font-size:11.5px;color:var(--ink-4);flex:0 0 42px;letter-spacing:.05em}
+.f dd{font-size:13.5px;color:var(--ink);flex:1}
+.f dd.num{font-family:var(--f-num);font-size:var(--num-size);font-weight:var(--w-title);letter-spacing:var(--track)}
+.f.miss dd{color:var(--warn)}
+.dim{color:var(--ink-4);font-size:11.5px;font-weight:400}
+
+.verdict{
+  display:flex;align-items:center;gap:9px;padding:12px var(--pad);
+  background:var(--sunk);color:var(--ok);font-size:12.5px;
+  border-top:1px solid var(--line-2);
+}
+.s-c .verdict{border-top:1.5px solid var(--ink)}
+.pip{width:7px;height:7px;border-radius:50%;background:currentColor;flex:0 0 7px}
+.s-c .pip{border-radius:0}
+
+.acts{display:flex;gap:0;border-top:1px solid var(--line-2)}
+.s-c .acts{border-top:1.5px solid var(--ink)}
+.acts button{
+  flex:1;padding:13px 0;border:0;background:transparent;cursor:pointer;
+  font-family:var(--f-ui);font-size:13px;font-weight:var(--w-title);color:var(--ink-3);
+  border-right:1px solid var(--line-2);transition:background .18s,color .18s;
+}
+.s-c .acts button{border-right:1.5px solid var(--ink);text-transform:uppercase;letter-spacing:.08em;font-size:11.5px}
+.acts button:last-child{border-right:0}
+.acts .primary{color:var(--accent)}
+.s-c .acts .primary{background:var(--accent);color:#fff}
+.acts button:hover{background:var(--sunk)}
+.s-c .acts .primary:hover{background:var(--ink);color:var(--card)}
+/* B 的主鈕改成實心藥丸，符合柔光語彙 */
+.s-b .acts{border-top:0;padding:4px var(--pad) var(--pad);gap:8px}
+.s-b .acts button{border-right:0;border-radius:99px;background:var(--sunk);padding:12px 0}
+.s-b .acts .primary{background:var(--accent);color:#fff}
+.s-b .acts .primary:hover{filter:brightness(.92);background:var(--accent)}
+
+/* 今日行程 */
+.sched{
+  background:var(--card);border:var(--bd);border-radius:var(--r);
+  box-shadow:var(--sh);overflow:hidden;font-family:var(--f-ui);
+}
+.s-head{display:flex;align-items:center;gap:10px;padding:var(--pad);border-bottom:1px solid var(--line-2)}
+.s-c .s-head{border-bottom:1.5px solid var(--ink)}
+.s-head h3{font-size:13.5px;font-weight:var(--w-title);color:var(--ink);letter-spacing:var(--track)}
+.s-head .d{font-family:var(--f-num);font-size:11px;color:var(--ink-4);letter-spacing:.08em}
+.s-head .live{margin-left:auto;display:flex;align-items:center;gap:6px;font-family:var(--f-num);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ok)}
+
+.ev{display:grid;grid-template-columns:60px 1px 1fr;align-items:stretch}
+.ev .clock{
+  font-family:var(--f-num);font-size:var(--num-size);font-weight:var(--w-title);
+  letter-spacing:var(--track);padding:14px 12px 0 var(--pad);text-align:right;color:var(--ink-2);
+}
+.ev .rail{background:var(--line-2);position:relative}
+.s-c .ev .rail{background:var(--ink)}
+.ev .rail::before{
+  content:"";position:absolute;top:19px;left:-3.5px;width:8px;height:8px;border-radius:50%;
+  background:var(--ink-4);border:2px solid var(--card);
+}
+.s-c .ev .rail::before{border-radius:0;left:-4px;width:9px;height:9px}
+.ev.hot .rail::before{background:var(--accent);width:10px;height:10px;left:-4.5px}
+.s-c .ev.hot .rail::before{left:-5px}
+.ev .body{padding:12px var(--pad) 14px 16px}
+.ev .body b{font-size:13px;font-weight:var(--w-title);color:var(--ink);display:block;letter-spacing:var(--track)}
+.ev .body .meta{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.ev.hot .body{background:var(--accent-bg);border-radius:var(--r-sm);margin:6px 12px 6px 8px;padding:11px 14px}
+.s-c .ev.hot .body{border:1.5px solid var(--accent);margin:6px 12px}
+.src{
+  display:inline-block;margin-top:7px;font-family:var(--f-num);font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+  padding:2px 8px;border:1px solid var(--accent);border-radius:99px;font-weight:600;
+}
+.s-c .src{border-radius:0;border-width:1.5px}
+.travel{grid-column:3;font-family:var(--f-num);font-size:10px;color:var(--ink-4);padding:0 var(--pad) 4px 16px;letter-spacing:.06em}
+
+/* 底部說明 */
+.why{margin-top:20px;font-size:13px;color:#8f8b84;line-height:1.75}
+.why b{color:#d8d4cd;font-weight:500}
+.why .row{display:grid;grid-template-columns:52px 1fr;gap:10px;padding:7px 0;border-top:1px solid #232326}
+.why .row span{font-family:"IBM Plex Mono",monospace;font-size:10px;color:#6a665f;letter-spacing:.08em;padding-top:4px;text-transform:uppercase}
+
+.closing{margin-top:64px;border-top:1px solid #2a2a2e;padding-top:28px;color:#9a968f;font-size:14px;max-width:70ch}
+.closing b{color:#e8e6e3;font-weight:500}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="top">
+  <p class="kicker">Style Directions · 擇一定案後全站沿用</p>
+  <h1>三種風格，<b>同一個畫面</b></h1>
+  <p>為了讓你比得出真正的差別，三欄的內容完全一樣：一張「LINE 預約確認卡」加一段「今日行程」。差別全在圓角、邊框、色溫、字體與疏密。左右滑或縮放都可以，也支援深色模式。</p>
+</header>
+
+<div class="grid">
+
+  <!-- ══════ A ══════ -->
+  <div class="col">
+    <div class="label"><span class="id">A</span><h2>時刻表精準</h2></div>
+    <p class="tagline">像鐵路時刻表。等寬數字、髮絲線、幾乎零裝飾，資訊密度高，看久不累。</p>
+    <p class="forwho">適合 · 每天要看很多筆的專業工具</p>
+    <div class="swatches"><i style="background:#faf8f5"></i><i style="background:#e2ded7"></i><i style="background:#a09a92"></i><i style="background:#3d3b38"></i><i style="background:#a86a1f"></i></div>
+    <p class="specline"><span>暖石墨 + 琥珀</span><span>IBM Plex Mono</span></p>
+
+    <div class="s-a frame">
+      <div class="card">
+        <div class="c-head"><h3>新增預約</h3><span class="tag">待確認</span></div>
+        <dl class="fields">
+          <div class="f"><dt>日期</dt><dd class="num">08/02 <span class="dim">週六</span></dd></div>
+          <div class="f"><dt>時間</dt><dd class="num">19:00 – 20:30</dd></div>
+          <div class="f"><dt>地點</dt><dd>六合健身房</dd></div>
+          <div class="f"><dt>客人</dt><dd>陳小姐</dd></div>
+          <div class="f miss"><dt>電話</dt><dd>未提供 · 點我補上</dd></div>
+        </dl>
+        <div class="verdict"><span class="pip"></span>時段無衝突，前後行程來得及</div>
+        <div class="acts"><button class="primary">確認建立</button><button>修改</button></div>
+      </div>
+
+      <div class="sched">
+        <div class="s-head"><h3>今日行程</h3><span class="d">08/02 週六</span><span class="live"><span class="pip"></span>同步中</span></div>
+        <div class="ev"><div class="clock">09:00</div><div class="rail"></div><div class="body"><b>陳小姐 · 深層按摩 60 分</b><p class="meta">A 館 2F · 定金已付</p></div></div>
+        <div class="ev"><div></div><div class="rail"></div><p class="travel">↓ 移動 30 分 · A 館 → 六合</p></div>
+        <div class="ev hot"><div class="clock">19:00</div><div class="rail"></div><div class="body"><b>陳小姐 · 推拿 90 分</b><p class="meta">六合健身房 3F · 定金待付</p><span class="src">由 LINE 建立</span></div></div>
+      </div>
+    </div>
+
+    <div class="why">
+      <div class="row"><span>記憶點</span><b>所有時間都是等寬字</b>，數字上下對齊成一條線</div>
+      <div class="row"><span>優勢</span>資訊最密、掃讀最快，深色模式最耐看</div>
+      <div class="row"><span>代價</span>偏冷靜，比較不「親切」</div>
+    </div>
+  </div>
+
+  <!-- ══════ B ══════ -->
+  <div class="col">
+    <div class="label"><span class="id">B</span><h2>柔光日光</h2></div>
+    <p class="tagline">大圓角、無邊框、柔和陰影。低彩度的鼠尾草綠，放鬆、乾淨、有呼吸感。</p>
+    <p class="forwho">適合 · 按摩、美業、身心放鬆類品牌</p>
+    <div class="swatches"><i style="background:#f7f7f5"></i><i style="background:#edefec"></i><i style="background:#aab0b6"></i><i style="background:#4b5158"></i><i style="background:#5d7f6e"></i></div>
+    <p class="specline"><span>瓷白 + 鼠尾草綠</span><span>Plus Jakarta Sans</span></p>
+
+    <div class="s-b frame">
+      <div class="card">
+        <div class="c-head"><h3>新增預約</h3><span class="tag">待確認</span></div>
+        <dl class="fields">
+          <div class="f"><dt>日期</dt><dd class="num">08/02 <span class="dim">週六</span></dd></div>
+          <div class="f"><dt>時間</dt><dd class="num">19:00 – 20:30</dd></div>
+          <div class="f"><dt>地點</dt><dd>六合健身房</dd></div>
+          <div class="f"><dt>客人</dt><dd>陳小姐</dd></div>
+          <div class="f miss"><dt>電話</dt><dd>未提供 · 點我補上</dd></div>
+        </dl>
+        <div class="verdict"><span class="pip"></span>時段無衝突，前後行程來得及</div>
+        <div class="acts"><button class="primary">確認建立</button><button>修改</button></div>
+      </div>
+
+      <div class="sched">
+        <div class="s-head"><h3>今日行程</h3><span class="d">08/02 週六</span><span class="live"><span class="pip"></span>同步中</span></div>
+        <div class="ev"><div class="clock">09:00</div><div class="rail"></div><div class="body"><b>陳小姐 · 深層按摩 60 分</b><p class="meta">A 館 2F · 定金已付</p></div></div>
+        <div class="ev"><div></div><div class="rail"></div><p class="travel">↓ 移動 30 分 · A 館 → 六合</p></div>
+        <div class="ev hot"><div class="clock">19:00</div><div class="rail"></div><div class="body"><b>陳小姐 · 推拿 90 分</b><p class="meta">六合健身房 3F · 定金待付</p><span class="src">由 LINE 建立</span></div></div>
+      </div>
+    </div>
+
+    <div class="why">
+      <div class="row"><span>記憶點</span><b>沒有任何一條邊框線</b>，全靠陰影與留白分層</div>
+      <div class="row"><span>優勢</span>最親和、客人端接受度最高、最好看</div>
+      <div class="row"><span>代價</span>密度低，同一畫面塞得下的資料較少</div>
+    </div>
+  </div>
+
+  <!-- ══════ C ══════ -->
+  <div class="col">
+    <div class="label"><span class="id">C</span><h2>高對比編輯</h2></div>
+    <p class="tagline">純黑白直角、粗線條、硬陰影，配一個燒橘色。銳利、有態度、一眼認得出來。</p>
+    <p class="forwho">適合 · 健身、運動、想要品牌記憶點</p>
+    <div class="swatches"><i style="background:#ffffff"></i><i style="background:#dcdcdc"></i><i style="background:#8f8f8f"></i><i style="background:#000000"></i><i style="background:#e3462f"></i></div>
+    <p class="specline"><span>純黑白 + 燒橘</span><span>Space Grotesk</span></p>
+
+    <div class="s-c frame">
+      <div class="card">
+        <div class="c-head"><h3>新增預約</h3><span class="tag">待確認</span></div>
+        <dl class="fields">
+          <div class="f"><dt>日期</dt><dd class="num">08/02 <span class="dim">週六</span></dd></div>
+          <div class="f"><dt>時間</dt><dd class="num">19:00 – 20:30</dd></div>
+          <div class="f"><dt>地點</dt><dd>六合健身房</dd></div>
+          <div class="f"><dt>客人</dt><dd>陳小姐</dd></div>
+          <div class="f miss"><dt>電話</dt><dd>未提供 · 點我補上</dd></div>
+        </dl>
+        <div class="verdict"><span class="pip"></span>時段無衝突，前後行程來得及</div>
+        <div class="acts"><button class="primary">確認建立</button><button>修改</button></div>
+      </div>
+
+      <div class="sched">
+        <div class="s-head"><h3>今日行程</h3><span class="d">08/02 週六</span><span class="live"><span class="pip"></span>同步中</span></div>
+        <div class="ev"><div class="clock">09:00</div><div class="rail"></div><div class="body"><b>陳小姐 · 深層按摩 60 分</b><p class="meta">A 館 2F · 定金已付</p></div></div>
+        <div class="ev"><div></div><div class="rail"></div><p class="travel">↓ 移動 30 分 · A 館 → 六合</p></div>
+        <div class="ev hot"><div class="clock">19:00</div><div class="rail"></div><div class="body"><b>陳小姐 · 推拿 90 分</b><p class="meta">六合健身房 3F · 定金待付</p><span class="src">由 LINE 建立</span></div></div>
+      </div>
+    </div>
+
+    <div class="why">
+      <div class="row"><span>記憶點</span><b>硬邊實體陰影</b>，卡片像貼在紙上的標籤</div>
+      <div class="row"><span>優勢</span>辨識度最高，去掉 Logo 也認得出是你</div>
+      <div class="row"><span>代價</span>個性強，不是所有職人都想要這麼有稜角</div>
+    </div>
+  </div>
+
+</div>
+
+<p class="closing">選定之後，我會把它固化成一組<b>設計代幣</b>（顏色、圓角、字體、間距、陰影全部變數化），之後每一頁都從這組變數長出來，不會東一個樣西一個樣。往後想微調整體感覺，也只要改變數，不用一頁一頁動。</p>
+
+</div>
+</body>
+</html>

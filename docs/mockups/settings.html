@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 設定類畫面草稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7;
+  --accent:#5d7f6e; --accent-bg:#e7efe9; --accent-ink:#fff;
+  --ok:#5d7f6e; --ok-bg:#e7efe9; --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6; --info:#5d7183; --info-bg:#e8eef2;
+  --r-xs:8px; --r-sm:14px; --r-md:22px; --r-lg:28px; --r-pill:999px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --sh-3:0 30px 70px -34px rgba(35,38,42,.38);
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029; --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e; --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+    --sh-3:0 34px 76px -34px rgba(0,0,0,.85);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1180px;margin:0 auto;padding:52px 24px 100px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:var(--r-pill);font-weight:700;margin-bottom:18px}
+h1{font-size:clamp(26px,3.8vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.18}
+.lede{margin-top:14px;max-width:64ch;color:var(--ink-3);font-size:15px}
+
+section{margin-top:72px}
+.sec-title{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.sec-title .n{font-size:11px;font-weight:800;color:var(--ink-4);letter-spacing:.1em}
+.sec-title h2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.sec-desc{color:var(--ink-3);font-size:14px;max-width:66ch;margin-bottom:22px}
+
+.plain{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:22px 26px;margin-bottom:26px}
+.plain h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:13px}
+.plain ul{list-style:none;font-size:14.5px;color:var(--ink-2)}
+.plain ul li{padding:6px 0 6px 20px;position:relative}
+.plain ul li::before{content:"";position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.plain ul li b{color:var(--ink);font-weight:700}
+.plain .note{margin-top:13px;padding:13px 16px;background:var(--accent-bg);color:var(--accent);border-radius:var(--r-sm);font-size:13.5px}
+.plain .note.q{background:var(--warn-bg);color:var(--warn)}
+.plain .note b{font-weight:800}
+
+.panel{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);overflow:hidden}
+.pbar{display:flex;align-items:center;gap:12px;padding:17px 22px}
+.pbar h3{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.pbar .sub{font-size:12px;color:var(--ink-4);font-weight:700}
+.pbar .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{padding:10px 18px;border:0;border-radius:var(--r-pill);cursor:pointer;font-family:var(--font);font-size:12.5px;font-weight:800;transition:filter .18s,background .18s,color .18s}
+.btn-p{background:var(--accent);color:var(--accent-ink)}
+.btn-p:hover{filter:brightness(.93)}
+.btn-s{background:var(--sunk);color:var(--ink-2)}
+.btn-s:hover{background:var(--accent-bg);color:var(--accent)}
+.seg{display:flex;background:var(--sunk);border-radius:var(--r-pill);padding:3px}
+.seg button{border:0;background:transparent;font-family:var(--font);font-size:12px;font-weight:700;color:var(--ink-3);padding:6px 14px;border-radius:var(--r-pill);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--sh-1)}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:var(--r-pill)}
+.pill .dot{width:5px;height:5px;border-radius:50%;background:currentColor}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-info{background:var(--info-bg);color:var(--info)}
+.p-mute{background:var(--sunk);color:var(--ink-3)}
+.p-danger{background:var(--danger-bg);color:var(--danger)}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+.field label span{font-weight:500;color:var(--ink-4)}
+.input,.select{width:100%;font-family:var(--font);font-size:14px;color:var(--ink);background:var(--sunk);border:0;border-radius:var(--r-sm);padding:12px 15px}
+.input:focus,.select:focus{outline:0;background:var(--surface);box-shadow:0 0 0 3px var(--accent-bg),var(--sh-1)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.form{padding:4px 22px 20px}
+.hint{font-size:11.5px;color:var(--ink-4);margin-top:5px}
+
+.switchrow{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--hairline)}
+.switchrow:last-child{border-bottom:0}
+.switchrow b{font-size:13.5px;font-weight:700;display:block}
+.switchrow p{font-size:11.5px;color:var(--ink-4)}
+.sw{margin-left:auto;width:44px;height:26px;border-radius:var(--r-pill);background:var(--ink-4);position:relative;flex:0 0 44px;cursor:pointer}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw.on{background:var(--accent)}
+.sw.on::after{transform:translateX(18px)}
+.subsetting{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:2px 0 14px;margin-top:-4px}
+.subsetting .lb{font-size:12.5px;color:var(--ink-3);font-weight:700}
+.subsetting .unit{font-size:12px;color:var(--ink-4);font-weight:700;margin-left:-5px}
+.numin{width:72px;background:var(--sunk);border:0;border-radius:var(--r-xs);padding:9px 0;text-align:center;font-family:var(--font);font-size:14px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.numin:focus{outline:0;background:var(--surface);box-shadow:0 0 0 3px var(--accent-bg)}
+.subsetting .tip{font-size:11.5px;color:var(--ink-4);width:100%;margin-top:2px}
+
+/* 資源需求 */
+.reqbox{background:var(--sunk);border-radius:var(--r-sm);padding:15px 16px}
+.reqbox .h{font-size:12px;font-weight:800;color:var(--ink-2);margin-bottom:4px}
+.reqbox .s{font-size:11.5px;color:var(--ink-4);margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{background:var(--surface);border:0;border-radius:var(--r-pill);padding:9px 15px;font-family:var(--font);font-size:12.5px;font-weight:700;color:var(--ink-3);cursor:pointer;box-shadow:var(--sh-1)}
+.chip.on{background:var(--accent);color:var(--accent-ink)}
+.chip:hover:not(.on){color:var(--accent)}
+
+/* 週排班 */
+.sched{padding:0 22px 18px}
+.shead{display:grid;grid-template-columns:70px repeat(7,1fr);gap:5px;padding-bottom:9px}
+.shead span{text-align:center;font-size:11px;color:var(--ink-4);font-weight:800;letter-spacing:.05em}
+.shead span:first-child{text-align:left}
+.srow{display:grid;grid-template-columns:70px repeat(7,1fr);gap:5px;margin-bottom:5px;align-items:center}
+.srow .nm{font-size:12.5px;font-weight:800;color:var(--ink-2)}
+.cell{border-radius:var(--r-xs);padding:9px 4px;text-align:center;font-size:11px;font-weight:700;cursor:pointer;line-height:1.3;min-height:44px;display:flex;flex-direction:column;justify-content:center;gap:1px}
+.cell.off{background:var(--sunk);color:var(--ink-4)}
+.cell.a{background:var(--accent-bg);color:var(--accent)}
+.cell.b{background:var(--info-bg);color:var(--info)}
+.cell.m{background:var(--warn-bg);color:var(--warn)}
+.cell small{font-size:9.5px;opacity:.8;font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:14px;padding:12px 22px 18px;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:4px;display:block}
+
+/* 移動時間矩陣 */
+.mtx{padding:0 22px 20px}
+.mtx table{width:100%;border-collapse:collapse}
+.mtx th,.mtx td{padding:10px 8px;text-align:center;font-size:12.5px}
+.mtx th{font-size:11px;color:var(--ink-4);font-weight:800;letter-spacing:.05em}
+.mtx th.rowh{text-align:left;font-weight:800;color:var(--ink-2);font-size:12.5px}
+.mtx td{border-bottom:1px solid var(--hairline)}
+.mtx input{width:64px;background:var(--sunk);border:0;border-radius:var(--r-xs);padding:7px 0;text-align:center;font-family:var(--font);font-size:13px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.mtx input:focus{outline:0;background:var(--surface);box-shadow:0 0 0 3px var(--accent-bg)}
+.mtx .self{color:var(--ink-4);font-weight:700}
+
+/* 客戶列表 */
+.filters{display:flex;flex-wrap:wrap;gap:7px;padding:0 22px 14px}
+.fchip{background:var(--sunk);border:0;border-radius:var(--r-pill);padding:8px 15px;font-family:var(--font);font-size:12px;font-weight:700;color:var(--ink-3);cursor:pointer}
+.fchip.on{background:var(--accent);color:var(--accent-ink)}
+.fchip .c{opacity:.65;font-variant-numeric:tabular-nums}
+.clist{padding:0 22px 20px}
+.chead{display:grid;grid-template-columns:1fr 88px 78px 96px 96px;gap:12px;padding:0 4px 8px;font-size:10.5px;color:var(--ink-4);font-weight:800;letter-spacing:.06em}
+.chead span:not(:first-child){text-align:right}
+.crow{display:grid;grid-template-columns:1fr 88px 78px 96px 96px;gap:12px;align-items:center;padding:12px 4px;border-bottom:1px solid var(--hairline);cursor:pointer}
+.crow:hover{background:var(--sunk)}
+.crow .who{display:flex;align-items:center;gap:11px}
+.crow .av{width:34px;height:34px;border-radius:50%;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:12.5px;flex:0 0 34px}
+.crow b{font-size:13.5px;font-weight:700;display:block}
+.crow .ph{font-size:11px;color:var(--ink-4);font-variant-numeric:tabular-nums}
+.crow .cell2{text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.crow .cell2.mute{color:var(--ink-4);font-weight:600}
+.crow .cell2.bad{color:var(--danger)}
+.crow .tagcell{text-align:right}
+
+/* 手機 */
+.phone{width:352px;flex:0 0 352px;border-radius:38px;padding:10px;background:linear-gradient(165deg,#33383a,#191c1d);box-shadow:var(--sh-3)}
+.screen{background:var(--bg);border-radius:29px;overflow:hidden;height:600px;display:flex;flex-direction:column;position:relative}
+.pnav{display:flex;align-items:center;gap:10px;padding:14px 17px;background:var(--surface)}
+.pnav .back{font-size:17px;color:var(--ink-3);font-weight:700}
+.pnav h3{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.mbody{flex:1;overflow-y:auto;padding:16px 17px 20px}
+.mbody::-webkit-scrollbar{width:4px}
+.mbody::-webkit-scrollbar-thumb{background:var(--ink-4);border-radius:9px}
+.sellcard{background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:14px 15px;margin-bottom:12px}
+.money{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--hairline)}
+.money:last-child{border-bottom:0}
+.money .l{font-size:13px;color:var(--ink-2);font-weight:700}
+.money .l small{display:block;font-size:10.5px;color:var(--ink-4);font-weight:600}
+.money .v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+.editamt{background:var(--sunk);border:0;border-radius:var(--r-xs);padding:6px 10px;width:98px;text-align:right;font-family:var(--font);font-size:15px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.editamt:focus{outline:0;background:var(--surface);box-shadow:0 0 0 3px var(--accent-bg)}
+.calc{background:var(--accent-bg);color:var(--accent);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;font-weight:700;margin-top:4px}
+.calc b{font-weight:800;font-variant-numeric:tabular-nums}
+
+.stage{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.notes{margin-top:26px;display:grid;gap:9px}
+.n-i{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:15px 19px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1)}
+.n-i .n{font-size:12.5px;font-weight:800;color:var(--accent)}
+.n-i b{font-weight:700;font-size:13.5px}
+.n-i p{font-size:13px;color:var(--ink-3);margin-top:3px}
+
+@media(max-width:900px){
+  .frow,.frow3{grid-template-columns:1fr}
+  .phone{width:100%;max-width:352px;flex:1 1 auto}
+  .chead,.crow{grid-template-columns:1fr 80px 90px}
+  .chead span:nth-child(3),.crow .cell2:nth-of-type(2),
+  .chead span:nth-child(4),.crow .cell2:nth-of-type(3){display:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 07 · 設定類畫面</span>
+  <h1>老師只設定一次，之後天天受用的四張畫面</h1>
+  <p class="lede">這幾張的難處不在好不好看，在於<b>不能把老師嚇跑</b>。設定畫面太複雜，人在第一天就流失了。</p>
+</header>
+
+<!-- ══ 01 服務項目 ══ -->
+<section>
+  <div class="sec-title"><span class="n">01</span><h2>服務項目</h2></div>
+  <p class="sec-desc">這張是整個系統最難設計的一頁，因為它要同時裝得下「按摩 60 分」和「場地一小時」兩種完全不同的東西。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>上面填基本的：名稱、時長、價格。<b>九成的老師填完這三格就可以走了。</b></li>
+      <li>「需要什麼資源」是關鍵：按摩需要<b>師傅＋包廂</b>，場租只需要<b>場地</b>。系統靠這個判斷時段能不能約。</li>
+      <li>定金、地點模式、前後緩衝這些進階設定<b>收在下面，預設收合</b>。</li>
+      <li>時長模式切成「按小時」時，畫面會自動變成場租的樣子（最少幾小時、最多幾小時）。</li>
+    </ul>
+    <div class="note q"><b>想聽你意見：</b>「需要什麼資源」這個概念對老師會不會太抽象？我的替代方案是改問「做這項服務時會佔用什麼？」並預設幫他勾好——單人工作室就自動勾「我自己」，他根本不用碰。</div>
+  </div>
+
+  <div class="panel">
+    <div class="pbar"><h3>編輯服務項目</h3><span class="sub">深層運動按摩</span>
+      <div class="right"><button class="btn btn-s">刪除</button><button class="btn btn-p">儲存</button></div></div>
+    <div class="form">
+      <div class="frow">
+        <div class="field"><label>服務名稱</label><input class="input" value="深層運動按摩"></div>
+        <div class="field"><label>分類 <span>· 選填</span></label><input class="input" value="按摩"></div>
+      </div>
+
+      <div class="frow3">
+        <div class="field"><label>時長模式</label>
+          <select class="select"><option>固定時長</option><option>按小時計（場地租借）</option></select></div>
+        <div class="field"><label>時長</label><input class="input num" value="90 分鐘"></div>
+        <div class="field"><label>價格</label><input class="input num" value="NT$ 1,800"></div>
+      </div>
+
+      <div class="field">
+        <div class="reqbox">
+          <p class="h">做這項服務時會佔用什麼？</p>
+          <p class="s">系統靠這個判斷時段能不能約。單人工作室通常只要勾「我自己」。</p>
+          <div class="chips">
+            <button class="chip on">王老師</button>
+            <button class="chip">李老師</button>
+            <button class="chip on">包廂 A</button>
+            <button class="chip">包廂 B</button>
+            <button class="chip">主訓練區</button>
+            <button class="chip">＋ 新增</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="frow">
+        <div class="field"><label>地點模式</label>
+          <select class="select"><option>多據點巡迴</option><option>固定店面</option><option>到府 / 無固定地點</option></select>
+          <p class="hint">選「巡迴」後，可預約時段會依老師當天在哪個據點自動篩選</p></div>
+        <div class="field"><label>定金</label>
+          <select class="select"><option>固定金額 NT$300</option><option>不收</option><option>價格百分比</option></select>
+          <p class="hint">可另外設定只對新客或信用不良的客人收</p></div>
+      </div>
+
+      <div style="border-top:1px solid var(--hairline);padding-top:6px">
+        <div class="switchrow"><div><b>服務前後需要緩衝時間</b><p>準備器材、整理環境、換床單</p></div><span class="sw on"></span></div>
+        <div class="subsetting">
+          <span class="lb">服務前</span><input class="numin" value="5"><span class="unit">分鐘</span>
+          <span class="lb" style="margin-left:8px">服務後</span><input class="numin" value="10"><span class="unit">分鐘</span>
+          <p class="tip">這段時間會一起被鎖住，客人約不到。關掉開關就等於前後都 0 分。</p>
+        </div>
+        <div class="switchrow"><div><b>這是團體課程</b><p>開啟後可設定容納人數與最低成團人數</p></div><span class="sw"></span></div>
+        <div class="switchrow"><div><b>開放線上預約</b><p>關閉後客人看不到，只能由老師手動建立</p></div><span class="sw on"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 02 營業時間與據點 ══ -->
+<section>
+  <div class="sec-title"><span class="n">02</span><h2>營業時間與據點</h2></div>
+  <p class="sec-desc">巡迴老師不是「隨時能去任何一點」，而是「週一三五在 A 館、週二四在 B 館」。這張表就是在講這件事。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>一格就是「這個人這天在哪個據點、幾點到幾點」。點一下就換據點，再點一下設時間。</li>
+      <li>顏色代表據點，灰色是<b>那天不上班</b>。</li>
+      <li>下面那張小表是<b>據點之間要開多久</b>。系統會拿它去算「A 館的預約結束後，最早幾點能在 B 館開始」。</li>
+      <li>只有兩三個據點，這張表大概三分鐘就填完，之後幾乎不用再動。</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <div class="pbar"><h3>每週排班</h3><span class="sub">王老師</span>
+      <div class="right"><div class="seg"><button class="on">王老師</button><button>李老師</button><button>場地</button></div></div></div>
+
+    <div class="sched">
+      <div class="shead"><span>成員</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+      <div class="srow">
+        <span class="nm">王老師</span>
+        <div class="cell a">A 館<small>10–20</small></div>
+        <div class="cell b">B 館<small>13–21</small></div>
+        <div class="cell a">A 館<small>10–20</small></div>
+        <div class="cell b">B 館<small>13–21</small></div>
+        <div class="cell a">A 館<small>10–20</small></div>
+        <div class="cell m">到府<small>09–18</small></div>
+        <div class="cell off">休</div>
+      </div>
+      <div class="srow">
+        <span class="nm">李老師</span>
+        <div class="cell off">休</div>
+        <div class="cell a">A 館<small>12–21</small></div>
+        <div class="cell a">A 館<small>12–21</small></div>
+        <div class="cell off">休</div>
+        <div class="cell a">A 館<small>12–21</small></div>
+        <div class="cell a">A 館<small>10–20</small></div>
+        <div class="cell a">A 館<small>10–18</small></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i style="background:var(--accent-bg)"></i>A 館</span>
+      <span><i style="background:var(--info-bg)"></i>B 館</span>
+      <span><i style="background:var(--warn-bg)"></i>到府</span>
+      <span><i style="background:var(--sunk)"></i>不上班</span>
+      <span style="margin-left:auto;color:var(--ink-4)">點格子切換據點，長按設定時間</span>
+    </div>
+
+    <div class="pbar" style="border-top:1px solid var(--hairline)"><h3>據點之間的移動時間</h3><span class="sub">分鐘</span></div>
+    <div class="mtx">
+      <table>
+        <tr><th></th><th>A 館</th><th>B 館</th><th>六合健身房</th></tr>
+        <tr><th class="rowh">A 館</th><td class="self">—</td><td><input value="30"></td><td><input value="45"></td></tr>
+        <tr><th class="rowh">B 館</th><td><input value="30"></td><td class="self">—</td><td><input value="20"></td></tr>
+        <tr><th class="rowh">六合健身房</th><td><input value="45"></td><td><input value="20"></td><td class="self">—</td></tr>
+      </table>
+      <p class="hint" style="margin-top:10px">預設兩邊填一樣的值。單行道或固定塞車方向想拆開設定也可以。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 03 客戶管理 ══ -->
+<section>
+  <div class="sec-title"><span class="n">03</span><h2>客戶管理</h2></div>
+  <p class="sec-desc">上面那排篩選鈕就是整頁的靈魂——老師平常要找的不是「某個人」，是「一群人」。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>篩選鈕直接寫出<b>各群有幾個人</b>，老師一眼就看到「沉睡客 23 人」，自然會想去撈回來。</li>
+      <li><b>沉睡客</b>＝ 90 天沒回來。<b>VIP</b>＝ 消費排前 20%。這兩群是最有生意的地方。</li>
+      <li>列表顯示最後到訪、到店次數、放鳥次數、累計消費，點任一列進客人檔案。</li>
+      <li>右上角<b>匯入</b>可以把 Excel 或通訊錄的舊客人一次搬進來，這是導入時最大的門檻。</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <div class="pbar"><h3>客戶</h3><span class="sub">共 184 位</span>
+      <div class="right"><button class="btn btn-s">匯入名單</button><button class="btn btn-p">＋ 新增客戶</button></div></div>
+
+    <div class="filters">
+      <button class="fchip on">全部 <span class="c">184</span></button>
+      <button class="fchip">新客 <span class="c">12</span></button>
+      <button class="fchip">回頭客 <span class="c">96</span></button>
+      <button class="fchip">沉睡客 <span class="c">23</span></button>
+      <button class="fchip">VIP <span class="c">37</span></button>
+      <button class="fchip">有放鳥紀錄 <span class="c">9</span></button>
+      <button class="fchip">已封鎖 <span class="c">2</span></button>
+    </div>
+
+    <div class="clist">
+      <div class="chead"><span>客人</span><span>最後到訪</span><span>到店</span><span>放鳥</span><span>累計消費</span></div>
+
+      <div class="crow">
+        <div class="who"><span class="av">陳</span><div><b>陳小姐 <span class="pill p-ok" style="margin-left:4px"><span class="dot"></span>VIP</span></b><span class="ph">0912-345-678</span></div></div>
+        <span class="cell2 mute">07/12</span><span class="cell2">12</span><span class="cell2 bad">1</span><span class="cell2">18,600</span>
+      </div>
+      <div class="crow">
+        <div class="who"><span class="av">林</span><div><b>林先生</b><span class="ph">0933-221-889</span></div></div>
+        <span class="cell2 mute">08/02</span><span class="cell2">8</span><span class="cell2 mute">0</span><span class="cell2">12,400</span>
+      </div>
+      <div class="crow">
+        <div class="who"><span class="av">周</span><div><b>周太太 <span class="pill p-warn" style="margin-left:4px"><span class="dot"></span>沉睡</span></b><span class="ph">0955-660-142</span></div></div>
+        <span class="cell2 mute">03/18</span><span class="cell2">15</span><span class="cell2 mute">0</span><span class="cell2">21,300</span>
+      </div>
+      <div class="crow">
+        <div class="who"><span class="av">張</span><div><b>張先生</b><span class="ph">0928-114-527</span></div></div>
+        <span class="cell2 mute">07/26</span><span class="cell2">5</span><span class="cell2 bad">1</span><span class="cell2">8,400</span>
+      </div>
+      <div class="crow">
+        <div class="who"><span class="av">吳</span><div><b>吳先生 <span class="pill p-danger" style="margin-left:4px"><span class="dot"></span>已封鎖</span></b><span class="ph">0977-303-118</span></div></div>
+        <span class="cell2 mute">05/09</span><span class="cell2">3</span><span class="cell2 bad">3</span><span class="cell2">3,600</span>
+      </div>
+      <div class="crow">
+        <div class="who"><span class="av">鄭</span><div><b>鄭小姐 <span class="pill p-info" style="margin-left:4px"><span class="dot"></span>新客</span></b><span class="ph">0918-772-005</span></div></div>
+        <span class="cell2 mute">07/30</span><span class="cell2">1</span><span class="cell2 mute">0</span><span class="cell2">1,200</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 04 販售時數券 ══ -->
+<section>
+  <div class="sec-title"><span class="n">04</span><h2>販售時數券與儲值金</h2></div>
+  <p class="sec-desc">從客人檔案裡開啟。老師自己決定收多少、給多少，系統不做贈額規則。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>老師填<b>兩個獨立的數字</b>：收多少錢、給多少時數。要送就直接多給，不用系統算。</li>
+      <li>下面會即時算出<b>實際單價</b>——這個數字之後退款時會用到，老師現在也能拿來確認自己有沒有送過頭。</li>
+      <li><b>到期日老師自己設</b>，可以從方案帶預設值再改。</li>
+      <li>快到期時系統自動發 LINE 提醒客人，順便就是一個把人叫回來的理由。</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><span class="back">‹</span><h3>販售時數券</h3></div>
+        <div class="mbody">
+          <div class="sellcard">
+            <div class="money"><span class="l">客人</span><span class="v" style="font-size:14px">陳小姐</span></div>
+          </div>
+
+          <div class="sellcard">
+            <div class="field" style="margin-bottom:12px">
+              <label>方案</label>
+              <select class="select"><option>10 小時方案</option><option>1hr 券</option><option>30min 券</option><option>儲值金</option></select>
+            </div>
+            <div class="money"><span class="l">收款金額</span><input class="editamt" value="10,000"></div>
+            <div class="money"><span class="l">給予時數<small>要送就直接多給</small></span><input class="editamt" value="11 hr"></div>
+            <div class="money"><span class="l">到期日</span><input class="editamt" style="width:118px" value="2027/07/28"></div>
+          </div>
+
+          <div class="calc">實際單價 <b>NT$ 909</b> / 小時　·　等於送了 <b>1 小時</b></div>
+
+          <div class="sellcard" style="margin-top:12px">
+            <div class="money"><span class="l">付款方式</span><span class="v" style="font-size:13px">現金</span></div>
+          </div>
+
+          <p style="font-size:11.5px;color:var(--ink-4);margin-top:12px;line-height:1.6">
+            到期前 14 天會自動發 LINE 提醒陳小姐，可在通知設定裡調整。
+          </p>
+
+          <div style="margin-top:16px"><button class="btn btn-p" style="width:100%;padding:14px">確認販售</button></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="notes" style="flex:1 1 360px;min-width:320px">
+      <div class="n-i"><span class="n">1</span><div><b>收款與給予是兩個獨立欄位</b><p>不做「儲 10,000 送 1,000」的規則引擎。老師談價方式千百種，讓他自己填最快。</p></div></div>
+      <div class="n-i"><span class="n">2</span><div><b>即時顯示實際單價</b><p>老師當場就知道自己算下來一小時賣多少，不會不小心送過頭。退款時也用這個數字。</p></div></div>
+      <div class="n-i"><span class="n">3</span><div><b>底層記分鐘，顯示講小時</b><p>資料庫存 660 分鐘，畫面寫 11 小時。這樣 90 分鐘的服務可以直接扣，不會有券湊不出來的問題。</p></div></div>
+      <div class="n-i"><span class="n">4</span><div><b>先到期的先扣</b><p>客人有多張券時，一律從最快過期的開始扣，避免白白讓客人的券過期。</p></div></div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
