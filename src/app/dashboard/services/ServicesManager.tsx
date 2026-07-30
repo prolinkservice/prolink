@@ -4,6 +4,25 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { cn } from '@/lib/utils'
+import {
   blankService,
   describeDeposit,
   describeDuration,
@@ -26,7 +45,7 @@ import {
   TextBox,
   ToggleRow,
 } from '@/components/FormBits'
-import { deleteService, saveService } from './actions'
+import { deleteService, duplicateService, reorderServices, saveService } from './actions'
 
 // 草稿：docs/mockups/settings.html §01
 // 上面三格（名稱、時長、價格）填完就能走，進階設定收在下面。
@@ -53,8 +72,17 @@ export function ServicesManager({
 }) {
   const router = useRouter()
   const [draft, setDraft] = useState<ServiceDraft | null>(null)
+  const [orderIds, setOrderIds] = useState<string[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [pending, startTransition] = useTransition()
+
+  // 手機上拖曳要按住一下才啟動，否則會跟捲動打架；
+  // 滑鼠則是移動 6px 才算拖，避免點編輯時誤觸
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 160, tolerance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
 
   function openNew() {
     setError(null)
@@ -84,6 +112,48 @@ export function ServicesManager({
       const res = await deleteService(id)
       if (!res.ok) return setError(res.error)
       setDraft(null)
+      router.refresh()
+    })
+  }
+
+  function copy(id: string) {
+    setError(null)
+    startTransition(async () => {
+      const res = await duplicateService(id)
+      if (!res.ok) return setError(res.error)
+      setOrderIds(null)
+      router.refresh()
+    })
+  }
+
+  // 拖曳當下先在畫面上換位置，不等伺服器回來，手感才不會頓
+  const ordered =
+    orderIds && orderIds.length === services.length
+      ? orderIds
+          .map((id) => services.find((s) => s.id === id))
+          .filter((s): s is ServiceRow => Boolean(s))
+      : services
+
+  function onDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const ids = ordered.map((s) => s.id)
+    const next = arrayMove(
+      ids,
+      ids.indexOf(String(active.id)),
+      ids.indexOf(String(over.id))
+    )
+    setOrderIds(next)
+    setError(null)
+
+    startTransition(async () => {
+      const res = await reorderServices(next)
+      if (!res.ok) {
+        // 存失敗就把畫面退回伺服器的順序，不要讓人以為存好了
+        setOrderIds(null)
+        setError(res.error)
+      }
       router.refresh()
     })
   }
@@ -146,52 +216,126 @@ export function ServicesManager({
               </PrimaryButton>
             </div>
           ) : (
-            <ul className="flex flex-col gap-2.5">
-              {services.map((s) => (
-                <li key={s.id}>
-                  <button
-                    onClick={() => openEdit(s)}
-                    className="flex w-full items-center gap-3 rounded-lg bg-card px-5 py-4 text-left shadow-soft transition hover:shadow-card"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <b className="text-[14.5px] font-extrabold tracking-tight">{s.name}</b>
-                        {!s.is_active && (
-                          <span className="rounded-full bg-sunk px-2.5 py-0.5 text-[10px] font-extrabold text-ink-3">
-                            未開放線上預約
-                          </span>
-                        )}
-                        {s.location_mode === 'mobile' && (
-                          <span className="rounded-full bg-warn-bg px-2.5 py-0.5 text-[10px] font-extrabold text-warn">
-                            到府
-                          </span>
-                        )}
-                        {s.capacity > 1 && (
-                          <span className="rounded-full bg-info-bg px-2.5 py-0.5 text-[10px] font-extrabold text-info">
-                            團體課 {s.capacity} 人
-                          </span>
-                        )}
-                      </div>
-                      <p className="num mt-1 text-[11.5px] text-ink-3">
-                        {[
-                          describeDuration(s),
-                          formatPrice(s),
-                          describeDeposit(s),
-                          bookableNames(s.bookableIds, bookables),
-                        ]
-                          .filter(Boolean)
-                          .join('　·　')}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-[12px] font-extrabold text-ink-3">編輯</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <>
+              {services.length > 1 && (
+                <p className="mb-2 px-1 text-[11.5px] text-ink-3">
+                  用左邊的握把拖曳可以換順序，客人在預約頁上就是照這個順序看到。
+                </p>
+              )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={onDragEnd}
+              >
+                <SortableContext
+                  items={ordered.map((s) => s.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <ul className="flex flex-col gap-2.5">
+                    {ordered.map((s) => (
+                      <SortableServiceRow
+                        key={s.id}
+                        service={s}
+                        bookables={bookables}
+                        pending={pending}
+                        onEdit={() => openEdit(s)}
+                        onCopy={() => copy(s.id)}
+                      />
+                    ))}
+                  </ul>
+                </SortableContext>
+              </DndContext>
+            </>
           )}
         </>
       )}
     </main>
+  )
+}
+
+function SortableServiceRow({
+  service: s,
+  bookables,
+  pending,
+  onEdit,
+  onCopy,
+}: {
+  service: ServiceRow
+  bookables: Bookable[]
+  pending: boolean
+  onEdit: () => void
+  onCopy: () => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: s.id })
+
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        'flex items-center gap-1 rounded-lg bg-card pr-3 shadow-soft transition-shadow hover:shadow-card',
+        isDragging && 'relative z-10 shadow-float'
+      )}
+    >
+      {/* 握把獨立出來：整列都能拖的話，手機上想點編輯就會變成拖曳。
+          touch-none 讓按住握把時不要跟頁面捲動打架 */}
+      <button
+        type="button"
+        aria-label={`調整「${s.name}」的順序`}
+        {...attributes}
+        {...listeners}
+        className="shrink-0 cursor-grab touch-none px-2.5 py-5 text-ink-4 hover:text-ink-2 active:cursor-grabbing"
+      >
+        <span className="block text-[15px] leading-none font-extrabold">⠿</span>
+      </button>
+
+      <button
+        onClick={onEdit}
+        className="flex min-w-0 flex-1 items-center gap-3 py-4 text-left"
+      >
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <b className="text-[14.5px] font-extrabold tracking-tight">{s.name}</b>
+            {!s.is_active && (
+              <span className="rounded-full bg-sunk px-2.5 py-0.5 text-[10px] font-extrabold text-ink-3">
+                未開放線上預約
+              </span>
+            )}
+            {s.location_mode === 'mobile' && (
+              <span className="rounded-full bg-warn-bg px-2.5 py-0.5 text-[10px] font-extrabold text-warn">
+                到府
+              </span>
+            )}
+            {s.capacity > 1 && (
+              <span className="rounded-full bg-info-bg px-2.5 py-0.5 text-[10px] font-extrabold text-info">
+                團體課 {s.capacity} 人
+              </span>
+            )}
+          </div>
+          <p className="num mt-1 text-[11.5px] text-ink-3">
+            {[
+              describeDuration(s),
+              formatPrice(s),
+              describeDeposit(s),
+              bookableNames(s.bookableIds, bookables),
+            ]
+              .filter(Boolean)
+              .join('　·　')}
+          </p>
+        </div>
+        <span className="shrink-0 text-[12px] font-extrabold text-ink-3">編輯</span>
+      </button>
+
+      <button
+        onClick={onCopy}
+        disabled={pending}
+        title="複製成一項新的服務，只差時長或價格時很好用"
+        className="shrink-0 rounded-full bg-sunk px-3.5 py-2 text-[11.5px] font-extrabold text-ink-3 transition hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+      >
+        複製
+      </button>
+    </li>
   )
 }
 

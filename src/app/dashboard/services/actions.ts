@@ -168,6 +168,103 @@ export async function saveService(draft: ServiceDraft): Promise<ActionResult> {
   return { ok: true }
 }
 
+/**
+ * 複製一項服務。同一種服務常常只差時長或價格（60 分 / 90 分、到店 / 到府），
+ * 從頭再填一次十幾個欄位太蠢。
+ *
+ * 複本一律先關閉線上預約：兩個一模一樣的項目同時出現在預約頁上，
+ * 客人只會困惑該選哪一個。
+ */
+export async function duplicateService(id: string): Promise<ActionResult> {
+  const current = await getCurrentTenant()
+  if (!current) return { ok: false, error: '請先登入' }
+  const { tenant } = current
+
+  const supabase = await createServerSupabaseClient()
+  // 只取要複製的欄位。用 select('*') 會把 id 與時間戳一起帶過來，
+  // 還得再一個一個挑掉
+  const { data: source, error: readError } = await supabase
+    .from('services')
+    .select(
+      `tenant_id, name, category, description,
+       duration_mode, duration_min, min_hours, max_hours,
+       buffer_before_min, buffer_after_min, price, price_unit,
+       location_mode, location_id, service_area,
+       payment_mode, deposit_type, deposit_value, deposit_condition,
+       capacity, min_headcount`
+    )
+    .eq('id', id)
+    .eq('tenant_id', tenant.id)
+    .maybeSingle()
+
+  if (readError) return { ok: false, error: readError.message }
+  if (!source) return { ok: false, error: '找不到這項服務' }
+
+  const { data: last } = await supabase
+    .from('services')
+    .select('sort_order')
+    .eq('tenant_id', tenant.id)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('services')
+    .insert({
+      ...source,
+      name: `${source.name}（複本）`,
+      is_active: false,
+      sort_order: (last?.sort_order ?? 0) + 1,
+    })
+    .select('id')
+    .single()
+
+  if (insertError) return { ok: false, error: insertError.message }
+
+  // 佔用的資源要一起複製，否則複本存不回去（存檔時強制至少一項）
+  const { data: requirements } = await supabase
+    .from('service_requirements')
+    .select('bookable_type, bookable_id, quantity')
+    .eq('service_id', id)
+
+  if (requirements && requirements.length > 0) {
+    const { error: reqError } = await supabase
+      .from('service_requirements')
+      .insert(requirements.map((r) => ({ ...r, service_id: inserted.id })))
+    if (reqError) return { ok: false, error: reqError.message }
+  }
+
+  revalidatePath('/dashboard/services')
+  return { ok: true }
+}
+
+/**
+ * 重新排順序。客人在預約頁上是由上往下看，最想賣的要放最上面。
+ * 傳整份新順序而不是「往上移一格」，兩邊才不會因為中間插隊而對不起來。
+ */
+export async function reorderServices(ids: string[]): Promise<ActionResult> {
+  const current = await getCurrentTenant()
+  if (!current) return { ok: false, error: '請先登入' }
+  const { tenant } = current
+
+  const supabase = await createServerSupabaseClient()
+
+  // 服務項目一家店通常不到十項，逐筆更新最直白；
+  // upsert 會要求補齊所有 not null 欄位，反而容易寫壞資料
+  for (const [index, id] of ids.entries()) {
+    const { error } = await supabase
+      .from('services')
+      .update({ sort_order: index + 1 })
+      .eq('id', id)
+      .eq('tenant_id', tenant.id)
+    if (error) return { ok: false, error: error.message }
+  }
+
+  revalidatePath('/dashboard/services')
+  revalidatePath(`/p/${tenant.slug}`)
+  return { ok: true }
+}
+
 export async function deleteService(id: string): Promise<ActionResult> {
   const current = await getCurrentTenant()
   if (!current) return { ok: false, error: '請先登入' }
