@@ -65,6 +65,12 @@ export function WeeklyScheduleCard({
       .sort((a, b) => a.start.localeCompare(b.start))
   }
 
+  // 有排班但沒指定據點的天數
+  const unassigned = WEEKDAYS.filter((d) => {
+    const segs = hours.filter((h) => h.bookable_id === active.id && h.weekday === d.value)
+    return segs.length > 0 && segs.some((h) => h.location_id === null)
+  }).length
+
   function locationName(id: string | null): string {
     if (!id) return locations.length > 0 ? '不限地點' : ''
     return locations.find((l) => l.id === id)?.name ?? '已停用的據點'
@@ -122,6 +128,15 @@ export function WeeklyScheduleCard({
       }
     >
       <div className="px-5 pt-1 pb-5">
+        {/* 有兩個以上據點卻沒綁，車程永遠算不到，兩邊時段會重疊開放 */}
+        {locations.length >= 2 && unassigned > 0 && (
+          <p className="mb-3 rounded-sm bg-warn-bg px-4 py-3 text-[11.5px] leading-relaxed font-semibold text-warn">
+            你有 {locations.length} 個據點，但有 {unassigned} 天還沒指定在哪一邊。
+            沒綁的話系統會當成「哪裡都可以」，據點之間的車程不會被算進去，
+            兩個據點的時段會同時開放給客人。點下面的日子選一下就好。
+          </p>
+        )}
+
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
           {WEEKDAYS.map((d) => {
             const segments = segmentsOf(d.value)
