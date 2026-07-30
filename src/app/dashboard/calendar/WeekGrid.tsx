@@ -54,9 +54,9 @@ export function WeekGrid({
   }
 
   return (
-    <main className="px-6 pt-2 pb-10">
+    <main className="pb-10">
       <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h1 className="text-[22px] font-extrabold tracking-tight">行事曆</h1>
+        <h1 className="text-[21px] font-extrabold tracking-tight">行事曆</h1>
         <span className="num text-xs font-bold text-ink-4">
           {weekStart.slice(5).replace('-', '/')} – {addDays(weekStart, 6).slice(5).replace('-', '/')}
         </span>
@@ -109,7 +109,7 @@ export function WeekGrid({
               {hours.map((h) => (
                 <div
                   key={h}
-                  className="num text-right text-[10.5px] font-bold text-ink-4"
+                  className="num text-right text-[11px] font-bold text-ink-3"
                   style={{ height: HOUR_PX }}
                 >
                   {String(h).padStart(2, '0')}:00
@@ -187,7 +187,7 @@ export function WeekGrid({
         <span className="text-ink-4">點空白處可以直接在那個時段建立預約</span>
       </div>
 
-      <p className="mt-2 px-1 text-[11px] text-ink-4">
+      <p className="mt-2 px-1 text-[11.5px] text-ink-3">
         本週共 {bookings.filter((b) => b.kind === 'booking').length} 筆，預計收入 NT${' '}
         {money(
           bookings

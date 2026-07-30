@@ -55,13 +55,14 @@ export function TodayBoard({
   const label = formatDayLabel(todayDate)
 
   return (
-    <main className="px-6 pt-2 pb-24">
-      <div className="mb-5 flex items-baseline gap-3">
-        <h1 className="text-[22px] font-extrabold tracking-tight">今日行程</h1>
-        <span className="num text-xs font-bold text-ink-4">{label}</span>
+    <main className="pb-24">
+      <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-[21px] font-extrabold tracking-tight">今日行程</h1>
+        <span className="num text-[12.5px] font-bold text-ink-3">{label}</span>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      {/* 三個數字併成一張卡：三個獨立色塊各自搶注意力，合起來反而安靜 */}
+      <div className="flex flex-wrap overflow-hidden rounded-lg bg-card shadow-soft">
         <Stat label="今日預約" value={String(live.length)} />
         <Stat label="預計收入" value={`NT$ ${money(expected)}`} />
         <Stat label="待結案" value={String(toClose.length)} tone={toClose.length > 0} />
@@ -85,7 +86,7 @@ export function TodayBoard({
                   {formatDate(b.start_at, timezone)} {formatTime(b.start_at, timezone)}
                 </span>
                 <b className="text-[13px] font-extrabold">{b.customer_name ?? '—'}</b>
-                <span className="text-[11px] text-ink-4">{b.service_name}</span>
+                <span className="text-[11.5px] text-ink-3">{b.service_name}</span>
                 <button
                   onClick={() => setCheckout(b)}
                   className="ml-auto rounded-full bg-primary px-4 py-1.5 text-[11.5px] font-extrabold text-primary-foreground"
@@ -99,12 +100,20 @@ export function TodayBoard({
       )}
 
       {today.length === 0 ? (
-        <div className="mt-4 rounded-lg bg-card px-6 py-14 text-center shadow-card">
-          <div className="mx-auto mb-4 size-14 rounded-lg bg-accent" />
-          <b className="block text-[15px] font-extrabold">今天還沒有預約</b>
-          <p className="mx-auto mt-1.5 max-w-[34ch] text-[13px] text-ink-3">
-            把預約連結傳給客人，他們就能自己約。接到電話也可以自己建一筆。
-          </p>
+        <div className="mt-3.5 flex flex-wrap items-center gap-4 rounded-lg bg-card px-5 py-6 shadow-soft">
+          <div className="size-11 shrink-0 rounded-md bg-accent" />
+          <div className="min-w-[16ch] flex-1">
+            <b className="block text-[14.5px] font-extrabold">今天還沒有預約</b>
+            <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">
+              把預約連結傳給客人，他們就能自己約；接到電話也可以自己建一筆。
+            </p>
+          </div>
+          <button
+            onClick={() => setCreating(true)}
+            className="shrink-0 rounded-full bg-primary px-5 py-3 text-[12.5px] font-extrabold text-primary-foreground transition hover:brightness-95"
+          >
+            ＋ 新增預約
+          </button>
         </div>
       ) : (
         <ol className="mt-4 flex flex-col gap-2.5">
@@ -117,7 +126,7 @@ export function TodayBoard({
             return (
               <li key={b.id}>
                 {gap && (
-                  <p className="mb-2.5 flex flex-wrap items-center gap-x-2 px-1 text-[11px] font-bold text-ink-4">
+                  <p className="mb-2.5 flex flex-wrap items-center gap-x-2 px-1 text-[11.5px] font-bold text-ink-3">
                     <span className="num">
                       ↓ 移動 {gap.minutes} 分 · {gap.from} → {gap.to}
                     </span>
@@ -237,11 +246,18 @@ export function TodayBoard({
 
 function Stat({ label, value, tone }: { label: string; value: string; tone?: boolean }) {
   return (
-    <div className={cn('rounded-sm px-5 py-4', tone ? 'bg-warn-bg' : 'bg-sunk')}>
-      <p className={cn('text-[11px] font-bold', tone ? 'text-warn' : 'text-ink-4')}>{label}</p>
+    <div
+      className={cn(
+        'min-w-[33%] flex-1 border-hairline px-5 py-3.5 not-[:last-child]:border-r',
+        tone && 'bg-warn-bg'
+      )}
+    >
+      <p className={cn('text-[11.5px] font-bold', tone ? 'text-warn' : 'text-ink-3')}>
+        {label}
+      </p>
       <p
         className={cn(
-          'num mt-0.5 text-2xl leading-tight font-extrabold',
+          'num mt-0.5 text-[23px] leading-tight font-extrabold tracking-[-0.03em]',
           tone && 'text-warn'
         )}
       >

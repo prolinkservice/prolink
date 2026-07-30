@@ -87,12 +87,14 @@
 }
 
 /* ── 淺色 ─────────────────────────────────────────────── */
+/* 底色比原本降一階、卡片不用純白：純白配深字是對比最強的組合，
+   也最刺眼。降下來之後卡片反而更浮得出來。 */
 :root {
-  --background: #f7f7f5;
+  --background: #f2f3f0;
   --foreground: #23262a;
-  --card: #ffffff;
+  --card: #fbfbfa;
   --card-foreground: #23262a;
-  --popover: #ffffff;
+  --popover: #fbfbfa;
   --popover-foreground: #23262a;
 
   --primary: #5d7f6e;
@@ -108,12 +110,12 @@
   --input: #f1f2ef;
   --ring: #5d7f6e;
 
-  --sunk: #f1f2ef;
+  --sunk: #eceee9;
   --ink: #23262a;
   --ink-2: #4b5158;
-  --ink-3: #7b828a;
-  --ink-4: #aab0b6;
-  --hairline: #e9ebe7;
+  --ink-3: #767d85;
+  --ink-4: #a2a9af;
+  --hairline: #e4e7e1;
 
   --ok: #5d7f6e;        --ok-bg: #e7efe9;
   --warn: #b6795a;      --warn-bg: #f6ece4;
@@ -142,11 +144,13 @@
   --sidebar-ring: #5d7f6e;
 }
 
-/* ── 深色：跟隨系統設定 ────────────────────────────────── */
-/* Tailwind v4 的 dark: 變體預設就是 prefers-color-scheme，
-   兩者一致。日後要做手動切換再改回 class 版本。 */
+/* ── 深色 ─────────────────────────────────────────────── */
+/* 兩個入口共用同一份值：
+   · data-theme="auto"（預設）跟著系統走
+   · data-theme="dark" 是使用者自己在右上角選的，蓋過系統設定
+   值只寫一次會讓 CSS 讀不出來，所以刻意重複一份，改的時候兩邊要一起改。 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --background: #131614;
     --foreground: #eef1ee;
     --card: #1c201e;
@@ -198,6 +202,67 @@
     --sidebar-border: #2a2f2c;
     --sidebar-ring: #8fb8a2;
   }
+}
+
+/* 使用者自己選「深」時，不管系統是什麼都要是深色 */
+:root[data-theme='dark'] {
+  --background: #131614;
+  --foreground: #eef1ee;
+  --card: #1c201e;
+  --card-foreground: #eef1ee;
+  --popover: #1c201e;
+  --popover-foreground: #eef1ee;
+
+  --primary: #8fb8a2;
+  --primary-foreground: #10201a;
+  --secondary: #232725;
+  --secondary-foreground: #c2c8c4;
+  --muted: #232725;
+  --muted-foreground: #8e9691;
+  --accent: #233029;
+  --accent-foreground: #8fb8a2;
+  --destructive: #d08a7c;
+  --border: #2a2f2c;
+  --input: #232725;
+  --ring: #8fb8a2;
+
+  --sunk: #232725;
+  --ink: #eef1ee;
+  --ink-2: #c2c8c4;
+  --ink-3: #8e9691;
+  --ink-4: #636b67;
+  --hairline: #2a2f2c;
+
+  --ok: #8fb8a2;      --ok-bg: #233029;
+  --warn: #d09b7c;    --warn-bg: #2e241d;
+  --danger: #d08a7c;  --danger-bg: #2f211e;
+  --info: #8fa5b5;    --info-bg: #1f272c;
+
+  --sh-1: 0 2px 8px -4px rgb(0 0 0 / 0.40);
+  --sh-2: 0 20px 50px -28px rgb(0 0 0 / 0.75), 0 2px 8px -4px rgb(0 0 0 / 0.30);
+  --sh-3: 0 34px 76px -34px rgb(0 0 0 / 0.85);
+
+  --chart-1: #8fb8a2;
+  --chart-2: #5d7f6e;
+  --chart-3: #8fa5b5;
+  --chart-4: #d09b7c;
+  --chart-5: #636b67;
+
+  --sidebar: #1c201e;
+  --sidebar-foreground: #c2c8c4;
+  --sidebar-primary: #8fb8a2;
+  --sidebar-primary-foreground: #10201a;
+  --sidebar-accent: #233029;
+  --sidebar-accent-foreground: #8fb8a2;
+  --sidebar-border: #2a2f2c;
+  --sidebar-ring: #8fb8a2;
+}
+
+/* 瀏覽器的表單元件、捲軸也要跟著換，不然深色頁面上會冒出白色的下拉選單 */
+:root { color-scheme: light }
+:root[data-theme='dark'] { color-scheme: dark }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) { color-scheme: dark }
 }
 
 @layer base {

@@ -89,10 +89,10 @@ export function ServicesManager({
   }
 
   return (
-    <main className="px-6 pt-2 pb-10">
+    <main className="pb-10">
       <div className="mb-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h1 className="text-[22px] font-extrabold tracking-tight">服務項目</h1>
-        <p className="text-[12px] text-ink-3">客人在預約頁上看到、可以選的東西。</p>
+        <h1 className="text-[21px] font-extrabold tracking-tight">服務項目</h1>
+        <p className="text-[12.5px] text-ink-3">客人在預約頁上看到、可以選的東西。</p>
         {!draft && (
           <PrimaryButton className="ml-auto" onClick={openNew}>
             ＋ 新增服務
@@ -183,7 +183,7 @@ export function ServicesManager({
                           .join('　·　')}
                       </p>
                     </div>
-                    <span className="shrink-0 text-[11.5px] font-extrabold text-ink-4">編輯</span>
+                    <span className="shrink-0 text-[12px] font-extrabold text-ink-3">編輯</span>
                   </button>
                 </li>
               ))}
@@ -335,7 +335,7 @@ function ServiceEditor({
                   step={0.5}
                   suffix="起"
                 />
-                <span className="text-[11px] font-bold text-ink-4">至</span>
+                <span className="text-[11.5px] font-bold text-ink-3">至</span>
                 <NumberBox
                   value={draft.max_hours}
                   onValueChange={(v) => patch({ max_hours: v })}
@@ -372,7 +372,7 @@ function ServiceEditor({
           <b className="block text-[12px] font-extrabold text-ink-2">
             做這項服務時會佔用什麼？
           </b>
-          <p className="mt-0.5 mb-3 text-[11px] text-ink-4">
+          <p className="mt-0.5 mb-3 text-[11.5px] text-ink-3">
             系統靠這個防止同一個時段被重複約走。單人工作室通常只要勾自己。
           </p>
           <div className="flex flex-wrap gap-2">
@@ -481,7 +481,7 @@ function ServiceEditor({
               setAskMobile(true)
               patch({ location_mode: 'mobile' })
             }}
-            className="mb-3 text-[11.5px] font-extrabold text-ink-4 hover:text-primary"
+            className="mb-3 text-[12px] font-extrabold text-ink-3 hover:text-primary"
           >
             這項是到府服務？→
           </button>
@@ -559,7 +559,7 @@ function ServiceEditor({
                 suffix="分"
                 className="w-28"
               />
-              <p className="w-full text-[10.5px] text-ink-4">
+              <p className="w-full text-[11.5px] text-ink-3">
                 這段時間會一起被鎖住，客人約不到。關掉開關就等於前後都 0 分。
               </p>
             </div>

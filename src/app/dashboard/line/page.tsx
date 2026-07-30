@@ -13,10 +13,10 @@ export default async function LinePage() {
   const { tenant } = current
 
   return (
-    <main className="px-6 pt-2 pb-10">
+    <main className="pb-10">
       <div className="mb-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h1 className="text-[22px] font-extrabold tracking-tight">LINE 官方帳號</h1>
-        <p className="text-[12px] text-ink-3">客人約完之後，要找得到你。</p>
+        <h1 className="text-[21px] font-extrabold tracking-tight">LINE 官方帳號</h1>
+        <p className="text-[12.5px] text-ink-3">客人約完之後，要找得到你。</p>
       </div>
 
       <ContactForm

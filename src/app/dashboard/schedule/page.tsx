@@ -61,10 +61,10 @@ export default async function SchedulePage() {
   const onsiteLocations = activeLocations.filter((l) => l.type === 'onsite')
 
   return (
-    <main className="px-6 pt-2 pb-10">
+    <main className="pb-10">
       <div className="mb-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <h1 className="text-[22px] font-extrabold tracking-tight">營業時間與據點</h1>
-        <p className="text-[12px] text-ink-3">設定一次，之後幾乎不用再動。</p>
+        <h1 className="text-[21px] font-extrabold tracking-tight">營業時間與據點</h1>
+        <p className="text-[12.5px] text-ink-3">設定一次，之後幾乎不用再動。</p>
       </div>
 
       <LocationsCard locations={locations} />

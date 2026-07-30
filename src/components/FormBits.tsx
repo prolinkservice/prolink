@@ -7,7 +7,7 @@
 import { cn } from '@/lib/utils'
 
 const INPUT_BASE =
-  'w-full rounded-sm bg-sunk px-3.5 py-3 text-[13px] outline-none transition ' +
+  'w-full rounded-sm bg-sunk px-3.5 py-3 text-[13.5px] outline-none transition ' +
   'focus:bg-card focus:shadow-[0_0_0_3px_var(--accent)] disabled:opacity-50'
 
 export function Field({
@@ -28,9 +28,9 @@ export function Field({
 }) {
   return (
     <div className={cn('mb-3.5', className)}>
-      <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-extrabold text-ink-2">
+      <label className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-extrabold text-ink-2">
         {label}
-        {optional && <span className="font-bold text-ink-4">· 選填</span>}
+        {optional && <span className="font-bold text-ink-3">· 選填</span>}
         {isNew && (
           <span className="rounded-full bg-info-bg px-2 py-0.5 text-[9px] font-extrabold text-info">
             新出現
@@ -38,7 +38,7 @@ export function Field({
         )}
       </label>
       {children}
-      {hint && <p className="mt-1.5 text-[10.5px] leading-relaxed text-ink-4">{hint}</p>}
+      {hint && <p className="mt-1.5 text-[11.5px] leading-relaxed text-ink-3">{hint}</p>}
     </div>
   )
 }
@@ -84,7 +84,7 @@ export function NumberBox({
       )}
     >
       {prefix && (
-        <span className="pl-3.5 text-[11px] font-bold whitespace-nowrap text-ink-4">
+        <span className="pl-3.5 text-[11.5px] font-bold whitespace-nowrap text-ink-3">
           {prefix}
         </span>
       )}
@@ -94,10 +94,10 @@ export function NumberBox({
         inputMode="decimal"
         value={value ?? ''}
         onChange={(e) => onValueChange(Number(e.target.value))}
-        className="num min-w-0 flex-1 bg-transparent px-3 py-3 text-[13px] font-extrabold outline-none"
+        className="num min-w-0 flex-1 bg-transparent px-3 py-3 text-[13.5px] font-extrabold outline-none"
       />
       {suffix && (
-        <span className="pr-3.5 text-[11px] font-bold whitespace-nowrap text-ink-4">
+        <span className="pr-3.5 text-[11.5px] font-bold whitespace-nowrap text-ink-3">
           {suffix}
         </span>
       )}
@@ -123,8 +123,8 @@ export function ToggleRow({
     <div>
       <div className="flex items-center gap-3 py-3">
         <div className="min-w-0">
-          <b className="block text-[13px] font-extrabold">{title}</b>
-          <p className="text-[11px] text-ink-4">{desc}</p>
+          <b className="block text-[13.5px] font-extrabold">{title}</b>
+          <p className="text-[11.5px] text-ink-3">{desc}</p>
         </div>
         <button
           type="button"
@@ -165,7 +165,7 @@ export function Chip({
       aria-pressed={on}
       onClick={onClick}
       className={cn(
-        'rounded-full px-4 py-2.5 text-[12px] font-extrabold transition',
+        'rounded-full px-4 py-2.5 text-[12.5px] font-extrabold transition',
         on
           ? 'bg-primary text-primary-foreground'
           : 'bg-card text-ink-3 shadow-soft hover:text-primary'
@@ -184,7 +184,7 @@ export function PrimaryButton({
     <button
       {...props}
       className={cn(
-        'rounded-full bg-primary px-5 py-2.5 text-[12.5px] font-extrabold text-primary-foreground transition hover:brightness-95 disabled:opacity-50',
+        'rounded-full bg-primary px-5 py-2.5 text-[13px] font-extrabold text-primary-foreground transition hover:brightness-95 disabled:opacity-50',
         className
       )}
     />
@@ -200,7 +200,7 @@ export function QuietButton({
     <button
       {...props}
       className={cn(
-        'rounded-full bg-sunk px-5 py-2.5 text-[12.5px] font-extrabold transition disabled:opacity-50',
+        'rounded-full bg-sunk px-5 py-2.5 text-[13px] font-extrabold transition disabled:opacity-50',
         danger
           ? 'text-danger hover:bg-danger-bg'
           : 'text-ink-2 hover:bg-accent hover:text-accent-foreground',
@@ -214,7 +214,7 @@ export function QuietButton({
 export function ErrorNote({ children }: { children: React.ReactNode }) {
   if (!children) return null
   return (
-    <p className="mt-3 rounded-sm bg-danger-bg px-3.5 py-2.5 text-[12px] font-bold text-danger">
+    <p className="mt-3 rounded-sm bg-danger-bg px-3.5 py-2.5 text-[12.5px] font-bold text-danger">
       {children}
     </p>
   )
@@ -234,8 +234,8 @@ export function Card({
   return (
     <section className="mb-4 rounded-lg bg-card shadow-card">
       <header className="flex flex-wrap items-center gap-x-3 gap-y-1 px-5 pt-4.5 pb-1">
-        <h2 className="text-[15px] font-extrabold tracking-tight">{title}</h2>
-        {sub && <span className="text-[11px] font-bold text-ink-4">{sub}</span>}
+        <h2 className="text-[15.5px] font-extrabold tracking-tight">{title}</h2>
+        {sub && <span className="text-[12px] font-bold text-ink-3">{sub}</span>}
         {right && <div className="ml-auto flex items-center gap-2">{right}</div>}
       </header>
       {children}

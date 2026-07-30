@@ -58,7 +58,7 @@ export function CheckoutSheet({
       <div className="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-xl bg-card shadow-float sm:rounded-xl">
         <header className="sticky top-0 z-10 flex items-center gap-3 bg-card px-5 pt-5 pb-2">
           <h2 className="text-[16px] font-extrabold tracking-tight">結帳</h2>
-          <span className="num text-[11px] font-bold text-ink-4">
+          <span className="num text-[11.5px] font-bold text-ink-3">
             {formatTime(booking.start_at, timezone)} 那筆
           </span>
           <button
@@ -120,7 +120,7 @@ export function CheckoutSheet({
                 </button>
               ))}
             </div>
-            <p className="mb-3.5 text-[10.5px] text-ink-4">
+            <p className="mb-3.5 text-[11.5px] text-ink-3">
               時數券與儲值金要等券的功能做好才會出現在這裡。
             </p>
 

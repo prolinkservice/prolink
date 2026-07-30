@@ -83,7 +83,7 @@ export function TravelCard({
       <div className="px-5 pt-1 pb-5">
         {showMatrix && (
           <>
-            <p className="mb-3 text-[12px] text-ink-3">
+            <p className="mb-3 text-[12.5px] text-ink-3">
               系統會拿這些數字算「A 館的預約結束後，最早幾點能在 B 館開始」。
               你自己最清楚車程，填個保守值就好。
             </p>
@@ -144,7 +144,7 @@ export function TravelCard({
         {hasMobileService && bookables.length > 0 && (
           <div className={showMatrix ? 'mt-5 border-t border-hairline pt-4' : ''}>
             <b className="block text-[13px] font-extrabold">到府每趟預留</b>
-            <p className="mt-0.5 mb-3 text-[11.5px] text-ink-4">
+            <p className="mt-0.5 mb-3 text-[11.5px] text-ink-3">
               到府沒有固定據點，車程算不準，所以用一個固定值預留。覺得不夠可以調大。
             </p>
             <ul className="flex flex-col gap-2.5">

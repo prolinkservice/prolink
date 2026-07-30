@@ -146,7 +146,7 @@ export function NewBookingSheet({
       <div className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-xl bg-card shadow-float sm:rounded-xl">
         <header className="sticky top-0 z-10 flex items-center gap-3 bg-card px-5 pt-5 pb-2">
           <h2 className="text-[16px] font-extrabold tracking-tight">新增預約</h2>
-          <span className="text-[11px] font-bold text-ink-4">手動建立</span>
+          <span className="text-[11.5px] font-bold text-ink-3">手動建立</span>
           <button
             onClick={onClose}
             aria-label="關閉"
@@ -166,7 +166,7 @@ export function NewBookingSheet({
                 </span>
                 <div className="min-w-0">
                   <b className="block text-[13.5px] font-extrabold">{customer.name}</b>
-                  <span className="num text-[11px] text-ink-4">{customer.phone}</span>
+                  <span className="num text-[11.5px] text-ink-3">{customer.phone}</span>
                 </div>
                 <button
                   onClick={() => setCustomer(null)}
@@ -208,8 +208,8 @@ export function NewBookingSheet({
                         className="flex w-full items-center gap-3 rounded-sm bg-sunk px-3.5 py-2.5 text-left"
                       >
                         <b className="text-[13px] font-extrabold">{h.name}</b>
-                        <span className="num text-[11px] text-ink-4">{h.phone}</span>
-                        <span className="num ml-auto text-[11px] font-bold text-ink-4">
+                        <span className="num text-[11.5px] text-ink-3">{h.phone}</span>
+                        <span className="num ml-auto text-[11.5px] font-bold text-ink-3">
                           到店 {h.visit_count}
                         </span>
                       </button>
@@ -313,7 +313,7 @@ export function NewBookingSheet({
             {pending && slots === null ? (
               <p className="text-[11.5px] font-bold text-ink-4">查詢中…</p>
             ) : slots === null ? (
-              <p className="text-[11px] text-ink-4">
+              <p className="text-[11.5px] text-ink-3">
                 按上面那顆會列出引擎算出來的空檔，點一下就帶入時間。
               </p>
             ) : slots.length === 0 ? (

@@ -62,7 +62,7 @@ export function LocationsCard({ locations }: { locations: Location[] }) {
     >
       <div className="px-5 pt-1 pb-5">
         {active.length === 0 && !draft && (
-          <p className="rounded-sm bg-sunk px-4 py-3.5 text-[12px] text-ink-3">
+          <p className="rounded-sm bg-sunk px-4 py-3.5 text-[12.5px] text-ink-3">
             只有一個固定店面的話，填一個就好；到府服務不需要建據點。
           </p>
         )}
@@ -83,7 +83,7 @@ export function LocationsCard({ locations }: { locations: Location[] }) {
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-ink-4">{l.address || '未填地址'}</p>
+                  <p className="text-[11.5px] text-ink-3">{l.address || '未填地址'}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -102,7 +102,7 @@ export function LocationsCard({ locations }: { locations: Location[] }) {
                 <button
                   onClick={() => run(() => setLocationActive(l.id, false))}
                   disabled={pending}
-                  className="text-[11.5px] font-extrabold text-ink-4 hover:text-danger disabled:opacity-50"
+                  className="text-[12px] font-extrabold text-ink-3 hover:text-danger disabled:opacity-50"
                 >
                   停用
                 </button>
@@ -184,7 +184,7 @@ export function LocationsCard({ locations }: { locations: Location[] }) {
                 </li>
               ))}
             </ul>
-            <p className="mt-2 text-[10.5px] text-ink-4">
+            <p className="mt-2 text-[11.5px] text-ink-3">
               停用只是不再顯示，排班與歷史資料都留著。
             </p>
           </div>

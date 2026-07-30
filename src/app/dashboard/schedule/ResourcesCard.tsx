@@ -95,7 +95,7 @@ export function ResourcesCard({
                     {TYPE_LABEL[b.type]}
                   </span>
                 </div>
-                <p className="num text-[11px] text-ink-4">
+                <p className="num text-[11.5px] text-ink-3">
                   {[
                     locations.find((l) => l.id === b.location_id)?.name ?? '不限地點',
                     b.capacity > 1 ? `可容納 ${b.capacity} 人` : null,
@@ -128,7 +128,7 @@ export function ResourcesCard({
                 <button
                   onClick={() => run(() => setBookableActive(b.id, false))}
                   disabled={pending}
-                  className="text-[11.5px] font-extrabold text-ink-4 hover:text-danger disabled:opacity-50"
+                  className="text-[12px] font-extrabold text-ink-3 hover:text-danger disabled:opacity-50"
                 >
                   停用
                 </button>

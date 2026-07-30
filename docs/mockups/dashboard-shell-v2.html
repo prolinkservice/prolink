@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 後台外框改版</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --page-bg:#f7f7f5; --card:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7; --accent:#5d7f6e; --accent-bg:#e7efe9;
+  --warn:#b6795a; --warn-bg:#f6ece4;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#eceee9;color:var(--ink);font-family:var(--font);line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1240px;margin:0 auto;padding:48px 24px 90px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:999px;font-weight:700;margin-bottom:16px}
+h1{font-size:clamp(25px,3.6vw,33px);font-weight:800;letter-spacing:-.03em;line-height:1.2}
+.lede{margin-top:13px;max-width:62ch;color:var(--ink-3);font-size:15px}
+.lede b{color:var(--ink)}
+
+section{margin-top:60px}
+.sec-title{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.sec-title .n{font-size:11px;font-weight:800;color:var(--ink-4);letter-spacing:.1em}
+.sec-title h2{font-size:21px;font-weight:700;letter-spacing:-.02em}
+
+.plain{background:#fff;border-radius:22px;box-shadow:var(--sh-2);padding:22px 26px;margin-bottom:22px}
+.plain h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:12px}
+.plain ul{list-style:none;font-size:14.5px;color:var(--ink-2)}
+.plain li{padding:6px 0 6px 20px;position:relative}
+.plain li::before{content:"";position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.plain li b{color:var(--ink);font-weight:700}
+
+/* ══ 假的瀏覽器視窗 ══ */
+.win{border-radius:16px;overflow:hidden;box-shadow:var(--sh-2);background:var(--page-bg);color:var(--ink)}
+.win .bar{display:flex;align-items:center;gap:7px;padding:9px 14px;background:#dfe2dd}
+.win .bar i{width:10px;height:10px;border-radius:50%;background:#c2c7c1;display:block}
+.win .bar span{margin-left:10px;font-size:11px;color:#6f766f;font-weight:700}
+.shell{display:flex;min-height:430px}
+
+/* 深色版本 */
+.dark{
+  --page-bg:#131614; --card:#1c201e; --sunk:#232725;
+  --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+  --hairline:#2a2f2c; --accent:#8fb8a2; --accent-bg:#233029;
+  --warn:#d09b7c; --warn-bg:#2e241d;
+  --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+  --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+}
+.dark .bar{background:#0d100e}
+.dark .bar i{background:#2c322e}
+.dark .bar span{color:#7c847e}
+
+/* ── 舊版側欄（示範問題用）── */
+.old-side{width:186px;flex:0 0 186px;background:var(--card);padding:12px 8px}
+.old-side .brand{display:flex;gap:9px;align-items:center;padding:6px 8px 16px}
+.old-side .brand i{width:26px;height:26px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center}
+.old-side .brand b{font-size:12.5px;font-weight:800}
+.old-side .brand small{display:block;font-size:9px;color:var(--ink-4);font-weight:700}
+.old-side .grp{font-size:9.5px;font-weight:800;color:var(--ink-4);letter-spacing:.09em;padding:12px 10px 5px}
+.old-side a{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:11px;font-size:12px;font-weight:600;color:var(--ink-2);text-decoration:none}
+.old-side a i{width:12px;height:12px;border-radius:4px;background:currentColor;opacity:.28}
+.old-side a.off{color:var(--ink-4)}
+.old-side a.off em{margin-left:auto;font-style:normal;font-size:8px;font-weight:800}
+
+.old-main{flex:1;padding:14px 20px}
+.old-top{display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px}
+.old-chip{background:var(--card);border-radius:999px;padding:6px 8px 6px 13px;font-size:10px;font-weight:700;color:var(--ink-3);box-shadow:var(--sh-1)}
+.old-chip b{color:var(--accent);font-weight:800}
+.old-h{display:flex;align-items:baseline;gap:9px;margin-bottom:12px}
+.old-h h3{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.old-h span{font-size:10px;font-weight:700;color:var(--ink-4)}
+.old-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:11px}
+.old-stat{background:var(--sunk);border-radius:12px;padding:13px 16px}
+.old-stat p{font-size:8.5px;font-weight:700;color:var(--ink-4)}
+.old-stat b{display:block;font-size:19px;font-weight:800;margin-top:1px}
+.old-empty{background:var(--card);border-radius:16px;box-shadow:var(--sh-2);padding:44px 20px;text-align:center}
+.old-empty .box{width:42px;height:42px;border-radius:12px;background:var(--accent-bg);margin:0 auto 12px}
+.old-empty b{font-size:12px;font-weight:800}
+.old-empty p{font-size:10px;color:var(--ink-3);margin-top:4px}
+
+/* ── 新版 ── */
+.n-side{width:210px;flex:0 0 210px;background:var(--card);padding:14px 10px;border-right:1px solid var(--hairline);display:flex;flex-direction:column}
+.n-brand{display:flex;gap:10px;align-items:center;padding:6px 8px 14px}
+.n-brand i{width:30px;height:30px;border-radius:10px;background:var(--accent);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
+.n-brand b{font-size:13.5px;font-weight:800;display:block;line-height:1.25}
+.n-brand small{font-size:10.5px;color:var(--ink-3);font-weight:600}
+.n-grp{font-size:10.5px;font-weight:800;color:var(--ink-3);letter-spacing:.08em;padding:14px 10px 6px}
+.n-side a{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:11px;font-size:13.5px;font-weight:600;color:var(--ink-2);text-decoration:none;position:relative}
+.n-side a i{width:15px;height:15px;border-radius:5px;background:currentColor;opacity:.3}
+.n-side a.on{background:var(--accent-bg);color:var(--accent);font-weight:800}
+.n-side a.on::before{content:"";position:absolute;left:-10px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--accent)}
+.n-side a.on i{opacity:1}
+.n-side a.off{color:var(--ink-4)}
+.n-side a.off em{margin-left:auto;font-style:normal;font-size:9.5px;font-weight:800}
+
+.n-main{flex:1;display:flex;flex-direction:column;min-width:0}
+.n-top{display:flex;align-items:center;gap:10px;padding:0 20px;height:52px;background:var(--card);border-bottom:1px solid var(--hairline)}
+.n-top .t{font-size:14px;font-weight:800}
+.n-top .right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.n-link{display:flex;align-items:center;gap:7px;background:var(--sunk);border-radius:999px;padding:6px 8px 6px 13px;font-size:11.5px;font-weight:700;color:var(--ink-2)}
+.n-link b{color:var(--accent);font-weight:800}
+.n-link .cp{background:var(--card);border-radius:999px;padding:3px 9px;font-size:10px;font-weight:800;color:var(--ink-3)}
+.n-btn{background:var(--sunk);border-radius:999px;padding:7px 14px;font-size:11.5px;font-weight:800;color:var(--ink-2)}
+.n-theme{display:flex;background:var(--sunk);border-radius:999px;padding:3px}
+.n-theme span{font-size:11px;font-weight:800;color:var(--ink-3);padding:4px 9px;border-radius:999px}
+.n-theme span.on{background:var(--card);color:var(--ink);box-shadow:var(--sh-1)}
+
+.n-body{padding:22px 20px 26px;overflow:hidden}
+.n-inner{max-width:640px}          /* ← 真實比例是 1080px，這裡整體縮到 0.6 倍 */
+.n-h{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.n-h h3{font-size:20px;font-weight:800;letter-spacing:-.025em}
+.n-h span{font-size:12px;font-weight:700;color:var(--ink-3)}
+.n-h .today{margin-left:auto;font-size:11.5px;font-weight:800;color:var(--accent);background:var(--accent-bg);padding:4px 11px;border-radius:999px}
+
+.n-stats{display:flex;background:var(--card);border-radius:16px;box-shadow:var(--sh-1);overflow:hidden;margin-bottom:14px}
+.n-stat{flex:1;padding:14px 18px;border-right:1px solid var(--hairline)}
+.n-stat:last-child{border-right:0}
+.n-stat p{font-size:11.5px;font-weight:700;color:var(--ink-3)}
+.n-stat b{display:block;font-size:23px;font-weight:800;letter-spacing:-.03em;margin-top:2px}
+.n-stat.warn{background:var(--warn-bg)}
+.n-stat.warn p,.n-stat.warn b{color:var(--warn)}
+
+.n-empty{background:var(--card);border-radius:16px;box-shadow:var(--sh-1);padding:30px 22px;display:flex;align-items:center;gap:16px}
+.n-empty .box{width:44px;height:44px;border-radius:13px;background:var(--accent-bg);flex:0 0 44px}
+.n-empty b{font-size:14px;font-weight:800;display:block}
+.n-empty p{font-size:12.5px;color:var(--ink-2);margin-top:3px;line-height:1.6}
+.n-empty .go{margin-left:auto;background:var(--accent);color:#fff;border-radius:999px;padding:10px 18px;font-size:12.5px;font-weight:800;white-space:nowrap}
+.dark .n-empty .go{color:#10201a}
+
+.n-list{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.n-item{background:var(--card);border-radius:14px;box-shadow:var(--sh-1);padding:12px 16px;display:flex;align-items:center;gap:12px}
+.n-item.now{box-shadow:0 0 0 2px var(--accent),var(--sh-1)}
+.n-item .tm{font-size:15px;font-weight:800;letter-spacing:-.03em}
+.n-item .who b{font-size:13.5px;font-weight:800}
+.n-item .who p{font-size:11.5px;color:var(--ink-3)}
+.n-item .tag{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--accent-bg);color:var(--accent)}
+.n-item .tag.now{background:var(--accent);color:#fff}
+.dark .n-item .tag.now{color:#10201a}
+.n-item .amt{margin-left:auto;font-size:13.5px;font-weight:800}
+.n-move{font-size:11px;font-weight:700;color:var(--ink-3);padding:2px 4px}
+.n-move b{color:var(--accent);font-weight:800}
+
+.cmp{display:grid;gap:20px;grid-template-columns:1fr;margin-top:18px}
+.cap{font-size:12px;color:var(--ink-3);font-weight:700;margin-top:9px;text-align:center}
+.tag-bad{background:#f8e9e6;color:#b05a4e;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800}
+.tag-good{background:#e7efe9;color:#5d7f6e;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:800}
+
+table.t{width:100%;border-collapse:collapse;margin-top:6px}
+table.t th,table.t td{padding:11px 12px;text-align:left;font-size:14px;border-bottom:1px solid var(--hairline);vertical-align:top}
+table.t th{font-size:11px;letter-spacing:.08em;color:var(--ink-4);font-weight:800}
+table.t td b{font-weight:700}
+table.t td.num2{font-variant-numeric:tabular-nums;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 09 · 後台外框改版</span>
+  <h1>把後台從「寬得發慌」改成「一眼看得完」</h1>
+  <p class="lede">四個問題一起解：<b>太寬太空曠、字太小對比不夠、白底刺眼、層次不清楚</b>。動的是外框與尺度，不是重畫一套設計——方案 B 的圓角、陰影、鼠尾草綠全部保留。</p>
+</header>
+
+<!-- ══ 01 對照 ══ -->
+<section>
+  <div class="sec-title"><span class="n">01</span><h2>現在 vs 改版</h2></div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li><b>內容加寬度上限 1080px 並靠左。</b>現在在寬螢幕上，三張卡被拉成 1600px 寬，讀一行字眼睛要橫向跑很遠。</li>
+      <li><b>三張統計卡併成一張、用細線分隔。</b>三個獨立色塊各自搶注意力，合成一張反而安靜，也省下一半高度。</li>
+      <li><b>字級全面上調一級</b>：標籤 11 → 11.5–12.5px、說明文 13 → 12.5–14px，並把大量的最淡灰（ink-4）換成中灰（ink-3 / ink-2）。</li>
+      <li><b>側欄目前所在的頁面要看得出來</b>：底色 + 左側色條 + 加粗。現在全部長一樣，你不知道自己在哪。</li>
+      <li><b>頂部做成真的工具列</b>，有底色與分隔線，不再是兩顆藥丸浮在右上角。</li>
+      <li><b>空狀態不再佔掉半個螢幕</b>：改成一條橫向卡片，右邊直接給「新增預約」的入口。</li>
+    </ul>
+  </div>
+
+  <div class="cmp">
+    <div>
+      <div class="win">
+        <div class="bar"><i></i><i></i><i></i><span>現在 — 內容拉滿整個螢幕</span></div>
+        <div class="shell">
+          <div class="old-side">
+            <div class="brand"><i>揚</i><div><b>揚翼運動按摩</b><small>揚翼運動按摩</small></div></div>
+            <p class="grp">每天要用</p>
+            <a href="#"><i></i>今日行程</a>
+            <a href="#"><i></i>行事曆</a>
+            <a href="#" class="off"><i></i>客戶管理 <em>準備中</em></a>
+            <p class="grp">設定</p>
+            <a href="#"><i></i>服務項目</a>
+            <a href="#"><i></i>營業時間與據點</a>
+            <a href="#"><i></i>LINE 官方帳號</a>
+          </div>
+          <div class="old-main">
+            <div class="old-top">
+              <span class="old-chip">/p/ <b>youngyeebody</b> · 複製</span>
+              <span class="old-chip">預覽</span>
+            </div>
+            <div class="old-h"><h3>今日行程</h3><span>07/30（四）</span></div>
+            <div class="old-stats">
+              <div class="old-stat"><p>今日預約</p><b>0</b></div>
+              <div class="old-stat"><p>預計收入</p><b>NT$ 0</b></div>
+              <div class="old-stat"><p>待結案</p><b>0</b></div>
+            </div>
+            <div class="old-empty">
+              <div class="box"></div>
+              <b>今天還沒有預約</b>
+              <p>把預約連結傳給客人，他們就能自己約。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="cap"><span class="tag-bad">問題</span>　卡片被拉到 1600px 寬 · 標籤 8–11px · 側欄看不出在哪一頁 · 空狀態佔掉整塊</p>
+    </div>
+
+    <div>
+      <div class="win">
+        <div class="bar"><i></i><i></i><i></i><span>改版 — 內容 1080px 靠左，其餘留白</span></div>
+        <div class="shell">
+          <div class="n-side">
+            <div class="n-brand"><i>揚</i><div><b>揚翼運動按摩</b><small>擁有者</small></div></div>
+            <p class="n-grp">每天要用</p>
+            <a href="#" class="on"><i></i>今日行程</a>
+            <a href="#"><i></i>行事曆</a>
+            <a href="#" class="off"><i></i>客戶管理 <em>準備中</em></a>
+            <p class="n-grp">設定</p>
+            <a href="#"><i></i>服務項目</a>
+            <a href="#"><i></i>營業時間與據點</a>
+            <a href="#"><i></i>LINE 官方帳號</a>
+          </div>
+          <div class="n-main">
+            <div class="n-top">
+              <span class="t">今日行程</span>
+              <div class="right">
+                <span class="n-link">/p/<b>youngyeebody</b><span class="cp">複製</span></span>
+                <span class="n-btn">預覽</span>
+                <span class="n-theme"><span>自動</span><span class="on">淺</span><span>深</span></span>
+              </div>
+            </div>
+            <div class="n-body">
+              <div class="n-inner">
+                <div class="n-h"><h3>今日行程</h3><span>07/30（四）</span><span class="today">今天</span></div>
+                <div class="n-stats">
+                  <div class="n-stat"><p>今日預約</p><b>0</b></div>
+                  <div class="n-stat"><p>預計收入</p><b>NT$ 0</b></div>
+                  <div class="n-stat"><p>待結案</p><b>0</b></div>
+                </div>
+                <div class="n-empty">
+                  <div class="box"></div>
+                  <div>
+                    <b>今天還沒有預約</b>
+                    <p>把預約連結傳給客人，他們就能自己約；接到電話也可以自己建一筆。</p>
+                  </div>
+                  <span class="go">＋ 新增預約</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="cap"><span class="tag-good">改版</span>　內容收在 1080px · 統計併成一張 · 側欄有目前位置 · 空狀態變一條</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 02 深色 ══ -->
+<section>
+  <div class="sec-title"><span class="n">02</span><h2>深色模式與亮度開關</h2></div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>深色代幣其實<b>早就寫好了</b>，只是綁在「跟隨系統」。你的系統是淺色，所以永遠看到白底。</li>
+      <li>改成<b>右上角自己切</b>：自動 / 淺 / 深。選了就記住（存 cookie），換裝置也不會跳回去。</li>
+      <li>淺色也一起調柔：頁面底色從 <b>#f7f7f5 → #f2f3f0</b>，卡片從純白 <b>#ffffff → #fbfbfa</b>。純白配深字是對比最強的組合，長時間看最累。</li>
+      <li>深色不是把顏色反過來就好——鼠尾草綠會變太暗，所以主色改用<b>較亮的 #8fb8a2</b>，這在代幣裡也已經備好了。</li>
+    </ul>
+  </div>
+
+  <div class="cmp">
+    <div>
+      <div class="win dark">
+        <div class="bar"><i></i><i></i><i></i><span>改版 · 深色 — 有預約的樣子</span></div>
+        <div class="shell">
+          <div class="n-side">
+            <div class="n-brand"><i>揚</i><div><b>揚翼運動按摩</b><small>擁有者</small></div></div>
+            <p class="n-grp">每天要用</p>
+            <a href="#" class="on"><i></i>今日行程</a>
+            <a href="#"><i></i>行事曆</a>
+            <a href="#" class="off"><i></i>客戶管理 <em>準備中</em></a>
+            <p class="n-grp">設定</p>
+            <a href="#"><i></i>服務項目</a>
+            <a href="#"><i></i>營業時間與據點</a>
+          </div>
+          <div class="n-main">
+            <div class="n-top">
+              <span class="t">今日行程</span>
+              <div class="right">
+                <span class="n-link">/p/<b>youngyeebody</b><span class="cp">複製</span></span>
+                <span class="n-btn">預覽</span>
+                <span class="n-theme"><span>自動</span><span>淺</span><span class="on">深</span></span>
+              </div>
+            </div>
+            <div class="n-body">
+              <div class="n-inner">
+                <div class="n-h"><h3>今日行程</h3><span>08/03（一）</span><span class="today">今天</span></div>
+                <div class="n-stats">
+                  <div class="n-stat"><p>今日預約</p><b>4</b></div>
+                  <div class="n-stat"><p>預計收入</p><b>NT$ 6,600</b></div>
+                  <div class="n-stat warn"><p>待結案</p><b>2</b></div>
+                </div>
+                <div class="n-list">
+                  <div class="n-item">
+                    <span class="tm num">09:00</span>
+                    <div class="who"><b>陳小姐</b><p>深層按摩 60 分 · A 館</p></div>
+                    <span class="tag">已完成</span>
+                    <span class="amt num">1,200</span>
+                  </div>
+                  <p class="n-move num">↓ 移動 30 分 · A 館 → B 館 · <b>開啟導航</b></p>
+                  <div class="n-item now">
+                    <span class="tm num">11:00</span>
+                    <div class="who"><b>林先生</b><p>推拿 90 分 · B 館</p></div>
+                    <span class="tag now">進行中</span>
+                    <span class="amt num">1,800</span>
+                  </div>
+                  <div class="n-item">
+                    <span class="tm num">19:00</span>
+                    <div class="who"><b>張先生</b><p>運動按摩 60 分 · 六合健身房</p></div>
+                    <span class="tag">已確認</span>
+                    <span class="amt num">1,600</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="cap">深色下的行程表。時間、金額等寬對齊，一列一筆，掃過去就知道今天長什麼樣</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 03 尺度表 ══ -->
+<section>
+  <div class="sec-title"><span class="n">03</span><h2>實際會改的數字</h2></div>
+  <div class="plain" style="padding-bottom:8px">
+    <table class="t">
+      <tr><th style="width:26%">項目</th><th style="width:22%">現在</th><th style="width:22%">改成</th><th>為什麼</th></tr>
+      <tr><td><b>內容最大寬度</b></td><td class="num2">無上限</td><td class="num2">1080px</td><td>寬螢幕上一行掃太遠，眼睛累</td></tr>
+      <tr><td><b>統計卡</b></td><td>三張獨立色塊</td><td>一張含分隔線</td><td>少兩個色塊搶注意力，高度砍半</td></tr>
+      <tr><td><b>區塊標籤</b></td><td class="num2">11px / ink-4</td><td class="num2">11.5px / ink-3</td><td>最淡的灰只該用在真正的附註</td></tr>
+      <tr><td><b>說明文字</b></td><td class="num2">11–13px</td><td class="num2">12.5–14px</td><td>桌機上 11px 太小</td></tr>
+      <tr><td><b>側欄字級</b></td><td class="num2">13px</td><td class="num2">13.5px + 目前位置高亮</td><td>看得出自己在哪一頁</td></tr>
+      <tr><td><b>頁面底色</b></td><td class="num2">#f7f7f5</td><td class="num2">#f2f3f0</td><td>降一階亮度，白卡才浮得出來</td></tr>
+      <tr><td><b>卡片底色</b></td><td class="num2">#ffffff</td><td class="num2">#fbfbfa</td><td>純白配深字對比最強，也最刺眼</td></tr>
+      <tr><td><b>深色模式</b></td><td>只能跟隨系統</td><td>右上角自動／淺／深</td><td>代幣早就寫好了，只差一個開關</td></tr>
+    </table>
+  </div>
+  <p class="lede" style="margin-top:14px">
+    這些改動集中在 <b>globals.css</b> 與 <b>後台外框</b>，服務項目、排班、行事曆那些頁面只會跟著容器變窄與字級變大，不用逐頁重畫。
+  </p>
+</section>
+
+</div>
+</body>
+</html>

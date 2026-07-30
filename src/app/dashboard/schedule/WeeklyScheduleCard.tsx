@@ -45,7 +45,7 @@ export function WeeklyScheduleCard({
   if (bookables.length === 0) {
     return (
       <Card title="每週排班">
-        <p className="px-5 pt-1 pb-5 text-[12px] text-ink-3">
+        <p className="px-5 pt-1 pb-5 text-[12.5px] text-ink-3">
           先建立可預約的人或場地，才能排班。
         </p>
       </Card>
@@ -167,7 +167,7 @@ export function WeeklyScheduleCard({
               <b className="text-[13.5px] font-extrabold">
                 星期{WEEKDAYS.find((d) => d.value === editing.weekday)?.label}
               </b>
-              <span className="text-[11px] text-ink-4">
+              <span className="text-[11.5px] text-ink-3">
                 同一天可以排多段，各自綁不同據點；中間留白就是刻意不接客。
               </span>
             </div>
@@ -189,7 +189,7 @@ export function WeeklyScheduleCard({
                     }
                     className="num rounded-sm bg-card px-3 py-2.5 text-[13px] font-extrabold outline-none"
                   />
-                  <span className="text-[11px] font-bold text-ink-4">到</span>
+                  <span className="text-[11.5px] font-bold text-ink-3">到</span>
                   <input
                     type="time"
                     step={1800}
@@ -232,7 +232,7 @@ export function WeeklyScheduleCard({
                         segments: editing.segments.filter((_, j) => j !== i),
                       })
                     }
-                    className="text-[11.5px] font-extrabold text-ink-4 hover:text-danger"
+                    className="text-[12px] font-extrabold text-ink-3 hover:text-danger"
                   >
                     移除
                   </button>
@@ -336,7 +336,7 @@ export function WeeklyScheduleCard({
                   複製過去
                 </QuietButton>
               </div>
-              <p className="mt-2 text-[10.5px] text-ink-4">
+              <p className="mt-2 text-[11.5px] text-ink-3">
                 複製會覆蓋目標日原本的班。複製的是已儲存的內容，不是畫面上還沒存的修改。
               </p>
             </div>
