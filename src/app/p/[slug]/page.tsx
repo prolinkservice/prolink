@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { lookupTenantBySlug } from '@/lib/tenant'
+import { Stamp } from '@/components/Stamp'
 
 // 職人的公開預約頁。網址是 prolink.tw/p/{slug}，
 // 職人改過 slug 之後舊網址會 301 轉到新的，
@@ -54,9 +55,7 @@ export default async function TenantPublicPage({ params }: Props) {
   return (
     <main className="mx-auto min-h-dvh w-full max-w-lg px-5 py-10">
       <header className="text-center">
-        <div className="mx-auto grid size-14 place-items-center rounded-full bg-accent text-lg font-extrabold text-accent-foreground">
-          {tenant.name.slice(0, 1)}
-        </div>
+        <Stamp name={tenant.name} className="mx-auto size-14 text-xl" />
         <h1 className="mt-4 text-2xl font-extrabold tracking-tight">{tenant.name}</h1>
         <p className="mt-1.5 text-[13px] text-ink-3">選擇服務後挑時段，不用註冊</p>
       </header>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ThemeToggle, type Theme } from '@/components/ThemeToggle'
+import { Stamp } from '@/components/Stamp'
 import { CopyLinkButton } from './CopyLinkButton'
 
 // 後台外框。草稿：docs/mockups/dashboard-shell-v2.html
@@ -59,9 +60,7 @@ export function DashboardShell({
     <div className="flex min-h-dvh flex-col lg:flex-row">
       <aside className="flex shrink-0 flex-col gap-0.5 bg-card p-3 lg:w-56 lg:border-r lg:border-hairline">
         <div className="flex items-center gap-2.5 px-2.5 pt-1.5 pb-4">
-          <span className="grid size-8 shrink-0 place-items-center rounded-[10px] bg-primary text-[13px] font-extrabold text-primary-foreground">
-            {tenantName.slice(0, 1)}
-          </span>
+          <Stamp name={tenantName} className="size-9 text-[14px]" />
           <div className="min-w-0">
             <b className="block truncate text-[14px] leading-tight font-extrabold tracking-tight">
               {tenantName}

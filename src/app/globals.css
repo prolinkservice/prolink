@@ -3,12 +3,15 @@
 @import "shadcn/tailwind.css";
 
 /* ═══════════════════════════════════════════════════════════════
-   ProLink 設計系統 · 方案 B「柔光日光」
+   ProLink 設計系統 ·「暖陶日常」Warm Ceramic Utilitarian
    ─────────────────────────────────────────────────────────────
-   語彙：大圓角 · 無邊框 · 柔和層次陰影 · 低彩度鼠尾草綠
-   分層靠陰影與留白，不靠線條。除了高密度列表，一律不用 1px 框。
+   語彙只有兩個：自然有機（陶土、紙、手感）＋ 工具理性（密度、刻度、
+   等寬數字）。分層靠陰影與留白，不靠線條。
 
-   來源：docs/mockups/design-system.html
+   三個記憶點：陶土紅、時間刻度、襯線數字。
+   質感只有一層紙紋，動態只有一組——多加就會從有質感變成有雜訊。
+
+   來源：docs/mockups/warm-redesign.html
    改這裡等於改全站。
    ═══════════════════════════════════════════════════════════════ */
 
@@ -77,185 +80,189 @@
   --shadow-float: var(--sh-3);   /* 彈窗、浮層 */
 
   /* ── 字體 ────────────────────────────────────────────── */
-  /* 全站統一用源泉圓體 GenSenRounded2TW（含拉丁與數字）。
-     這個字體的數字寬度一律 555，本身就是等寬，
-     時間與金額不需要 tnum 特性也會對齊。 */
+  /* 中文與內文：源泉圓體 GenSenRounded2TW。
+     數字與時間：Fraunces 襯線體（只載拉丁子集，中文會自動落回源泉）。
+     時間、金額、日期是這個系統最常看的東西，讓它們有自己的長相。 */
   --font-sans: "GenSen", "PingFang TC", "Microsoft JhengHei",
                system-ui, sans-serif;
+  --font-display: "Fraunces", "GenSen", Georgia, serif;
   --font-heading: var(--font-sans);
   --font-mono: var(--font-sans);
 }
 
-/* ── 淺色 ─────────────────────────────────────────────── */
-/* 底色比原本降一階、卡片不用純白：純白配深字是對比最強的組合，
-   也最刺眼。降下來之後卡片反而更浮得出來。 */
+/* ── 淺色：燕麥紙上的陶土 ───────────────────────────────── */
+/* 底色不是白的。純白配深字是對比最強的組合，也最刺眼；
+   降下來之後卡片反而更浮得出來。 */
 :root {
-  --background: #f2f3f0;
-  --foreground: #23262a;
-  --card: #fbfbfa;
-  --card-foreground: #23262a;
-  --popover: #fbfbfa;
-  --popover-foreground: #23262a;
+  --background: #f6f1ea;
+  --foreground: #2a211c;
+  --card: #fffcf8;
+  --card-foreground: #2a211c;
+  --popover: #fffcf8;
+  --popover-foreground: #2a211c;
 
-  --primary: #5d7f6e;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f2ef;
-  --secondary-foreground: #4b5158;
-  --muted: #f1f2ef;
-  --muted-foreground: #7b828a;
-  --accent: #e7efe9;
-  --accent-foreground: #5d7f6e;
-  --destructive: #b05a4e;
-  --border: #e9ebe7;
-  --input: #f1f2ef;
-  --ring: #5d7f6e;
+  --primary: #a34e33;              /* 陶土。白字對比 5.3:1 */
+  --primary-foreground: #fffcf8;
+  --secondary: #efe7dc;
+  --secondary-foreground: #574a42;
+  --muted: #efe7dc;
+  --muted-foreground: #857466;
+  --accent: #f4e3da;               /* 陶土淡：選取、標籤底 */
+  --accent-foreground: #8f452c;
+  --destructive: #a63e33;
+  --border: #e4d9cc;
+  --input: #efe7dc;
+  --ring: #a34e33;
 
-  --sunk: #eceee9;
-  --ink: #23262a;
-  --ink-2: #4b5158;
-  --ink-3: #767d85;
-  --ink-4: #a2a9af;
-  --hairline: #e4e7e1;
+  --sunk: #efe7dc;
+  --ink: #2a211c;                  /* 偏暖的墨，不是純黑 */
+  --ink-2: #574a42;
+  --ink-3: #857466;
+  --ink-4: #b0a093;
+  --hairline: #e4d9cc;
 
-  --ok: #5d7f6e;        --ok-bg: #e7efe9;
-  --warn: #b6795a;      --warn-bg: #f6ece4;
-  --danger: #b05a4e;    --danger-bg: #f8e9e6;
-  --info: #5d7183;      --info-bg: #e8eef2;
+  /* 功能色一律拉暖。原本的藍灰混在暖色裡會顯髒 */
+  --ok: #6b7a45;        --ok-bg: #ecefdf;      /* 橄欖：完成 */
+  --warn: #a9762b;      --warn-bg: #f7ebd6;    /* 赭：提醒、待結案 */
+  --danger: #a63e33;    --danger-bg: #f8e4e0;  /* 磚：錯誤、放鳥 */
+  --info: #7a5468;      --info-bg: #f3e7ee;    /* 梅：資訊、待確認 */
 
-  --sh-1: 0 2px 8px -4px rgb(35 38 42 / 0.08);
-  --sh-2: 0 18px 44px -26px rgb(35 38 42 / 0.30), 0 2px 8px -4px rgb(35 38 42 / 0.06);
-  --sh-3: 0 30px 70px -34px rgb(35 38 42 / 0.38), 0 4px 12px -6px rgb(35 38 42 / 0.08);
+  /* 陰影帶一點暖，純黑的影子壓在紙色上會發灰 */
+  --sh-1: 0 1px 2px rgb(42 33 28 / 0.05), 0 4px 14px -10px rgb(42 33 28 / 0.35);
+  --sh-2: 0 2px 4px rgb(42 33 28 / 0.05), 0 22px 44px -28px rgb(42 33 28 / 0.45);
+  --sh-3: 0 30px 70px -32px rgb(42 33 28 / 0.50), 0 4px 12px -6px rgb(42 33 28 / 0.10);
 
-  --radius: 1.375rem;
+  --radius: 1.125rem;              /* 18px：比原本收斂，少一點「圓潤到沒個性」 */
 
-  --chart-1: #5d7f6e;
-  --chart-2: #8fb8a2;
-  --chart-3: #5d7183;
-  --chart-4: #b6795a;
-  --chart-5: #aab0b6;
+  --chart-1: #a34e33;
+  --chart-2: #d08a6a;
+  --chart-3: #6b7a45;
+  --chart-4: #a9762b;
+  --chart-5: #b0a093;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #4b5158;
-  --sidebar-primary: #5d7f6e;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e7efe9;
-  --sidebar-accent-foreground: #5d7f6e;
-  --sidebar-border: #e9ebe7;
-  --sidebar-ring: #5d7f6e;
+  --sidebar: #fffcf8;
+  --sidebar-foreground: #574a42;
+  --sidebar-primary: #a34e33;
+  --sidebar-primary-foreground: #fffcf8;
+  --sidebar-accent: #f4e3da;
+  --sidebar-accent-foreground: #8f452c;
+  --sidebar-border: #e4d9cc;
+  --sidebar-ring: #a34e33;
 }
 
-/* ── 深色 ─────────────────────────────────────────────── */
-/* 兩個入口共用同一份值：
+/* ── 深色：窯裡的火光 ───────────────────────────────────── */
+/* 不是把亮度反過來——底色帶棕，陶土色提亮，
+   否則在暗底上會變成一坨看不清的深紅。
+   兩個入口共用同一份值：
    · data-theme="auto"（預設）跟著系統走
    · data-theme="dark" 是使用者自己在右上角選的，蓋過系統設定
-   值只寫一次會讓 CSS 讀不出來，所以刻意重複一份，改的時候兩邊要一起改。 */
+   值重複兩份是刻意的，改的時候兩邊要一起改。 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --background: #131614;
-    --foreground: #eef1ee;
-    --card: #1c201e;
-    --card-foreground: #eef1ee;
-    --popover: #1c201e;
-    --popover-foreground: #eef1ee;
+    --background: #16110e;
+    --foreground: #f2e9e1;
+    --card: #211a16;
+    --card-foreground: #f2e9e1;
+    --popover: #211a16;
+    --popover-foreground: #f2e9e1;
 
-    --primary: #8fb8a2;
-    --primary-foreground: #10201a;
-    --secondary: #232725;
-    --secondary-foreground: #c2c8c4;
-    --muted: #232725;
-    --muted-foreground: #8e9691;
-    --accent: #233029;
-    --accent-foreground: #8fb8a2;
-    --destructive: #d08a7c;
-    --border: #2a2f2c;
-    --input: #232725;
-    --ring: #8fb8a2;
+    --primary: #e08a66;
+    --primary-foreground: #2a150e;
+    --secondary: #2a211c;
+    --secondary-foreground: #cfc1b6;
+    --muted: #2a211c;
+    --muted-foreground: #9c8b7e;
+    --accent: #37241c;
+    --accent-foreground: #f0b294;
+    --destructive: #e08878;
+    --border: #33291f;
+    --input: #2a211c;
+    --ring: #e08a66;
 
-    --sunk: #232725;
-    --ink: #eef1ee;
-    --ink-2: #c2c8c4;
-    --ink-3: #8e9691;
-    --ink-4: #636b67;
-    --hairline: #2a2f2c;
+    --sunk: #2a211c;
+    --ink: #f2e9e1;
+    --ink-2: #cfc1b6;
+    --ink-3: #9c8b7e;
+    --ink-4: #6e6057;
+    --hairline: #33291f;
 
-    --ok: #8fb8a2;      --ok-bg: #233029;
-    --warn: #d09b7c;    --warn-bg: #2e241d;
-    --danger: #d08a7c;  --danger-bg: #2f211e;
-    --info: #8fa5b5;    --info-bg: #1f272c;
+    --ok: #a8bb78;      --ok-bg: #242b17;
+    --warn: #d9a75c;    --warn-bg: #332617;
+    --danger: #e08878;  --danger-bg: #331d19;
+    --info: #c795af;    --info-bg: #2e1f28;
 
-    --sh-1: 0 2px 8px -4px rgb(0 0 0 / 0.40);
-    --sh-2: 0 20px 50px -28px rgb(0 0 0 / 0.75), 0 2px 8px -4px rgb(0 0 0 / 0.30);
-    --sh-3: 0 34px 76px -34px rgb(0 0 0 / 0.85);
+    --sh-1: 0 1px 2px rgb(0 0 0 / 0.50), 0 4px 14px -10px rgb(0 0 0 / 0.90);
+    --sh-2: 0 2px 4px rgb(0 0 0 / 0.50), 0 24px 48px -30px rgb(0 0 0 / 1);
+    --sh-3: 0 34px 76px -34px rgb(0 0 0 / 1);
 
-    --chart-1: #8fb8a2;
-    --chart-2: #5d7f6e;
-    --chart-3: #8fa5b5;
-    --chart-4: #d09b7c;
-    --chart-5: #636b67;
+    --chart-1: #e08a66;
+    --chart-2: #a34e33;
+    --chart-3: #a8bb78;
+    --chart-4: #d9a75c;
+    --chart-5: #6e6057;
 
-    --sidebar: #1c201e;
-    --sidebar-foreground: #c2c8c4;
-    --sidebar-primary: #8fb8a2;
-    --sidebar-primary-foreground: #10201a;
-    --sidebar-accent: #233029;
-    --sidebar-accent-foreground: #8fb8a2;
-    --sidebar-border: #2a2f2c;
-    --sidebar-ring: #8fb8a2;
+    --sidebar: #211a16;
+    --sidebar-foreground: #cfc1b6;
+    --sidebar-primary: #e08a66;
+    --sidebar-primary-foreground: #2a150e;
+    --sidebar-accent: #37241c;
+    --sidebar-accent-foreground: #f0b294;
+    --sidebar-border: #33291f;
+    --sidebar-ring: #e08a66;
   }
 }
 
-/* 使用者自己選「深」時，不管系統是什麼都要是深色 */
 :root[data-theme='dark'] {
-  --background: #131614;
-  --foreground: #eef1ee;
-  --card: #1c201e;
-  --card-foreground: #eef1ee;
-  --popover: #1c201e;
-  --popover-foreground: #eef1ee;
+  --background: #16110e;
+  --foreground: #f2e9e1;
+  --card: #211a16;
+  --card-foreground: #f2e9e1;
+  --popover: #211a16;
+  --popover-foreground: #f2e9e1;
 
-  --primary: #8fb8a2;
-  --primary-foreground: #10201a;
-  --secondary: #232725;
-  --secondary-foreground: #c2c8c4;
-  --muted: #232725;
-  --muted-foreground: #8e9691;
-  --accent: #233029;
-  --accent-foreground: #8fb8a2;
-  --destructive: #d08a7c;
-  --border: #2a2f2c;
-  --input: #232725;
-  --ring: #8fb8a2;
+  --primary: #e08a66;
+  --primary-foreground: #2a150e;
+  --secondary: #2a211c;
+  --secondary-foreground: #cfc1b6;
+  --muted: #2a211c;
+  --muted-foreground: #9c8b7e;
+  --accent: #37241c;
+  --accent-foreground: #f0b294;
+  --destructive: #e08878;
+  --border: #33291f;
+  --input: #2a211c;
+  --ring: #e08a66;
 
-  --sunk: #232725;
-  --ink: #eef1ee;
-  --ink-2: #c2c8c4;
-  --ink-3: #8e9691;
-  --ink-4: #636b67;
-  --hairline: #2a2f2c;
+  --sunk: #2a211c;
+  --ink: #f2e9e1;
+  --ink-2: #cfc1b6;
+  --ink-3: #9c8b7e;
+  --ink-4: #6e6057;
+  --hairline: #33291f;
 
-  --ok: #8fb8a2;      --ok-bg: #233029;
-  --warn: #d09b7c;    --warn-bg: #2e241d;
-  --danger: #d08a7c;  --danger-bg: #2f211e;
-  --info: #8fa5b5;    --info-bg: #1f272c;
+  --ok: #a8bb78;      --ok-bg: #242b17;
+  --warn: #d9a75c;    --warn-bg: #332617;
+  --danger: #e08878;  --danger-bg: #331d19;
+  --info: #c795af;    --info-bg: #2e1f28;
 
-  --sh-1: 0 2px 8px -4px rgb(0 0 0 / 0.40);
-  --sh-2: 0 20px 50px -28px rgb(0 0 0 / 0.75), 0 2px 8px -4px rgb(0 0 0 / 0.30);
-  --sh-3: 0 34px 76px -34px rgb(0 0 0 / 0.85);
+  --sh-1: 0 1px 2px rgb(0 0 0 / 0.50), 0 4px 14px -10px rgb(0 0 0 / 0.90);
+  --sh-2: 0 2px 4px rgb(0 0 0 / 0.50), 0 24px 48px -30px rgb(0 0 0 / 1);
+  --sh-3: 0 34px 76px -34px rgb(0 0 0 / 1);
 
-  --chart-1: #8fb8a2;
-  --chart-2: #5d7f6e;
-  --chart-3: #8fa5b5;
-  --chart-4: #d09b7c;
-  --chart-5: #636b67;
+  --chart-1: #e08a66;
+  --chart-2: #a34e33;
+  --chart-3: #a8bb78;
+  --chart-4: #d9a75c;
+  --chart-5: #6e6057;
 
-  --sidebar: #1c201e;
-  --sidebar-foreground: #c2c8c4;
-  --sidebar-primary: #8fb8a2;
-  --sidebar-primary-foreground: #10201a;
-  --sidebar-accent: #233029;
-  --sidebar-accent-foreground: #8fb8a2;
-  --sidebar-border: #2a2f2c;
-  --sidebar-ring: #8fb8a2;
+  --sidebar: #211a16;
+  --sidebar-foreground: #cfc1b6;
+  --sidebar-primary: #e08a66;
+  --sidebar-primary-foreground: #2a150e;
+  --sidebar-accent: #37241c;
+  --sidebar-accent-foreground: #f0b294;
+  --sidebar-border: #33291f;
+  --sidebar-ring: #e08a66;
 }
 
 /* 瀏覽器的表單元件、捲軸也要跟著換，不然深色頁面上會冒出白色的下拉選單 */
@@ -279,11 +286,26 @@
     @apply font-sans antialiased;
   }
 
-  /* 時間、金額、電話一律等寬對齊，列表才會排成一直線 */
+  /* 時間、金額、電話：襯線體 + 等寬對齊。
+     這是全站的記憶點之一，也是這套系統最常被讀的字。
+     中文夾在裡面時會自動落回源泉圓體。 */
   .num,
   [data-num] {
+    font-family: var(--font-display);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
+    font-variation-settings: "SOFT" 40, "opsz" 40;
+    letter-spacing: -0.01em;
+  }
+
+  /* 紙的顆粒。整站唯一的材質，不再加第二層 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E");
   }
 
   /* 標題偏緊的字距，是這套風格的一部分 */

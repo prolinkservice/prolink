@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { Stamp } from '@/components/Stamp'
 
 // 登入與註冊都走 /auth，那頁才有 Google 與 LINE。
 // 舊的 /login、/signup 是媒合時代的會員登入，只有帳號密碼，
@@ -98,9 +99,7 @@ export default async function Home({ searchParams }: Props) {
       <header className="bg-card">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 py-4">
           <Link href="/" className="flex items-center gap-2.5 text-[17px] font-extrabold tracking-tight">
-            <span className="grid size-7 place-items-center rounded-[9px] bg-primary text-[13px] font-extrabold text-primary-foreground">
-              P
-            </span>
+            <Stamp name="P" className="size-8 text-[14px]" />
             ProLink
           </Link>
           <nav className="ml-6 hidden gap-6 sm:flex">

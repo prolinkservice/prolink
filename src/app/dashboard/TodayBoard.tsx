@@ -61,8 +61,17 @@ export function TodayBoard({
         <span className="num text-[12.5px] font-bold text-ink-3">{label}</span>
       </div>
 
-      {/* 三個數字併成一張卡：三個獨立色塊各自搶注意力，合起來反而安靜 */}
-      <div className="flex flex-wrap overflow-hidden rounded-lg bg-card shadow-soft">
+      {/* 三個數字併成一張卡，上緣壓一條刻度——這是全站的招牌圖形。
+          三個獨立色塊各自搶注意力，合起來反而安靜 */}
+      <div className="relative flex flex-wrap overflow-hidden rounded-lg bg-card shadow-soft">
+        <span
+          aria-hidden
+          className="absolute inset-x-0 top-0 h-1.5"
+          style={{
+            backgroundImage:
+              'repeating-linear-gradient(90deg, var(--hairline) 0 1px, transparent 1px 11px)',
+          }}
+        />
         <Stat label="今日預約" value={String(live.length)} />
         <Stat label="預計收入" value={`NT$ ${money(expected)}`} />
         <Stat label="待結案" value={String(toClose.length)} tone={toClose.length > 0} />
@@ -116,7 +125,9 @@ export function TodayBoard({
           </button>
         </div>
       ) : (
-        <ol className="mt-4 flex flex-col gap-2.5">
+        <ol className="relative mt-4 flex flex-col gap-2.5 pl-14 before:absolute before:top-3 before:bottom-3 before:left-[46px] before:w-px before:bg-hairline">
+          {/* 左邊那條線加每筆的時間，就是一把刻度尺：
+              時間離開卡片、變成行程的骨架 */}
           {today.map((b, i) => {
             const prev = today[i - 1]
             const gap = prev ? travelBetween(prev, b, travel) : null
@@ -124,9 +135,9 @@ export function TodayBoard({
             const location = locations.find((l) => l.id === b.location_id)
 
             return (
-              <li key={b.id}>
+              <li key={b.id} className="relative">
                 {gap && (
-                  <p className="mb-2.5 flex flex-wrap items-center gap-x-2 px-1 text-[11.5px] font-bold text-ink-3">
+                  <p className="mb-2.5 flex flex-wrap items-center gap-x-2 text-[11.5px] font-bold text-ink-3">
                     <span className="num">
                       ↓ 移動 {gap.minutes} 分 · {gap.from} → {gap.to}
                     </span>
@@ -143,17 +154,29 @@ export function TodayBoard({
                   </p>
                 )}
 
+                <span
+                  aria-hidden
+                  className={cn(
+                    'absolute -left-14 w-[46px] pr-3 text-right',
+                    gap ? 'top-[46px]' : 'top-3.5'
+                  )}
+                >
+                  <b className="num block text-[15px] leading-none font-extrabold">
+                    {formatTime(b.start_at, timezone)}
+                  </b>
+                  <small className="num mt-1 block text-[10.5px] text-ink-3">
+                    {durationMinutes(b)} 分
+                  </small>
+                </span>
+
                 <article
                   className={cn(
                     'rounded-lg bg-card px-4 py-3.5 shadow-soft',
-                    running && 'shadow-[0_0_0_2px_var(--primary)]'
+                    running && 'border-l-[3px] border-primary shadow-card'
                   )}
                 >
                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                    <b className="num text-[15px] font-extrabold">
-                      {formatTime(b.start_at, timezone)}
-                    </b>
-                    <b className="text-[14px] font-extrabold">
+                    <b className="text-[14.5px] font-extrabold">
                       {b.kind === 'block' ? '不開放' : (b.customer_name ?? '—')}
                     </b>
                     <span
@@ -176,13 +199,9 @@ export function TodayBoard({
                     )}
                   </div>
 
+                  {/* 時長已經在左邊的刻度上，這裡不再重複 */}
                   <p className="num mt-1 text-[11.5px] text-ink-3">
-                    {[
-                      b.service_name,
-                      `${durationMinutes(b)} 分`,
-                      b.location_name,
-                      b.customer_phone,
-                    ]
+                    {[b.service_name, b.location_name, b.customer_phone]
                       .filter(Boolean)
                       .join('　·　')}
                   </p>
