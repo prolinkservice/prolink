@@ -1,5 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+
+// 登入與註冊都走 /auth，那頁才有 Google 與 LINE。
+// 舊的 /login、/signup 是媒合時代的會員登入，只有帳號密碼，
+// 現在一律轉到 /auth（見 src/app/login/page.tsx）。
+const LOGIN_HREF = '/auth?next=%2Fdashboard'
+const SIGNUP_HREF = '/auth?mode=signup&next=%2Fdashboard'
 
 // 產品官網首頁。舊版是「找老師的搜尋入口」，轉型後訪客不是消費者，
 // 是想把預約流程數位化的職人，所以整頁只有一個目標：讓他按下註冊。
@@ -67,7 +75,24 @@ const PRO_PLAN = [
   { text: '多位服務人員與據點' },
 ]
 
-export default function Home() {
+type Props = { searchParams: Promise<{ code?: string }> }
+
+export default async function Home({ searchParams }: Props) {
+  // Supabase 的 Redirect URLs 若沒放行我們的 callback，GoTrue 會退回 Site URL，
+  // 把 ?code= 掛在首頁上——沒人接，使用者就「登入完回到首頁，還是未登入」。
+  // 這裡把它接住轉給 callback，設定沒調好也能登入成功。
+  const { code } = await searchParams
+  if (code) {
+    redirect(`/auth/callback?code=${encodeURIComponent(code)}&next=%2Fdashboard`)
+  }
+
+  // 登入完會回到這一頁。標頭若永遠只有「登入」，人會以為自己沒登入成功，
+  // 而且從官網完全找不到路進後台
+  const supabase = await createServerSupabaseClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <div className="min-h-full">
       <header className="bg-card">
@@ -83,18 +108,34 @@ export default function Home() {
             <a href="#pricing" className="text-[13.5px] font-semibold text-ink-3 hover:text-ink">定價</a>
           </nav>
           <div className="ml-auto flex items-center gap-2.5">
-            <Link
-              href="/login"
-              className="rounded-full bg-sunk px-5 py-2.5 text-[13.5px] font-extrabold text-ink-2 transition hover:bg-accent hover:text-accent-foreground"
-            >
-              登入
-            </Link>
-            <Link
-              href="/signup"
-              className="rounded-full bg-primary px-5 py-2.5 text-[13.5px] font-extrabold text-primary-foreground transition hover:brightness-95"
-            >
-              免費開始
-            </Link>
+            {user ? (
+              <>
+                <span className="hidden text-[12.5px] font-semibold text-ink-4 sm:inline">
+                  {user.email}
+                </span>
+                <Link
+                  href="/dashboard"
+                  className="rounded-full bg-primary px-5 py-2.5 text-[13.5px] font-extrabold text-primary-foreground transition hover:brightness-95"
+                >
+                  進入後台
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href={LOGIN_HREF}
+                  className="rounded-full bg-sunk px-5 py-2.5 text-[13.5px] font-extrabold text-ink-2 transition hover:bg-accent hover:text-accent-foreground"
+                >
+                  登入
+                </Link>
+                <Link
+                  href={SIGNUP_HREF}
+                  className="rounded-full bg-primary px-5 py-2.5 text-[13.5px] font-extrabold text-primary-foreground transition hover:brightness-95"
+                >
+                  免費開始
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -117,7 +158,7 @@ export default function Home() {
         </p>
         <div className="mx-auto mt-7 flex max-w-xs flex-col gap-2.5 sm:mt-8 sm:max-w-none sm:flex-row sm:justify-center sm:gap-3">
           <Link
-            href="/signup"
+            href={SIGNUP_HREF}
             className="rounded-full bg-primary px-8 py-4 text-[15px] font-extrabold text-primary-foreground transition hover:brightness-95"
           >
             免費開始，不用信用卡
@@ -223,7 +264,7 @@ export default function Home() {
               ))}
             </ul>
             <Link
-              href="/signup"
+              href={SIGNUP_HREF}
               className="mt-6 block rounded-full bg-sunk py-3.5 text-center text-[13.5px] font-extrabold text-ink-2 transition hover:bg-accent hover:text-accent-foreground"
             >
               免費開始
@@ -243,7 +284,7 @@ export default function Home() {
               ))}
             </ul>
             <Link
-              href="/signup"
+              href={SIGNUP_HREF}
               className="mt-6 block rounded-full bg-primary py-3.5 text-center text-[13.5px] font-extrabold text-primary-foreground transition hover:brightness-95"
             >
               開始 14 天試用
@@ -261,7 +302,7 @@ export default function Home() {
         </h2>
         <p className="mt-3.5 text-[15px] text-ink-3">不用信用卡、不用簽約、不用等業務打給你</p>
         <Link
-          href="/signup"
+          href={SIGNUP_HREF}
           className="mt-7 inline-block rounded-full bg-primary px-8 py-4 text-[15px] font-extrabold text-primary-foreground transition hover:brightness-95"
         >
           免費開始
