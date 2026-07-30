@@ -213,6 +213,7 @@ function AuthForm() {
       </div>
 
       <form action={signInWithGoogle}>
+        <input type="hidden" name="next" value={next} />
         <Button type="submit" variant="outline" size="lg" className="w-full gap-2">
           <FcGoogle className="w-5 h-5" />
           使用 Google 繼續
