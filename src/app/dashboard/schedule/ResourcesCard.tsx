@@ -82,6 +82,15 @@ export function ResourcesCard({
       }
     >
       <div className="px-5 pt-1 pb-5">
+        {/* 這一段是給「我建了據點，為什麼服務項目那邊沒出現」的人看的 */}
+        <p className="mb-3 rounded-sm bg-sunk px-4 py-3 text-[11.5px] leading-relaxed text-ink-2">
+          這裡列的是<b className="font-extrabold">同一個時間只能給一組客人用的東西</b>
+          ：你本人、包廂、要出租的場地、特殊器材。服務項目就是靠它判斷時段會不會撞。
+          <br />
+          上面的「據點」只是地址，一個人跑兩個據點也<b className="font-extrabold">只算一個資源</b>
+          （你自己），不用重複建立。
+        </p>
+
         <ul className="flex flex-col">
           {active.map((b) => (
             <li

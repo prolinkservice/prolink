@@ -369,11 +369,16 @@ function ServiceEditor({
 
         {/* 佔用什麼資源是整頁的關鍵：系統靠這個判斷時段能不能約 */}
         <div className="mb-3.5 rounded-sm bg-sunk px-4 py-3.5">
-          <b className="block text-[12px] font-extrabold text-ink-2">
+          <b className="block text-[12.5px] font-extrabold text-ink-2">
             做這項服務時會佔用什麼？
           </b>
-          <p className="mt-0.5 mb-3 text-[11.5px] text-ink-3">
+          <p className="mt-0.5 mb-3 text-[11.5px] leading-relaxed text-ink-3">
             系統靠這個防止同一個時段被重複約走。單人工作室通常只要勾自己。
+            <br />
+            這裡列的是<b className="font-extrabold">人、包廂、器材</b>
+            這種同一時間只能給一組客人用的東西——
+            <b className="font-extrabold">據點（地址）不會出現在這裡</b>，
+            客人要去哪是由下面的「地點模式」決定的。
           </p>
           <div className="flex flex-wrap gap-2">
             {bookables.map((b) => {
