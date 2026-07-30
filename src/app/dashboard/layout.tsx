@@ -10,14 +10,14 @@ import { CopyLinkButton } from './CopyLinkButton'
 
 const DAILY = [
   { href: '/dashboard', label: '今日行程', ready: true },
-  { href: '/dashboard/calendar', label: '行事曆', ready: false },
+  { href: '/dashboard/calendar', label: '行事曆', ready: true },
   { href: '/dashboard/customers', label: '客戶管理', ready: false },
 ]
 
 const SETTINGS = [
-  { href: '/dashboard/services', label: '服務項目', ready: false },
-  { href: '/dashboard/schedule', label: '營業時間與據點', ready: false },
-  { href: '/dashboard/line', label: 'LINE 官方帳號', ready: false },
+  { href: '/dashboard/services', label: '服務項目', ready: true },
+  { href: '/dashboard/schedule', label: '營業時間與據點', ready: true },
+  { href: '/dashboard/line', label: 'LINE 官方帳號', ready: true },
   { href: '/dashboard/payments', label: '定金與收款', ready: false },
 ]
 

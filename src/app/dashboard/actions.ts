@@ -1,0 +1,159 @@
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getCurrentTenant } from '@/lib/tenant'
+import { fetchAvailableSlots, type AvailableSlot } from '@/lib/availability'
+import type { PaymentMethod } from '@/lib/bookings'
+
+export type ActionResult = { ok: true } | { ok: false; error: string }
+
+export type CustomerHit = {
+  id: string
+  name: string
+  phone: string | null
+  visit_count: number
+  no_show_points: number
+  is_blocked: boolean
+}
+
+/** 手動建單第一步：打手機或名字找既有客人 */
+export async function searchCustomers(query: string): Promise<CustomerHit[]> {
+  const current = await getCurrentTenant()
+  if (!current) return []
+
+  const q = query.trim()
+  if (q.length < 2) return []
+
+  const digits = q.replace(/\D/g, '')
+  const supabase = await createServerSupabaseClient()
+  const filter =
+    digits.length >= 2
+      ? `phone.ilike.%${digits}%,name.ilike.%${q}%`
+      : `name.ilike.%${q}%`
+
+  const { data } = await supabase
+    .from('customers')
+    .select('id, name, phone, visit_count, no_show_points, is_blocked')
+    .eq('tenant_id', current.tenant.id)
+    .or(filter)
+    .order('last_visit_at', { ascending: false, nullsFirst: false })
+    .limit(8)
+
+  return (data ?? []) as CustomerHit[]
+}
+
+/** 手動建單時列出「引擎認為可以約」的時段，方便老師直接點 */
+export async function manualSlots(input: {
+  serviceId: string
+  date: string
+  durationMin?: number | null
+}): Promise<AvailableSlot[]> {
+  const current = await getCurrentTenant()
+  if (!current) return []
+
+  return fetchAvailableSlots({
+    tenantId: current.tenant.id,
+    serviceId: input.serviceId,
+    date: input.date,
+    durationMin: input.durationMin ?? null,
+  })
+}
+
+export type CreateBookingInput = {
+  serviceId: string
+  /** ISO 字串。老師可以填任意時間，不受 30 分鐘格點限制 */
+  startAt: string
+  customerId?: string | null
+  name?: string
+  phone?: string
+  bookableIds?: string[] | null
+  locationId?: string | null
+  durationMin?: number | null
+  note?: string
+  internalNote?: string
+}
+
+export async function createManualBooking(
+  input: CreateBookingInput
+): Promise<ActionResult> {
+  const current = await getCurrentTenant()
+  if (!current) return { ok: false, error: '請先登入' }
+
+  const supabase = await createServerSupabaseClient()
+
+  // 建單走 security definer 函式，RLS 不會替我們把關地點的歸屬，
+  // 所以在這裡確認一次：這個據點必須是自己的
+  let locationId = input.locationId ?? null
+  if (locationId) {
+    const { data: location } = await supabase
+      .from('locations')
+      .select('id')
+      .eq('tenant_id', current.tenant.id)
+      .eq('id', locationId)
+      .maybeSingle()
+    if (!location) locationId = null
+  }
+
+  const { error } = await supabase.rpc('create_manual_booking', {
+    p_tenant_id: current.tenant.id,
+    p_service_id: input.serviceId,
+    p_start_at: input.startAt,
+    p_customer_id: input.customerId ?? null,
+    p_name: input.name ?? null,
+    p_phone: input.phone ?? null,
+    p_bookable_ids: input.bookableIds ?? null,
+    p_location_id: locationId,
+    p_duration_min: input.durationMin ?? null,
+    p_note: input.note ?? null,
+    p_internal_note: input.internalNote ?? null,
+  })
+
+  if (error) {
+    // 23P01 是互斥約束：同一個人或同一間包廂被排了兩筆。
+    // 這條是硬擋——移動時間不足可以強制建立，時間重疊不行
+    if (error.code === '23P01') {
+      return { ok: false, error: '這個時段已經被佔用了，同一個人或場地不能排兩筆' }
+    }
+    if (error.code?.startsWith('P0')) return { ok: false, error: error.message }
+    console.error('[create_manual_booking] 建立失敗', {
+      code: error.code,
+      message: error.message,
+    })
+    return { ok: false, error: '建立失敗，請稍後再試' }
+  }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/calendar')
+  return { ok: true }
+}
+
+export async function closeBooking(input: {
+  bookingId: string
+  outcome: 'completed' | 'no_show' | 'cancelled'
+  actualAmount?: number | null
+  paymentMethod?: PaymentMethod | null
+  internalNote?: string
+}): Promise<ActionResult> {
+  const current = await getCurrentTenant()
+  if (!current) return { ok: false, error: '請先登入' }
+
+  const supabase = await createServerSupabaseClient()
+  const { error } = await supabase.rpc('close_booking', {
+    p_booking_id: input.bookingId,
+    p_outcome: input.outcome,
+    p_actual_amount: input.actualAmount ?? null,
+    p_payment_method: input.paymentMethod ?? null,
+    p_internal_note: input.internalNote ?? null,
+  })
+
+  if (error) {
+    if (error.code?.startsWith('P0')) return { ok: false, error: error.message }
+    console.error('[close_booking] 結案失敗', { code: error.code, message: error.message })
+    return { ok: false, error: '結案失敗，請稍後再試' }
+  }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/calendar')
+  return { ok: true }
+}
