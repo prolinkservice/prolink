@@ -297,6 +297,15 @@
     letter-spacing: -0.01em;
   }
 
+  /* 橫向捲動的日期條上不該出現一條灰色捲軸，它不是內容 */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   /* 紙的顆粒。整站唯一的材質，不再加第二層 */
   body::before {
     content: "";

@@ -61,7 +61,7 @@ export default async function TenantPublicPage({ params }: Props) {
       </header>
 
       <section className="mt-8">
-        <h2 className="mb-2.5 px-1 text-[11px] font-extrabold tracking-[0.1em] text-ink-4">
+        <h2 className="mb-2.5 px-1 text-[11.5px] font-extrabold tracking-[0.1em] text-ink-3">
           選擇服務
         </h2>
 
@@ -116,7 +116,7 @@ export default async function TenantPublicPage({ params }: Props) {
         </section>
       )}
 
-      <p className="mt-8 text-center text-[11px] text-ink-4">由 職人連結 提供預約服務</p>
+      <p className="mt-8 text-center text-[11.5px] text-ink-3">由 職人連結 提供預約服務</p>
     </main>
   )
 }

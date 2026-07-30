@@ -140,12 +140,12 @@ export function BookingFlow({
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-6 pb-28">
       <header className="mb-5 flex items-baseline gap-2.5">
-        <Link href={`/p/${slug}`} className="text-[15px] font-extrabold text-ink-4">
+        <Link href={`/p/${slug}`} className="text-[17px] font-extrabold text-ink-3">
           ‹
         </Link>
         <h1 className="text-[17px] font-extrabold tracking-tight">{tenant.name}</h1>
         {step !== 'done' && (
-          <span className="num ml-auto text-[11px] font-extrabold text-ink-4">
+          <span className="num ml-auto text-[11.5px] font-extrabold text-ink-3">
             {step === 'time' ? '1' : '2'} / 2
           </span>
         )}
@@ -220,7 +220,7 @@ export function BookingFlow({
             </p>
           )}
 
-          <p className="mt-3 text-[10.5px] leading-relaxed text-ink-4">
+          <p className="mt-3 text-[11.5px] leading-relaxed text-ink-3">
             送出即表示同意{tenant.name}的預約與取消規則。
           </p>
 
@@ -255,7 +255,7 @@ export function BookingFlow({
 
           {service.duration_mode === 'hourly' && (
             <div className="mb-4">
-              <p className="mb-2 px-1 text-[10.5px] font-extrabold tracking-[0.1em] text-ink-4">
+              <p className="mb-2 px-1 text-[11.5px] font-extrabold tracking-[0.1em] text-ink-3">
                 要租幾小時
               </p>
               <div className="flex items-center gap-3 rounded-lg bg-card px-4 py-3 shadow-soft">
@@ -280,7 +280,7 @@ export function BookingFlow({
             </div>
           )}
 
-          <div className="-mx-1 mb-1 flex gap-2 overflow-x-auto px-1 pb-2">
+          <div className="no-scrollbar -mx-1 mb-1 flex gap-2 overflow-x-auto px-1 pb-2">
             {days.map((d) => {
               const on = d.date === date
               return (
@@ -299,8 +299,8 @@ export function BookingFlow({
                 >
                   <span
                     className={cn(
-                      'block text-[10px] font-extrabold',
-                      on ? 'opacity-75' : 'text-ink-4'
+                      'block text-[10.5px] font-extrabold',
+                      on ? 'opacity-75' : 'text-ink-3'
                     )}
                   >
                     {WEEKDAY_LABEL[d.weekday]}
@@ -314,7 +314,7 @@ export function BookingFlow({
           </div>
 
           {pending ? (
-            <p className="mt-6 text-center text-[12.5px] font-bold text-ink-4">
+            <p className="mt-6 text-center text-[12.5px] font-bold text-ink-3">
               正在算可以約的時段…
             </p>
           ) : slots.length === 0 ? (
@@ -348,7 +348,7 @@ export function BookingFlow({
                       {locations[group.locationId ?? '']?.name ?? '不限地點'}
                     </b>
                     {locations[group.locationId ?? '']?.address && (
-                      <span className="text-[10px] font-bold text-ink-4">
+                      <span className="text-[10.5px] font-bold text-ink-3">
                         {locations[group.locationId ?? '']?.address}
                       </span>
                     )}
@@ -378,7 +378,7 @@ export function BookingFlow({
           )}
 
           {slots.length > 0 && (
-            <p className="mt-5 text-[10.5px] leading-relaxed text-ink-4">
+            <p className="mt-5 text-[11.5px] leading-relaxed text-ink-3">
               只顯示確定可以預約的時段，已依店家當天的行程與移動時間計算。
             </p>
           )}
@@ -397,7 +397,7 @@ export function BookingFlow({
                     {formatDay(date)} {formatTime(picked.start_at, tenant.timezone)}
                   </b>
                   {picked.location_id && (
-                    <span className="block truncate text-[10.5px] font-bold text-ink-4">
+                    <span className="block truncate text-[11px] font-bold text-ink-3">
                       {locations[picked.location_id]?.name}
                     </span>
                   )}
@@ -410,7 +410,7 @@ export function BookingFlow({
                 </button>
               </>
             ) : (
-              <div className="w-full rounded-full bg-sunk py-3.5 text-center text-[13px] font-extrabold text-ink-4">
+              <div className="w-full rounded-full bg-sunk py-3.5 text-center text-[13px] font-extrabold text-ink-3">
                 請先選一個時段
               </div>
             )}
@@ -517,7 +517,7 @@ function Done({
 
       <Link
         href={`/p/${slug}`}
-        className="mt-5 py-2 text-center text-[12px] font-extrabold text-ink-4 hover:text-ink"
+        className="mt-5 py-2 text-center text-[12.5px] font-extrabold text-ink-3 hover:text-ink"
       >
         回到 {tenant.name}
       </Link>
@@ -568,7 +568,7 @@ function Recap({
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-hairline py-2.5 last:border-b-0">
-      <span className="shrink-0 text-[11.5px] font-bold text-ink-4">{label}</span>
+      <span className="shrink-0 text-[11.5px] font-bold text-ink-3">{label}</span>
       <b className="num text-right text-[13px] font-extrabold">{children}</b>
     </div>
   )
@@ -589,10 +589,10 @@ function Labeled({
     <div>
       <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-extrabold text-ink-2">
         {label}
-        {optional && <span className="font-bold text-ink-4">· 選填</span>}
+        {optional && <span className="font-bold text-ink-3">· 選填</span>}
       </label>
       {children}
-      {hint && <p className="mt-1 text-[10.5px] text-ink-4">{hint}</p>}
+      {hint && <p className="mt-1 text-[11.5px] text-ink-3">{hint}</p>}
     </div>
   )
 }
