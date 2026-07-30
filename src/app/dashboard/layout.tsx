@@ -35,7 +35,8 @@ export default async function DashboardLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect('/login?next=/dashboard')
+  // 同 /onboarding：/login 只有帳密，OAuth 註冊的人會卡住
+  if (!user) redirect('/auth?next=/dashboard')
 
   const current = await getCurrentTenant()
   if (!current) redirect('/onboarding')

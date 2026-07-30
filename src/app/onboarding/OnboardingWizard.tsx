@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { checkSlug, createTenant } from './actions'
+import { checkSlug, createTenant, switchAccount } from './actions'
 import { normalizeSlug } from '@/lib/tenant-slug'
 
 // 註冊精靈。唯一目標是讓職人拿到一條可以傳給客人的預約連結，
@@ -20,7 +20,13 @@ const WEEKDAYS = [
 
 const TOTAL_STEPS = 3
 
-export function OnboardingWizard({ siteUrl }: { siteUrl: string }) {
+export function OnboardingWizard({
+  siteUrl,
+  userEmail,
+}: {
+  siteUrl: string
+  userEmail: string
+}) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
@@ -151,6 +157,23 @@ export function OnboardingWizard({ siteUrl }: { siteUrl: string }) {
         <div className="px-5 pb-2">
           {step === 1 && (
             <>
+              {/* 使用者可能有多個 Google 帳號。用錯帳號時會看到這頁而不是後台，
+                  沒有這段說明就只會覺得「工作室不見了」。 */}
+              <div className="mb-4 rounded-sm bg-sunk px-3.5 py-3">
+                <p className="text-[11.5px] leading-relaxed text-ink-3">
+                  你目前以 <b className="font-extrabold text-ink">{userEmail}</b>{' '}
+                  登入，這個帳號還沒有工作室。
+                </p>
+                <form action={switchAccount}>
+                  <button
+                    type="submit"
+                    className="mt-1.5 text-[11.5px] font-extrabold text-primary hover:underline"
+                  >
+                    不是這個帳號？換一個登入 →
+                  </button>
+                </form>
+              </div>
+
               <h1 className="text-[19px] leading-tight font-extrabold tracking-tight">
                 你的品牌叫什麼
               </h1>

@@ -14,7 +14,9 @@ export default async function OnboardingPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login?next=/onboarding')
+  // 導向 /auth 而非 /login：/login 只有帳密欄位，
+  // 用 Google 或 LINE 註冊的人到那裡沒有密碼可填，會直接卡死
+  if (!user) redirect('/auth?next=/onboarding')
 
   // 已經有工作室的人不需要再跑一次精靈
   const existing = await getCurrentTenant()
@@ -24,7 +26,7 @@ export default async function OnboardingPage() {
 
   return (
     <main className="flex min-h-dvh items-center justify-center px-5 py-10">
-      <OnboardingWizard siteUrl={siteUrl} />
+      <OnboardingWizard siteUrl={siteUrl} userEmail={user.email ?? '（未提供信箱）'} />
     </main>
   )
 }

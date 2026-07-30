@@ -27,7 +27,7 @@ export async function getCurrentTenant(): Promise<
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('tenant_members')
     .select(
       `id, tenant_id, user_id, role, display_name, is_bookable,
@@ -38,7 +38,21 @@ export async function getCurrentTenant(): Promise<
     .limit(1)
     .maybeSingle()
 
-  if (!data) return null
+  if (error) {
+    console.error('[getCurrentTenant] 查不到租戶', {
+      userId: user.id,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    })
+    return null
+  }
+
+  if (!data) {
+    console.error('[getCurrentTenant] 查詢成功但沒有資料列', { userId: user.id })
+    return null
+  }
 
   // supabase-js 對單筆關聯可能回物件或陣列，兩種都吃
   const row = data as unknown as TenantMember & { tenants: Tenant | Tenant[] }

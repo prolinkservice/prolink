@@ -1,5 +1,6 @@
 'use server'
 
+import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { normalizeSlug, validateSlug } from '@/lib/tenant-slug'
 
@@ -20,6 +21,17 @@ export async function checkSlug(raw: string): Promise<SlugCheck> {
   if (error) return { ok: false, reason: '暫時查不到，請稍後再試' }
   if (!data) return { ok: false, reason: '這個網址已經有人使用了' }
   return { ok: true }
+}
+
+/**
+ * 換一個帳號。使用者可能同時有多個 Google 帳號，
+ * 用錯帳號登入時會看到「還沒有工作室」而困惑——
+ * 工作室其實建在另一個帳號底下。
+ */
+export async function switchAccount() {
+  const supabase = await createServerSupabaseClient()
+  await supabase.auth.signOut()
+  redirect('/auth?next=/onboarding')
 }
 
 export type CreateTenantInput = {
