@@ -5,7 +5,8 @@ import type { Tenant, TenantMember } from '@/lib/tenant-slug'
 // 那個檔案前後端共用，這裡不要 re-export，否則客戶端會把整包拉進去。
 // 一個 Tenant = 一個職人品牌／工作室，網址形態 /p/{slug}（規格 §2.4）
 
-const TENANT_FIELDS = 'id, slug, name, timezone, plan, status'
+const TENANT_FIELDS =
+  'id, slug, name, timezone, plan, status, line_friend_url, contact_phone'
 
 /**
  * 檢查 slug 能不能用。除了現有租戶，也要避開歷史 slug——

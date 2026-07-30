@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 客人的預約頁草稿</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f7f5; --surface:#fff; --sunk:#f1f2ef;
+  --ink:#23262a; --ink-2:#4b5158; --ink-3:#7b828a; --ink-4:#aab0b6;
+  --hairline:#e9ebe7;
+  --accent:#5d7f6e; --accent-bg:#e7efe9; --accent-ink:#fff;
+  --ok:#5d7f6e; --ok-bg:#e7efe9; --warn:#b6795a; --warn-bg:#f6ece4;
+  --danger:#b05a4e; --danger-bg:#f8e9e6; --info:#5d7183; --info-bg:#e8eef2;
+  --r-xs:8px; --r-sm:14px; --r-md:22px; --r-lg:28px; --r-pill:999px;
+  --sh-1:0 2px 8px -4px rgba(35,38,42,.08);
+  --sh-2:0 18px 44px -26px rgba(35,38,42,.30), 0 2px 8px -4px rgba(35,38,42,.06);
+  --sh-3:0 30px 70px -34px rgba(35,38,42,.38);
+  --font:"Plus Jakarta Sans","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#131614; --surface:#1c201e; --sunk:#232725;
+    --ink:#eef1ee; --ink-2:#c2c8c4; --ink-3:#8e9691; --ink-4:#636b67;
+    --hairline:#2a2f2c;
+    --accent:#8fb8a2; --accent-bg:#233029; --accent-ink:#10201a;
+    --ok:#8fb8a2; --ok-bg:#233029; --warn:#d09b7c; --warn-bg:#2e241d;
+    --danger:#d08a7c; --danger-bg:#2f211e; --info:#8fa5b5; --info-bg:#1f272c;
+    --sh-1:0 2px 8px -4px rgba(0,0,0,.4);
+    --sh-2:0 20px 50px -28px rgba(0,0,0,.75), 0 2px 8px -4px rgba(0,0,0,.3);
+    --sh-3:0 34px 76px -34px rgba(0,0,0,.85);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:400;line-height:1.65;-webkit-font-smoothing:antialiased}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.page{max-width:1180px;margin:0 auto;padding:52px 24px 100px}
+
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:5px 12px;border-radius:var(--r-pill);font-weight:700;margin-bottom:18px}
+h1{font-size:clamp(26px,3.8vw,34px);font-weight:800;letter-spacing:-.03em;line-height:1.18}
+.lede{margin-top:14px;max-width:64ch;color:var(--ink-3);font-size:15px}
+.lede b{color:var(--ink);font-weight:700}
+
+section{margin-top:72px}
+.sec-title{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.sec-title .n{font-size:11px;font-weight:800;color:var(--ink-4);letter-spacing:.1em}
+.sec-title h2{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.sec-desc{color:var(--ink-3);font-size:14px;max-width:66ch;margin-bottom:22px}
+
+.plain{background:var(--surface);border-radius:var(--r-md);box-shadow:var(--sh-2);padding:22px 26px;margin-bottom:26px}
+.plain h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:13px}
+.plain ul{list-style:none;font-size:14.5px;color:var(--ink-2)}
+.plain ul li{padding:6px 0 6px 20px;position:relative}
+.plain ul li::before{content:"";position:absolute;left:3px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.plain ul li b{color:var(--ink);font-weight:700}
+.plain .note{margin-top:13px;padding:13px 16px;background:var(--accent-bg);color:var(--accent);border-radius:var(--r-sm);font-size:13.5px}
+.plain .note.q{background:var(--warn-bg);color:var(--warn)}
+.plain .note b{font-weight:800}
+
+/* 手機 */
+.stage{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start}
+.phone{width:340px;flex:0 0 340px;border-radius:38px;padding:10px;background:linear-gradient(165deg,#33383a,#191c1d);box-shadow:var(--sh-3)}
+.phone .cap{text-align:center;font-size:11.5px;color:var(--ink-4);font-weight:700;margin-top:10px}
+.screen{background:var(--bg);border-radius:29px;overflow:hidden;height:610px;display:flex;flex-direction:column;position:relative}
+.pnav{display:flex;align-items:center;gap:10px;padding:14px 17px;background:var(--surface)}
+.pnav .back{font-size:17px;color:var(--ink-3);font-weight:700}
+.pnav h3{font-size:14.5px;font-weight:800;letter-spacing:-.02em}
+.pnav .step{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--ink-4);font-variant-numeric:tabular-nums}
+.mbody{flex:1;overflow-y:auto;padding:16px 17px 20px}
+.mbody::-webkit-scrollbar{width:4px}
+.mbody::-webkit-scrollbar-thumb{background:var(--ink-4);border-radius:9px}
+.foot{padding:12px 17px 16px;background:var(--surface)}
+.cta{width:100%;border:0;border-radius:var(--r-pill);background:var(--accent);color:var(--accent-ink);font-family:var(--font);font-size:14px;font-weight:800;padding:14px;cursor:pointer}
+.cta.off{background:var(--sunk);color:var(--ink-4)}
+.foot .sum{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+.foot .sum b{font-size:13px;font-weight:800}
+.foot .sum span{font-size:11.5px;color:var(--ink-4);font-weight:700}
+.foot .sum .money{margin-left:auto;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+
+/* 店家頭 */
+.brand{text-align:center;padding:6px 0 14px}
+.brand .av{width:56px;height:56px;border-radius:50%;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-size:19px;font-weight:800;margin:0 auto}
+.brand h4{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-top:11px}
+.brand p{font-size:11.5px;color:var(--ink-3);margin-top:3px}
+
+.lbl{font-size:10.5px;letter-spacing:.1em;font-weight:800;color:var(--ink-4);margin:4px 0 8px 2px}
+
+/* 服務列 */
+.srv{display:flex;align-items:center;gap:11px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:13px 14px;margin-bottom:9px;cursor:pointer}
+.srv.on{box-shadow:0 0 0 2px var(--accent),var(--sh-1)}
+.srv b{font-size:13.5px;font-weight:700;display:block}
+.srv small{font-size:11px;color:var(--ink-3);display:block;margin-top:2px}
+.srv .p{margin-left:auto;font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* 日期橫捲 */
+.days{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px}
+.day{flex:0 0 52px;border-radius:var(--r-sm);background:var(--surface);box-shadow:var(--sh-1);text-align:center;padding:9px 0 8px;cursor:pointer}
+.day .w{font-size:10px;font-weight:800;color:var(--ink-4)}
+.day .d{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:1px}
+.day .dot{width:4px;height:4px;border-radius:50%;background:var(--accent);margin:3px auto 0}
+.day.on{background:var(--accent);color:var(--accent-ink);box-shadow:var(--sh-2)}
+.day.on .w{color:var(--accent-ink);opacity:.75}
+.day.on .dot{background:var(--accent-ink)}
+.day.full{opacity:.42}
+.day.full .dot{background:var(--ink-4)}
+
+/* 時段 */
+.slotgrp{margin-top:6px}
+.slotgrp .h{display:flex;align-items:center;gap:7px;margin:12px 2px 8px}
+.slotgrp .h b{font-size:11.5px;font-weight:800}
+.slotgrp .h .tag{font-size:10px;font-weight:800;padding:3px 8px;border-radius:var(--r-pill);background:var(--info-bg);color:var(--info)}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.slot{background:var(--surface);border:0;border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:11px 0;font-family:var(--font);font-size:13.5px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;cursor:pointer}
+.slot.on{background:var(--accent);color:var(--accent-ink)}
+.empty{background:var(--sunk);border-radius:var(--r-sm);padding:22px 16px;text-align:center}
+.empty b{font-size:13px;font-weight:800;display:block}
+.empty p{font-size:11.5px;color:var(--ink-3);margin-top:4px}
+
+/* 表單 */
+.f{margin-bottom:11px}
+.f label{display:block;font-size:11px;font-weight:800;color:var(--ink-2);margin-bottom:5px}
+.f input,.f textarea{width:100%;font-family:var(--font);font-size:13px;color:var(--ink);background:var(--surface);border:0;border-radius:var(--r-sm);padding:12px 13px;box-shadow:var(--sh-1)}
+.f textarea{height:64px;resize:none}
+.f .hint{font-size:10.5px;color:var(--ink-4);margin-top:4px}
+
+.recap{background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:13px 14px;margin-bottom:13px}
+.recap .r{display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--hairline)}
+.recap .r:last-child{border-bottom:0}
+.recap .r span{font-size:11.5px;color:var(--ink-4);font-weight:700}
+.recap .r b{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+
+/* 成功 */
+.done{text-align:center;padding:14px 0 6px}
+.done .tick{width:54px;height:54px;border-radius:50%;background:var(--accent-bg);color:var(--accent);display:grid;place-items:center;font-size:24px;font-weight:800;margin:0 auto}
+.done h4{font-size:17px;font-weight:800;margin-top:12px;letter-spacing:-.02em}
+.done p{font-size:12px;color:var(--ink-3);margin-top:5px}
+.linecard{background:#06C755;color:#fff;border-radius:var(--r-sm);padding:13px 15px;margin-top:14px;display:flex;align-items:center;gap:11px}
+.linecard b{font-size:13px;font-weight:800;display:block}
+.linecard small{font-size:10.5px;opacity:.9}
+.linecard .go{margin-left:auto;font-size:11px;font-weight:800;background:rgba(255,255,255,.22);padding:6px 12px;border-radius:var(--r-pill)}
+.bankbox{background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:14px 15px;margin-top:12px}
+.bankbox .t{font-size:11px;font-weight:800;color:var(--ink-4);letter-spacing:.08em}
+.bankbox .acct{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.01em;margin-top:4px}
+.bankbox .who{font-size:11.5px;color:var(--ink-3);margin-top:3px}
+.warnbox{background:var(--warn-bg);color:var(--warn);border-radius:var(--r-sm);padding:12px 14px;font-size:11.5px;font-weight:700;margin-top:12px}
+.infobox{background:var(--info-bg);color:var(--info);border-radius:var(--r-sm);padding:12px 14px;font-size:11.5px;font-weight:700;margin-top:12px}
+.stopbox{background:var(--sunk);border-radius:var(--r-sm);padding:18px 16px;text-align:center;margin-top:10px}
+.stopbox b{font-size:13px;font-weight:800;display:block}
+.stopbox p{font-size:11.5px;color:var(--ink-3);margin-top:5px}
+
+/* 時數選擇（場租） */
+.hours{display:flex;gap:8px;align-items:center;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1);padding:11px 14px}
+.hours .v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;flex:1;text-align:center}
+.hours button{width:34px;height:34px;border:0;border-radius:50%;background:var(--sunk);color:var(--ink-2);font-size:17px;font-weight:800;font-family:var(--font);cursor:pointer}
+
+.notes{display:grid;gap:9px;flex:1 1 340px;min-width:300px}
+.n-i{display:grid;grid-template-columns:26px 1fr;gap:13px;padding:15px 19px;background:var(--surface);border-radius:var(--r-sm);box-shadow:var(--sh-1)}
+.n-i .n{font-size:12.5px;font-weight:800;color:var(--accent)}
+.n-i b{font-weight:700;font-size:13.5px}
+.n-i p{font-size:13px;color:var(--ink-3);margin-top:3px}
+
+table.cmp{width:100%;border-collapse:collapse;margin-top:6px}
+table.cmp th,table.cmp td{padding:11px 12px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--hairline);vertical-align:top}
+table.cmp th{font-size:11px;letter-spacing:.08em;color:var(--ink-4);font-weight:800}
+table.cmp td b{font-weight:700}
+
+@media(max-width:900px){
+  .phone{width:100%;max-width:340px;flex:1 1 auto}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 08 · 客人的預約頁</span>
+  <h1>客人打開連結到約好，四個畫面</h1>
+  <p class="lede">這條路徑上<b>沒有註冊、沒有下載 App、沒有密碼</b>。客人只留姓名跟手機，其他都是點的。畫面愈少決定，約成的人愈多。</p>
+</header>
+
+<!-- ══ 00 整體流程 ══ -->
+<section>
+  <div class="sec-title"><span class="n">00</span><h2>整條路徑</h2></div>
+  <p class="sec-desc">網址是 prolink.tw/p/{slug}，從職人的 LINE、名片或 IG 連過來。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li><b>選服務 → 選日期時段 → 填姓名手機 → 完成。</b>要收定金的話，中間多一步付款。</li>
+      <li>時段列表<b>只列真的約得到的</b>：被約走的、老師那天不在該據點的、來不及移動的，通通不出現。客人不會遇到「點下去才說不行」。</li>
+      <li><b>先選時間，再由時段自己帶出地點。</b>老師到處跑，時段本來就綁著地點，讓客人先選地點反而會選到一個當天沒開的據點。</li>
+      <li>每一步都在同一頁往下長，不跳新頁面，<b>回上一步不會掉資料</b>。</li>
+    </ul>
+    <div class="note"><b>為什麼不做「快速預約」一頁到底：</b>一頁塞滿選項在手機上要捲三四螢幕，而且日期一改時段就要整批重畫，客人會以為畫面壞了。分四步、每步只問一件事，反而快。</div>
+  </div>
+</section>
+
+<!-- ══ 01 選服務 ══ -->
+<section>
+  <div class="sec-title"><span class="n">01</span><h2>第一步：選服務</h2></div>
+  <p class="sec-desc">這一頁已經做好了，這裡補上選取狀態與底部的接續按鈕。</p>
+
+  <div class="stage">
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><h3>揚翼運動按摩</h3><span class="step">1 / 4</span></div>
+        <div class="mbody">
+          <div class="brand">
+            <div class="av">揚</div>
+            <h4>揚翼運動按摩</h4>
+            <p>選好時段直接預約，不用註冊</p>
+          </div>
+          <p class="lbl">選擇服務</p>
+          <div class="srv on"><div><b>全身運動按摩</b><small>60 分鐘</small></div><span class="p">1,600</span></div>
+          <div class="srv"><div><b>局部深層放鬆</b><small>30 分鐘</small></div><span class="p">900</span></div>
+          <div class="srv"><div><b>到府按摩</b><small>90 分鐘 · 到府服務</small></div><span class="p">2,400</span></div>
+        </div>
+        <div class="foot">
+          <div class="sum"><b>全身運動按摩</b><span>60 分鐘</span><span class="money">NT$ 1,600</span></div>
+          <button class="cta">選時間</button>
+        </div>
+      </div></div>
+      <p class="cap">選了才會出現底部條，沒選就沒有</p>
+    </div>
+
+    <div class="notes">
+      <div class="n-i"><span class="n">1</span><div><b>價格是參考價</b><p>實收金額以老師結帳登記為準。頁面上不寫「訂金」「總計」這種會讓客人以為在線上結清的字。</p></div></div>
+      <div class="n-i"><span class="n">2</span><div><b>到府服務會標出來</b><p>客人看到「到府服務」就知道要填地址，不會等到最後一步才驚訝。</p></div></div>
+      <div class="n-i"><span class="n">3</span><div><b>只有一項服務時直接跳過這步</b><p>單一服務的職人不需要「選擇」，開頁就是選日期。少一步是一步。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 02 選日期與時段 ══ -->
+<section>
+  <div class="sec-title"><span class="n">02</span><h2>第二步：選日期與時段</h2></div>
+  <p class="sec-desc">整個系統最核心的一頁。時段由引擎算出來，前端只負責顯示。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>日期橫著捲，<b>下面有小點代表那天還有空</b>，灰掉的是滿了或沒上班。往後最多開 60 天。</li>
+      <li>時段一律是 <b>18:00 / 18:30 / 19:00</b> 這種整點半點，不會出現 19:40 這種怪數字。</li>
+      <li>老師同一天跑兩個據點時，時段<b>按據點分組</b>，每組標地點。客人選時間的同時就決定了去哪。</li>
+      <li>那天沒空檔時，直接顯示<b>最近的可約日期</b>，讓客人一鍵跳過去，不要讓他自己一天一天點。</li>
+    </ul>
+    <div class="note q"><b>想聽你意見：</b>單據點的老師要不要把「地點分組」的標題整個拿掉？我目前的做法是<b>只有一組就不顯示標題</b>，畫面會乾淨很多，但客人也就看不到地址——地址改放在最後的確認頁。</div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><span class="back">‹</span><h3>選時間</h3><span class="step">2 / 4</span></div>
+        <div class="mbody">
+          <p class="lbl">8 月</p>
+          <div class="days">
+            <div class="day full"><div class="w">六</div><div class="d">1</div><div class="dot"></div></div>
+            <div class="day full"><div class="w">日</div><div class="d">2</div><div class="dot"></div></div>
+            <div class="day on"><div class="w">一</div><div class="d">3</div><div class="dot"></div></div>
+            <div class="day"><div class="w">二</div><div class="d">4</div><div class="dot"></div></div>
+            <div class="day"><div class="w">三</div><div class="d">5</div><div class="dot"></div></div>
+            <div class="day"><div class="w">四</div><div class="d">6</div><div class="dot"></div></div>
+            <div class="day"><div class="w">五</div><div class="d">7</div><div class="dot"></div></div>
+          </div>
+
+          <div class="slotgrp">
+            <div class="h"><b>六合健身房</b><span class="tag">高雄市三民區</span></div>
+            <div class="slots">
+              <button class="slot">18:00</button>
+              <button class="slot">18:30</button>
+              <button class="slot on">19:00</button>
+            </div>
+          </div>
+
+          <div class="slotgrp">
+            <div class="h"><b>五甲工作室</b><span class="tag">鳳山區</span></div>
+            <div class="slots">
+              <button class="slot">20:00</button>
+              <button class="slot">20:30</button>
+              <button class="slot">21:00</button>
+            </div>
+          </div>
+
+          <p style="font-size:10.5px;color:var(--ink-4);margin-top:14px;line-height:1.6">
+            只顯示確定可以預約的時段。時段依老師當天的行程與移動時間計算。
+          </p>
+        </div>
+        <div class="foot">
+          <div class="sum"><b>8/3（一）19:00</b><span>六合健身房</span></div>
+          <button class="cta">下一步</button>
+        </div>
+      </div></div>
+      <p class="cap">同一天兩個據點：按地點分組</p>
+    </div>
+
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><span class="back">‹</span><h3>選時間</h3><span class="step">2 / 4</span></div>
+        <div class="mbody">
+          <p class="lbl">8 月</p>
+          <div class="days">
+            <div class="day on"><div class="w">六</div><div class="d">1</div></div>
+            <div class="day full"><div class="w">日</div><div class="d">2</div><div class="dot"></div></div>
+            <div class="day"><div class="w">一</div><div class="d">3</div><div class="dot"></div></div>
+            <div class="day"><div class="w">二</div><div class="d">4</div><div class="dot"></div></div>
+            <div class="day"><div class="w">三</div><div class="d">5</div><div class="dot"></div></div>
+            <div class="day"><div class="w">四</div><div class="d">6</div><div class="dot"></div></div>
+            <div class="day"><div class="w">五</div><div class="d">7</div><div class="dot"></div></div>
+          </div>
+
+          <div class="empty">
+            <b>這天已經約滿了</b>
+            <p>最近可以約的是 8/3（一）</p>
+            <button class="cta" style="width:auto;padding:10px 20px;margin-top:12px;font-size:12.5px">看 8/3 的時段</button>
+          </div>
+
+          <div class="infobox">
+            想約這天的話，可以直接聯絡店家，老師有時候能挪出時間。
+          </div>
+        </div>
+        <div class="foot">
+          <button class="cta off">請先選一個時段</button>
+        </div>
+      </div></div>
+      <p class="cap">沒空檔時直接指路，不讓客人瞎點</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 03 填資料 ══ -->
+<section>
+  <div class="sec-title"><span class="n">03</span><h2>第三步：留姓名與手機</h2></div>
+  <p class="sec-desc">整條流程唯一要打字的地方。欄位愈少，約成率愈高。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li><b>只有兩個必填：姓名、手機。</b>手機是這個系統認人的方式——同一支號碼第二次來，自動接到同一位客人身上。</li>
+      <li>從 LINE 點進來的客人，<b>姓名會自動帶好</b>，等於只要按送出。</li>
+      <li>到府服務才多一個地址欄；備註永遠是選填。</li>
+      <li>上面固定顯示<b>再確認一次的摘要</b>（服務、時間、地點、金額），送出前最後一次確認。</li>
+    </ul>
+    <div class="note"><b>為什麼不要 email：</b>職人根本不會寄信給客人，通知走 LINE 或簡訊。多一格 email 就是多一個放棄的理由。</div>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><span class="back">‹</span><h3>確認預約</h3><span class="step">3 / 4</span></div>
+        <div class="mbody">
+          <div class="recap">
+            <div class="r"><span>服務</span><b>全身運動按摩</b></div>
+            <div class="r"><span>時間</span><b>8/3（一）19:00–20:00</b></div>
+            <div class="r"><span>地點</span><b>六合健身房</b></div>
+            <div class="r"><span>費用</span><b>NT$ 1,600</b></div>
+          </div>
+
+          <div class="f"><label>你的名字</label><input value="陳小姐"></div>
+          <div class="f">
+            <label>手機號碼</label>
+            <input class="num" value="0912-345-678">
+            <p class="hint">老師會用這支號碼跟你聯絡</p>
+          </div>
+          <div class="f"><label>想說的話（選填）</label><textarea placeholder="例：右肩比較緊、第一次來"></textarea></div>
+
+          <p style="font-size:10.5px;color:var(--ink-4);line-height:1.6;margin-top:2px">
+            送出即表示同意揚翼運動按摩的預約與取消規則。
+          </p>
+        </div>
+        <div class="foot">
+          <button class="cta">送出預約</button>
+        </div>
+      </div></div>
+      <p class="cap">不收定金：送出就結束</p>
+    </div>
+
+    <div class="notes">
+      <div class="n-i"><span class="n">1</span><div><b>手機號碼就是身分</b><p>同一支號碼再次預約，自動歸到同一位客人，歷史紀錄、時數券餘額都接得上。客人完全不知道有這回事。</p></div></div>
+      <div class="n-i"><span class="n">2</span><div><b>被封鎖的客人擋在這一步</b><p>不在進頁面時擋，避免被試探出規則。文案只寫「線上預約目前無法使用，請直接與店家聯繫」，不提黑名單。</p></div></div>
+      <div class="n-i"><span class="n">3</span><div><b>送出瞬間才鎖時段</b><p>兩個人同時選到同一格時，後送出的那位會收到「這個時段剛剛被約走了」並自動回到時段列表，不是丟一個錯誤頁。</p></div></div>
+      <div class="n-i"><span class="n">4</span><div><b>不做「同意條款」勾選框</b><p>改成按鈕上方一行小字。台灣的預約頁沒人會讀，多一個必勾的框只是多一個卡住的地方。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 04 完成 ══ -->
+<section>
+  <div class="sec-title"><span class="n">04</span><h2>第四步：完成頁</h2></div>
+  <p class="sec-desc">免費方案沒有任何自動通知，所以這一頁是客人<b>唯一</b>會收到的憑證。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>免費方案：預約<b>直接成立</b>，不需要客人再確認——因為沒有通知，他根本不會知道要確認。</li>
+      <li>成功頁<b>一定要顯示職人的 LINE</b>。客人有疑問時，這是他唯一找得到人的地方。</li>
+      <li>付費方案多一段：狀態是「等待店家確認」，並告訴客人會收到 LINE 通知。</li>
+      <li>下面提供<b>加到行事曆</b>與<b>取消預約</b>兩個連結，取消連結用預約編號，不需要登入。</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><h3>預約完成</h3><span class="step">4 / 4</span></div>
+        <div class="mbody">
+          <div class="done">
+            <div class="tick">✓</div>
+            <h4>約好了</h4>
+            <p>8 月 3 日（一）19:00　六合健身房</p>
+          </div>
+
+          <div class="recap" style="margin-top:16px">
+            <div class="r"><span>服務</span><b>全身運動按摩 60 分</b></div>
+            <div class="r"><span>費用</span><b>NT$ 1,600</b></div>
+            <div class="r"><span>預約編號</span><b class="num">A7K3M9</b></div>
+          </div>
+
+          <div class="linecard">
+            <div><b>加店家 LINE</b><small>有問題直接問，改期也在這裡說</small></div>
+            <span class="go">加好友</span>
+          </div>
+
+          <div class="warnbox">
+            這家店<b>不會自動發提醒訊息</b>，請自己記得時間。需要改期或取消，請直接聯絡店家。
+          </div>
+
+          <p style="font-size:11px;color:var(--ink-4);margin-top:14px;text-align:center;line-height:1.9">
+            加入行事曆　·　取消這筆預約
+          </p>
+        </div>
+      </div></div>
+      <p class="cap">免費方案：沒有通知，所以話要講清楚</p>
+    </div>
+
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><h3>預約完成</h3><span class="step">4 / 4</span></div>
+        <div class="mbody">
+          <div class="done">
+            <div class="tick" style="background:var(--warn-bg);color:var(--warn)">⏳</div>
+            <h4>已送出，等店家確認</h4>
+            <p>8 月 3 日（一）19:00　六合健身房</p>
+          </div>
+
+          <div class="recap" style="margin-top:16px">
+            <div class="r"><span>狀態</span><b style="color:var(--warn)">待確認</b></div>
+            <div class="r"><span>費用</span><b>NT$ 1,600</b></div>
+            <div class="r"><span>預約編號</span><b class="num">A7K3M9</b></div>
+          </div>
+
+          <div class="linecard">
+            <div><b>加店家 LINE 收確認通知</b><small>確認結果、行前提醒都會發到這裡</small></div>
+            <span class="go">加好友</span>
+          </div>
+
+          <div class="infobox">
+            店家通常會在幾小時內確認。確認之後你會收到 LINE 通知，前一天晚上與當天出發前各提醒一次。
+          </div>
+        </div>
+      </div></div>
+      <p class="cap">付費方案：多一段等待確認</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 05 定金 ══ -->
+<section>
+  <div class="sec-title"><span class="n">05</span><h2>要收定金時多出來的一步</h2></div>
+  <p class="sec-desc">免費方案只有銀行轉帳；付費方案可以接自己的 LINE Pay 或 INSTO。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>轉帳流程：<b>顯示店家帳號 → 客人自己轉 → 回填後五碼 → 老師在後台核帳</b>。平台完全不碰錢。</li>
+      <li>頁面上明寫<b>「本筆定金由 ○○ 收取」</b>，不能讓客人以為是平台在收款。</li>
+      <li>還沒轉帳前，時段<b>暫時鎖 15 分鐘</b>，時間到就自動放回去給別人。畫面上有倒數。</li>
+      <li>後五碼是選填但強烈建議——沒填的話老師要自己對帳，會拖到確認時間。</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><span class="back">‹</span><h3>付定金</h3><span class="step">4 / 5</span></div>
+        <div class="mbody">
+          <div class="warnbox" style="margin-top:0">
+            時段為你保留 <b class="num">14:32</b>，請在時間內完成轉帳
+          </div>
+
+          <div class="bankbox">
+            <p class="t">轉帳帳號</p>
+            <p class="acct">822　0123 4567 8901</p>
+            <p class="who">中國信託　戶名：王大明</p>
+          </div>
+
+          <div class="recap" style="margin-top:12px">
+            <div class="r"><span>定金</span><b>NT$ 300</b></div>
+            <div class="r"><span>現場再付</span><b>NT$ 1,300</b></div>
+          </div>
+
+          <div class="f" style="margin-top:12px">
+            <label>轉帳後五碼</label>
+            <input class="num" placeholder="12345">
+            <p class="hint">填了老師才對得起來，會快很多</p>
+          </div>
+
+          <p style="font-size:10.5px;color:var(--ink-4);line-height:1.7">
+            本筆定金由<b>揚翼運動按摩</b>收取，非平台代收。48 小時前取消可全額退還，由店家退款。
+          </p>
+        </div>
+        <div class="foot">
+          <button class="cta">我已完成轉帳</button>
+        </div>
+      </div></div>
+      <p class="cap">銀行轉帳：免費方案唯一選項</p>
+    </div>
+
+    <div class="notes">
+      <div class="n-i"><span class="n">1</span><div><b>15 分鐘暫鎖，不是永久佔位</b><p>沒有暫鎖，兩個人同時轉帳就會撞。鎖太久則會讓熱門時段空著不能賣。</p></div></div>
+      <div class="n-i"><span class="n">2</span><div><b>「我已完成轉帳」不等於已付款</b><p>狀態是「待核帳」，老師對到款才變確認。文案上要讓客人知道還沒結束。</p></div></div>
+      <div class="n-i"><span class="n">3</span><div><b>退款規則就一句話</b><p>48 小時前取消全額退。不列一大串條款，客人不會看，看了也會吵。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 06 場租變體 ══ -->
+<section>
+  <div class="sec-title"><span class="n">06</span><h2>場地租借的變體</h2></div>
+  <p class="sec-desc">同一套頁面，差別只在多一個「租幾小時」。六合健身房的教練走這條。</p>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>按小時計價的服務，<b>選完時段後多一步選時數</b>，金額即時算給他看。</li>
+      <li>時數會影響可選時段——租 3 小時的話，只剩不到 3 小時的空檔就不會出現。</li>
+      <li>教練在這個系統裡的身分是<b>客人</b>，一樣不用註冊，一樣用手機號碼認人。</li>
+    </ul>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="pnav"><span class="back">‹</span><h3>租用時數</h3><span class="step">3 / 4</span></div>
+        <div class="mbody">
+          <div class="recap">
+            <div class="r"><span>場地</span><b>主訓練區</b></div>
+            <div class="r"><span>開始</span><b>8/3（一）19:00</b></div>
+          </div>
+
+          <p class="lbl">要租幾小時</p>
+          <div class="hours">
+            <button>−</button>
+            <span class="v">2.0 小時</span>
+            <button>＋</button>
+          </div>
+          <p style="font-size:10.5px;color:var(--ink-4);margin-top:6px">
+            以 0.5 小時為單位，最少 1 小時、最多 4 小時
+          </p>
+
+          <div class="recap" style="margin-top:14px">
+            <div class="r"><span>使用時間</span><b>19:00–21:00</b></div>
+            <div class="r"><span>單價</span><b>NT$ 600 / 小時</b></div>
+            <div class="r"><span>合計</span><b>NT$ 1,200</b></div>
+          </div>
+
+          <div class="infobox">場地租借需全額預收，款項由六合健身房收取。</div>
+        </div>
+        <div class="foot">
+          <button class="cta">下一步</button>
+        </div>
+      </div></div>
+      <p class="cap">時數一改，時段與金額同步重算</p>
+    </div>
+
+    <div class="notes">
+      <div class="n-i"><span class="n">1</span><div><b>價格綁在場地上</b><p>主訓練區與多功能教室可以不同價，設定在場地那一層，不在服務項目。</p></div></div>
+      <div class="n-i"><span class="n">2</span><div><b>定期預約先不做在客人端</b><p>「每週二 19:00 固定」由老闆或助理在後台建立，客人端保持單筆就好，不然選項會爆炸。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 07 擋掉的狀況 ══ -->
+<section>
+  <div class="sec-title"><span class="n">07</span><h2>約不成的四種狀況</h2></div>
+  <p class="sec-desc">每一種都要有明確的下一步，不能只丟一句「無法預約」。</p>
+
+  <table class="cmp">
+    <tr><th style="width:26%">狀況</th><th style="width:37%">客人看到</th><th>下一步</th></tr>
+    <tr>
+      <td><b>被封鎖的客人</b></td>
+      <td>線上預約目前無法使用，請直接與店家聯繫。</td>
+      <td>顯示店家 LINE 與電話。<b>不提黑名單、不提原因</b>，也不在進頁面時就擋。</td>
+    </tr>
+    <tr>
+      <td><b>時段剛被搶走</b></td>
+      <td>這個時段剛剛被約走了</td>
+      <td>自動退回時段列表並重新整理，把最接近的兩三格標出來。</td>
+    </tr>
+    <tr>
+      <td><b>到府超出服務區域</b></td>
+      <td>這項服務目前不到這個區域</td>
+      <td>列出有服務的區域，並提供「改約到店」的選項。</td>
+    </tr>
+    <tr>
+      <td><b>店家還沒設定好</b></td>
+      <td>目前還沒有開放的服務</td>
+      <td>顯示店家聯絡方式。這是新註冊職人最容易被客人撞見的狀態。</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ══ 08 實作備註 ══ -->
+<section>
+  <div class="sec-title"><span class="n">08</span><h2>實作時要守住的四件事</h2></div>
+  <div class="notes" style="grid-template-columns:1fr">
+    <div class="n-i"><span class="n">1</span><div><b>時段一律由 available_slots 算</b><p>前端不做任何「哪些時段可以約」的判斷。把排班與既有預約撈到瀏覽器再比對，等於把「誰幾點來過」洩漏給任何人。</p></div></div>
+    <div class="n-i"><span class="n">2</span><div><b>送出時再檢查一次</b><p>客人停在頁面上的那幾分鐘，時段可能已經被約走。真正的防線是資料庫的互斥約束，前端顯示只是體驗。</p></div></div>
+    <div class="n-i"><span class="n">3</span><div><b>免費與付費走同一份程式</b><p>差別只在「送出後是 confirmed 還是 pending」與「發不發通知」，由租戶的方案旗標決定，不要複製兩套流程。</p></div></div>
+    <div class="n-i"><span class="n">4</span><div><b>整頁在手機上要能單手操作</b><p>主要按鈕固定在底部，日期與時段都在拇指範圍內。九成的客人是在 LINE 裡點開這個連結的。</p></div></div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

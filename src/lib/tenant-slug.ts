@@ -12,6 +12,9 @@ export type Tenant = {
   timezone: string
   plan: TenantPlan
   status: TenantStatus
+  /** LINE 官方帳號加好友連結。免費方案沒有通知，這是客人唯一找得到職人的地方 */
+  line_friend_url: string | null
+  contact_phone: string | null
 }
 
 export type TenantMember = {

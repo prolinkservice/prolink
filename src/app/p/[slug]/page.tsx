@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { lookupTenantBySlug } from '@/lib/tenant'
@@ -74,7 +75,10 @@ export default async function TenantPublicPage({ params }: Props) {
           <ul className="flex flex-col gap-2.5">
             {services.map((s) => (
               <li key={s.id}>
-                <button className="flex w-full items-center gap-3 rounded-lg bg-card px-4 py-3.5 text-left shadow-soft transition hover:shadow-card">
+                <Link
+                  href={`/p/${tenant.slug}/book?service=${s.id}`}
+                  className="flex w-full items-center gap-3 rounded-lg bg-card px-4 py-3.5 text-left shadow-soft transition hover:shadow-card"
+                >
                   <div className="min-w-0 flex-1">
                     <b className="block text-[14px] font-bold tracking-tight">{s.name}</b>
                     <p className="mt-0.5 text-[11.5px] text-ink-3">{describeService(s)}</p>
@@ -82,12 +86,36 @@ export default async function TenantPublicPage({ params }: Props) {
                   <span className="num shrink-0 text-[14px] font-extrabold">
                     {formatPrice(s)}
                   </span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      {/* 有疑問的客人要找得到人。免費方案沒有任何自動通知，這張卡更重要 */}
+      {(tenant.line_friend_url || tenant.contact_phone) && (
+        <section className="mt-6 flex flex-wrap justify-center gap-2">
+          {tenant.line_friend_url && (
+            <a
+              href={tenant.line_friend_url}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-full bg-[#06C755] px-5 py-3 text-[12.5px] font-extrabold text-white"
+            >
+              加 {tenant.name} 的 LINE
+            </a>
+          )}
+          {tenant.contact_phone && (
+            <a
+              href={`tel:${tenant.contact_phone}`}
+              className="num rounded-full bg-card px-5 py-3 text-[12.5px] font-extrabold shadow-soft"
+            >
+              {tenant.contact_phone}
+            </a>
+          )}
+        </section>
+      )}
 
       <p className="mt-8 text-center text-[11px] text-ink-4">由 職人連結 提供預約服務</p>
     </main>
