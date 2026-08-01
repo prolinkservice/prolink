@@ -14,6 +14,7 @@ import {
 } from '@/lib/bookings'
 import { formatDayLabel, formatTime } from '@/lib/datetime'
 import { cn } from '@/lib/utils'
+import { MapLink } from '@/components/MapLink'
 import { CheckoutSheet } from './CheckoutSheet'
 import { NewBookingSheet, type ServiceOption } from './NewBookingSheet'
 
@@ -137,20 +138,8 @@ export function TodayBoard({
             return (
               <li key={b.id} className="relative">
                 {gap && (
-                  <p className="mb-2.5 flex flex-wrap items-center gap-x-2 text-[11.5px] font-bold text-ink-3">
-                    <span className="num">
-                      ↓ 移動 {gap.minutes} 分 · {gap.from} → {gap.to}
-                    </span>
-                    {location?.address && (
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location.address)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-extrabold text-primary hover:underline"
-                      >
-                        開啟導航
-                      </a>
-                    )}
+                  <p className="num mb-2.5 text-[11.5px] font-bold text-ink-3">
+                    ↓ 移動 {gap.minutes} 分 · {gap.from} → {gap.to}
                   </p>
                 )}
 
@@ -199,9 +188,15 @@ export function TodayBoard({
                     )}
                   </div>
 
-                  {/* 時長已經在左邊的刻度上，這裡不再重複 */}
+                  {/* 時長已經在左邊的刻度上，這裡不再重複。
+                      到府的預約沒有據點，地址在預約本身上——而且要顯示完整的，
+                      導航會把樓層砍掉，老師到了樓下還是得知道上幾樓 */}
                   <p className="num mt-1 text-[11.5px] text-ink-3">
-                    {[b.service_name, b.location_name, b.customer_phone]
+                    {[
+                      b.service_name,
+                      b.location_name ?? b.service_address,
+                      b.customer_phone,
+                    ]
                       .filter(Boolean)
                       .join('　·　')}
                   </p>
@@ -212,17 +207,25 @@ export function TodayBoard({
                     </p>
                   )}
 
-                  <div className="mt-2 flex flex-wrap items-center gap-2.5">
-                    <span className="num text-[12.5px] font-extrabold">
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <span className="num mr-1 text-[12.5px] font-extrabold">
                       {b.status === 'completed'
                         ? `實收 ${money(b.actual_amount)}`
                         : `現場付款 ${money(b.quoted_price)}`}
                     </span>
+
+                    {/* 導航不綁在「有移動時間」上：第一筆、單據點、還沒填車程的人
+                        一樣要出得了門。只要這個據點有地址就給得出來 */}
+                    <MapLink address={location?.address} label="導航" />
+
+                    {/* 到府服務的地址在預約上，不在據點上 */}
+                    <MapLink address={b.service_address} label="到府地址" />
+
                     {b.kind === 'booking' &&
                       (b.status === 'confirmed' || b.status === 'pending') && (
                         <button
                           onClick={() => setCheckout(b)}
-                          className="ml-auto rounded-full bg-sunk px-4 py-2 text-[11.5px] font-extrabold text-ink-2 transition hover:bg-accent hover:text-accent-foreground"
+                          className="ml-auto min-h-11 rounded-full bg-sunk px-4 text-[12px] font-extrabold text-ink-2 transition hover:bg-accent hover:text-accent-foreground"
                         >
                           結案
                         </button>

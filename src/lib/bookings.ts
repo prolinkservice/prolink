@@ -33,6 +33,8 @@ export type BookingRow = {
   internal_note: string | null
   location_id: string | null
   location_name: string | null
+  /** 到府服務時客人填的地址。這種預約沒有據點，地址在預約本身上 */
+  service_address: string | null
   service_id: string | null
   service_name: string | null
   customer_id: string | null

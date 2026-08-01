@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import type { AvailableSlot } from '@/lib/availability'
 import { cn } from '@/lib/utils'
+import { MapLink } from '@/components/MapLink'
 import { loadSlots, submitBooking, type SlotsResult } from './actions'
 
 // 客人的預約流程。草稿：docs/mockups/public-booking.html
@@ -347,11 +348,10 @@ export function BookingFlow({
                     <b className="text-[11.5px] font-extrabold">
                       {locations[group.locationId ?? '']?.name ?? '不限地點'}
                     </b>
-                    {locations[group.locationId ?? '']?.address && (
-                      <span className="text-[10.5px] font-bold text-ink-3">
-                        {locations[group.locationId ?? '']?.address}
-                      </span>
-                    )}
+                    <MapLink
+                      address={locations[group.locationId ?? '']?.address}
+                      variant="text"
+                    />
                   </div>
                 )}
                 <div className="grid grid-cols-3 gap-2">
@@ -447,6 +447,11 @@ function Done({
   slug: string
 }) {
   const confirmed = result.status === 'confirmed'
+  // 同一份地址在這頁要用兩次，查一次就好
+  const placeAddress = picked?.location_id
+    ? (locations[picked.location_id]?.address ?? null)
+    : null
+
   return (
     <>
       <div className="pt-4 pb-1 text-center">
@@ -475,9 +480,21 @@ function Done({
           {service.name}
           {service.duration_mode === 'hourly' ? ` ${durationMin / 60} 小時` : ` ${durationMin} 分`}
         </Row>
+        {placeAddress && (
+          <Row label="地址">
+            <MapLink address={placeAddress} variant="text" className="font-bold" />
+          </Row>
+        )}
         <Row label="費用">NT$ {Math.round(price).toLocaleString('zh-TW')}</Row>
         <Row label="預約編號">{result.code}</Row>
       </div>
+
+      {/* 約完最常做的下一件事就是找路。這頁是客人唯一的憑證，
+          導航按鈕要跟 LINE 一樣是大顆的 */}
+      <MapLink
+        address={placeAddress}
+        className="mt-3 w-full justify-center py-4 text-[13.5px]"
+      />
 
       {tenant.lineFriendUrl ? (
         <a
@@ -554,10 +571,13 @@ function Recap({
       </Row>
       {picked.location_id && (
         <Row label="地點">
-          {locations[picked.location_id]?.name}
-          {locations[picked.location_id]?.address
-            ? `　${locations[picked.location_id]?.address}`
-            : ''}
+          <span className="block">{locations[picked.location_id]?.name}</span>
+          {/* 客人最需要能點的就是這裡：看完地址下一步就是找路 */}
+          <MapLink
+            address={locations[picked.location_id]?.address}
+            variant="text"
+            className="mt-0.5 font-bold"
+          />
         </Row>
       )}
       <Row label="費用">NT$ {Math.round(price).toLocaleString('zh-TW')}</Row>

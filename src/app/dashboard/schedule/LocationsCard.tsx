@@ -12,6 +12,7 @@ import {
   SelectBox,
   TextBox,
 } from '@/components/FormBits'
+import { MapLink } from '@/components/MapLink'
 import { saveLocation, setLocationActive } from './actions'
 
 // 據點。單人單店的老師只會看到一列，也不需要知道「據點」這個詞的意義；
@@ -83,7 +84,11 @@ export function LocationsCard({ locations }: { locations: Location[] }) {
                       </span>
                     )}
                   </div>
-                  <p className="text-[11.5px] text-ink-3">{l.address || '未填地址'}</p>
+                  {l.address ? (
+                    <MapLink address={l.address} variant="text" />
+                  ) : (
+                    <p className="text-[11.5px] text-ink-3">未填地址</p>
+                  )}
                 </div>
                 <button
                   onClick={() => {
