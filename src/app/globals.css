@@ -159,32 +159,32 @@
    值重複兩份是刻意的，改的時候兩邊要一起改。 */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --background: #16110e;
+    --background: #14100d;
     --foreground: #f2e9e1;
-    --card: #211a16;
+    --card: #2e261f;
     --card-foreground: #f2e9e1;
-    --popover: #211a16;
+    --popover: #2e261f;
     --popover-foreground: #f2e9e1;
 
     --primary: #e08a66;
     --primary-foreground: #2a150e;
-    --secondary: #2a211c;
+    --secondary: #3c3229;
     --secondary-foreground: #cfc1b6;
-    --muted: #2a211c;
+    --muted: #3c3229;
     --muted-foreground: #9c8b7e;
     --accent: #37241c;
     --accent-foreground: #f0b294;
     --destructive: #e08878;
     --border: #33291f;
-    --input: #2a211c;
+    --input: #3c3229;
     --ring: #e08a66;
 
-    --sunk: #2a211c;
+    --sunk: #3c3229;
     --ink: #f2e9e1;
     --ink-2: #cfc1b6;
-    --ink-3: #9c8b7e;
-    --ink-4: #6e6057;
-    --hairline: #33291f;
+    --ink-3: #a99787;
+    --ink-4: #7d6e62;
+    --hairline: #473b31;
 
     --ok: #a8bb78;      --ok-bg: #242b17;
     --warn: #d9a75c;    --warn-bg: #332617;
@@ -213,32 +213,32 @@
 }
 
 :root[data-theme='dark'] {
-  --background: #16110e;
+  --background: #14100d;
   --foreground: #f2e9e1;
-  --card: #211a16;
+  --card: #2e261f;
   --card-foreground: #f2e9e1;
-  --popover: #211a16;
+  --popover: #2e261f;
   --popover-foreground: #f2e9e1;
 
   --primary: #e08a66;
   --primary-foreground: #2a150e;
-  --secondary: #2a211c;
+  --secondary: #3c3229;
   --secondary-foreground: #cfc1b6;
-  --muted: #2a211c;
+  --muted: #3c3229;
   --muted-foreground: #9c8b7e;
   --accent: #37241c;
   --accent-foreground: #f0b294;
   --destructive: #e08878;
   --border: #33291f;
-  --input: #2a211c;
+  --input: #3c3229;
   --ring: #e08a66;
 
-  --sunk: #2a211c;
+  --sunk: #3c3229;
   --ink: #f2e9e1;
   --ink-2: #cfc1b6;
-  --ink-3: #9c8b7e;
-  --ink-4: #6e6057;
-  --hairline: #33291f;
+  --ink-3: #a99787;
+  --ink-4: #7d6e62;
+  --hairline: #473b31;
 
   --ok: #a8bb78;      --ok-bg: #242b17;
   --warn: #d9a75c;    --warn-bg: #332617;

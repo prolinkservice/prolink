@@ -408,6 +408,19 @@ function DayList({
                       .filter(Boolean)
                       .join('　·　')}
                   </p>
+
+                  {/* 客人寫的話一定要看得到。「右肩比較緊」「第一次來」
+                      這種資訊出門前沒看到，到現場就來不及了 */}
+                  {b.note && (
+                    <p className="mt-1.5 rounded-sm bg-sunk px-3 py-2 text-[11.5px] leading-relaxed text-ink-2">
+                      {b.note}
+                    </p>
+                  )}
+                  {b.internal_note && (
+                    <p className="mt-1 text-[11px] leading-relaxed text-ink-3">
+                      內部備註：{b.internal_note}
+                    </p>
+                  )}
                 </button>
               </li>
             )

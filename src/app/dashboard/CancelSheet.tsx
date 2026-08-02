@@ -82,6 +82,18 @@ export function CancelSheet({
                 .filter(Boolean)
                 .join('　·　')}
             </p>
+
+            {/* 決定要不要取消之前，得先看得到客人當初寫了什麼 */}
+            {booking.note && (
+              <p className="mt-2 rounded-sm bg-card px-3 py-2 text-[11.5px] leading-relaxed text-ink-2">
+                客人備註：{booking.note}
+              </p>
+            )}
+            {booking.internal_note && (
+              <p className="mt-1.5 text-[11px] leading-relaxed text-ink-3">
+                內部備註：{booking.internal_note}
+              </p>
+            )}
           </div>
 
           <p className="mt-3 text-[12.5px] leading-relaxed text-ink-2">
