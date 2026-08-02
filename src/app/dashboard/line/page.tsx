@@ -25,7 +25,7 @@ export default async function LinePage() {
       .select(
         `channel_id, channel_secret_encrypted, access_token_encrypted,
          bot_basic_id, bot_display_name, operator_bind_code,
-         webhook_verified_at, status, last_error`
+         webhook_verified_at, status`
       )
       .eq('tenant_id', tenant.id)
       .maybeSingle(),
@@ -54,7 +54,8 @@ export default async function LinePage() {
     operatorBound: (operatorRes.data ?? []).length > 0,
     bindCode: row?.operator_bind_code ?? null,
     status: row?.status ?? null,
-    lastError: row?.last_error ?? null,
+    // 讀不到就要講出來。安靜地顯示「還沒接上」，會讓人以為自己剛才白填了
+    loadError: channelRes.error?.message ?? null,
   }
 
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://prolink.tw').replace(/\/$/, '')

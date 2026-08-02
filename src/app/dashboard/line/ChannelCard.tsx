@@ -28,7 +28,8 @@ export type ChannelState = {
   operatorBound: boolean
   bindCode: string | null
   status: string | null
-  lastError: string | null
+  /** 讀取憑證時就出錯了。這種情況不能顯示成「還沒接上」 */
+  loadError: string | null
 }
 
 export function ChannelCard({
@@ -232,9 +233,11 @@ export function ChannelCard({
           </>
         )}
 
-        {state.lastError && !error && (
-          <p className="mt-3 rounded-sm bg-warn-bg px-3.5 py-2.5 text-[12px] font-bold text-warn">
-            上次檢查時 LINE 回報：{state.lastError}
+        {state.loadError && (
+          <p className="mt-3 rounded-sm bg-danger-bg px-3.5 py-2.5 text-[12px] leading-relaxed font-bold text-danger">
+            讀不到已儲存的設定：{state.loadError}
+            <br />
+            這不代表你剛才沒存進去——先別重貼，把這行訊息貼給工程師。
           </p>
         )}
         {message && (

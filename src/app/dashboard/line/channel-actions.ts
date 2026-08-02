@@ -75,7 +75,6 @@ export async function recheckChannel(): Promise<ActionResult> {
     .from('tenant_line_channels')
     .update({
       status: info.ok ? 'active' : 'error',
-      last_error: info.ok ? null : info.error,
       last_checked_at: new Date().toISOString(),
       ...(info.ok
         ? { bot_basic_id: info.info.basicId, bot_display_name: info.info.displayName }
