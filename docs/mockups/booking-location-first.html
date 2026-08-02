@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 先選地點，再選時段</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1ea; --card:#fffcf8; --sunk:#efe7dc;
+  --ink:#2a211c; --ink-2:#574a42; --ink-3:#857466; --ink-4:#b0a093;
+  --hairline:#e4d9cc;
+  --clay:#a34e33; --clay-soft:#f4e3da; --clay-ink:#8f452c;
+  --ochre:#a9762b; --ochre-soft:#f7ebd6;
+  --brick:#a63e33; --brick-soft:#f8e4e0;
+  --olive:#6b7a45; --olive-soft:#ecefdf;
+  --sh-1:0 1px 2px rgba(42,33,28,.05), 0 4px 14px -10px rgba(42,33,28,.35);
+  --sh-2:0 2px 4px rgba(42,33,28,.05), 0 22px 44px -28px rgba(42,33,28,.45);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Noto Sans TC","PingFang TC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.7;-webkit-font-smoothing:antialiased}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.page{max-width:1120px;margin:0 auto;padding:52px 22px 90px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:16px}
+.kicker::before{content:"";width:36px;height:1px;background:var(--clay)}
+h1{font-family:var(--display);font-size:clamp(27px,4.4vw,42px);font-weight:600;line-height:1.12;letter-spacing:-.025em}
+h1 em{font-style:italic;color:var(--clay)}
+.lede{margin-top:15px;max-width:60ch;color:var(--ink-2);font-size:15.5px}
+.lede b{color:var(--ink);font-weight:700}
+section{margin-top:58px}
+.sec-head{display:flex;align-items:flex-end;gap:14px;padding-bottom:12px;margin-bottom:20px;border-bottom:1px solid var(--hairline)}
+.sec-head .n{font-family:var(--display);font-size:31px;font-weight:400;color:var(--clay);line-height:.9}
+.sec-head h2{font-size:19px;font-weight:700}
+
+.plain{background:var(--card);border-radius:18px;box-shadow:var(--sh-1);padding:21px 25px;margin-bottom:20px}
+.plain h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:12px}
+.plain p{font-size:15px;color:var(--ink-2)}
+.plain p+p{margin-top:10px}
+.plain b{color:var(--ink);font-weight:700}
+.warn{margin-top:13px;background:var(--brick-soft);color:var(--brick);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+.note{margin-top:13px;background:var(--clay-soft);color:var(--clay-ink);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+.good{margin-top:13px;background:var(--olive-soft);color:var(--olive);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+
+.stage{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.unit{flex:0 0 auto}
+.caption{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin-bottom:11px;font-weight:700}
+.caption em{font-style:normal;color:var(--clay)}
+
+.phone{width:316px;max-width:100%;border-radius:34px;padding:9px;background:linear-gradient(160deg,#3a3733,#1a1817);box-shadow:0 28px 56px -30px rgba(0,0,0,.5)}
+.screen{background:var(--bg);border-radius:27px;overflow:hidden;min-height:520px;display:flex;flex-direction:column}
+.top{display:flex;align-items:baseline;gap:9px;padding:15px 17px 11px}
+.top .back{font-size:17px;font-weight:800;color:var(--ink-3)}
+.top b{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.top .step{margin-left:auto;font-size:11px;font-weight:800;color:var(--ink-3)}
+.body{padding:0 17px 17px;flex:1}
+
+.svc{background:var(--card);border-radius:14px;box-shadow:var(--sh-1);padding:11px 14px;margin-bottom:13px;display:flex;align-items:center;gap:10px}
+.svc b{font-size:13px;font-weight:800}
+.svc span{font-size:11px;color:var(--ink-3);display:block;margin-top:1px}
+.svc .price{margin-left:auto;font-family:var(--display);font-size:14px;font-weight:700}
+
+.lbl{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--ink-3);margin:4px 0 9px}
+
+/* 地點卡 */
+.loc{background:var(--card);border-radius:15px;box-shadow:var(--sh-1);padding:14px 15px;margin-bottom:11px;display:block;text-align:left}
+.loc.pick{box-shadow:var(--sh-2);outline:2px solid var(--clay)}
+.loc b{font-size:14px;font-weight:800;display:block;letter-spacing:-.01em}
+.loc .addr{font-size:11.5px;color:var(--ink-3);margin-top:3px;line-height:1.55}
+.loc .meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;align-items:center}
+.tag{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px}
+.t-ok{background:var(--olive-soft);color:var(--olive)}
+.t-warn{background:var(--ochre-soft);color:var(--ochre)}
+.t-mute{background:var(--sunk);color:var(--ink-3)}
+.loc .go{margin-left:auto;font-size:12px;font-weight:800;color:var(--clay)}
+
+/* 日期 */
+.days{display:flex;gap:7px;overflow:hidden;margin-bottom:14px}
+.day{flex:0 0 46px;background:var(--card);border-radius:12px;box-shadow:var(--sh-1);padding:7px 0;text-align:center}
+.day.on{background:var(--clay);color:#fff}
+.day.off{background:var(--sunk);box-shadow:none;color:var(--ink-4)}
+.day i{display:block;font-style:normal;font-size:10px;font-weight:700;opacity:.75}
+.day b{display:block;font-family:var(--display);font-size:16px;font-weight:600;margin-top:1px}
+
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.slot{background:var(--card);border-radius:12px;box-shadow:var(--sh-1);padding:12px 0;text-align:center;font-family:var(--display);font-size:14.5px;font-weight:600}
+.slot.on{background:var(--clay);color:#fff}
+
+.cta{margin:15px 17px 17px;border-radius:999px;background:var(--sunk);color:var(--ink-4);text-align:center;padding:14px 0;font-size:13.5px;font-weight:800}
+.cta.live{background:var(--clay);color:#fff}
+
+.foot-note{font-size:11.5px;color:var(--ink-3);margin-top:11px;line-height:1.6}
+
+/* 決策 */
+.ask{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);padding:21px 25px;margin-bottom:15px}
+.ask .q{font-size:16px;font-weight:700;display:flex;gap:11px;align-items:baseline}
+.ask .q .n{font-family:var(--display);color:var(--clay);font-size:20px}
+.ask .why{font-size:13.5px;color:var(--ink-3);margin:7px 0 13px 31px}
+.opts{display:grid;gap:9px;margin-left:31px}
+.opt{background:var(--sunk);border-radius:13px;padding:11px 14px;font-size:13.5px;color:var(--ink-2)}
+.opt b{color:var(--ink);font-weight:700}
+.opt.rec{background:var(--olive-soft);color:var(--olive)}
+.opt.rec b{color:var(--olive)}
+.opt .rectag{float:right;font-size:10px;font-weight:800;letter-spacing:.08em}
+
+table.t{width:100%;border-collapse:collapse;background:var(--card);border-radius:18px;box-shadow:var(--sh-1);overflow:hidden}
+table.t th,table.t td{padding:12px 15px;text-align:left;font-size:14px;border-bottom:1px solid var(--hairline);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t th{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);font-weight:700}
+
+@media(max-width:860px){.page{padding:38px 16px 70px}.phone{width:100%;max-width:316px}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 14 · 客人端預約流程</span>
+  <h1>先選<em>地點</em>，<br>再選時段</h1>
+  <p class="lede">
+    現在的流程是「選服務 → 一次看到兩間店的所有時段」。
+    改成<b>「選服務 → 選地點 → 選時段」</b>之後，客人在決定時間之前就先看到地址，
+    也不會被兩排長長的時段淹沒。
+  </p>
+</header>
+
+<!-- 1 -->
+<section>
+  <div class="sec-head"><span class="n">1</span><h2>改完長這樣</h2></div>
+
+  <div class="stage">
+
+    <div class="unit">
+      <div class="caption"><em>第 1 步</em> · 選地點（新的）</div>
+      <div class="phone"><div class="screen">
+        <div class="top"><span class="back">‹</span><b>揚翼運動按摩</b><span class="step">1 / 3</span></div>
+        <div class="body">
+          <div class="svc">
+            <div><b>全身運動按摩</b><span>60 分鐘</span></div>
+            <span class="price">1,800</span>
+          </div>
+          <p class="lbl">要去哪一間？</p>
+
+          <div class="loc">
+            <b>揚翼運動按摩_鳳山五甲</b>
+            <p class="addr">高雄市鳳山區鳳南路 301 號 20 樓</p>
+            <div class="meta">
+              <span class="tag t-ok">今天還有 9 個時段</span>
+              <span class="go">選這裡 ›</span>
+            </div>
+          </div>
+
+          <div class="loc">
+            <b>揚翼運動按摩_六合健身房</b>
+            <p class="addr">高雄市新興區秋山里六合二路 12 號 8 樓</p>
+            <div class="meta">
+              <span class="tag t-warn">今天剩 2 個時段</span>
+              <span class="go">選這裡 ›</span>
+            </div>
+          </div>
+
+          <p class="foot-note">
+            兩間都可以約，挑近的就好。地址點下去會開 Google 地圖。
+          </p>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="unit">
+      <div class="caption"><em>第 2 步</em> · 選時段（只剩一間的）</div>
+      <div class="phone"><div class="screen">
+        <div class="top"><span class="back">‹</span><b>鳳山五甲</b><span class="step">2 / 3</span></div>
+        <div class="body">
+          <div class="svc">
+            <div><b>全身運動按摩</b><span>60 分鐘 · 鳳南路 301 號 20 樓</span></div>
+            <span class="price">1,800</span>
+          </div>
+
+          <div class="days">
+            <span class="day on"><i>日</i><b>2</b></span>
+            <span class="day"><i>一</i><b>3</b></span>
+            <span class="day"><i>二</i><b>4</b></span>
+            <span class="day"><i>三</i><b>5</b></span>
+            <span class="day"><i>四</i><b>6</b></span>
+          </div>
+
+          <div class="slots">
+            <span class="slot">14:30</span><span class="slot">15:00</span><span class="slot">15:30</span>
+            <span class="slot">16:00</span><span class="slot on">16:30</span><span class="slot">17:00</span>
+            <span class="slot">17:30</span><span class="slot">18:00</span><span class="slot">18:30</span>
+            <span class="slot">19:00</span><span class="slot">19:30</span><span class="slot">20:00</span>
+          </div>
+        </div>
+        <div class="cta live">選好了，填資料 ›</div>
+      </div></div>
+      <div class="plain" style="margin-top:13px;width:316px;max-width:100%">
+        <p style="font-size:13.5px">
+          時段不用再分組了，畫面短一半。<br>
+          上面那顆「‹」回得去換地點。
+        </p>
+      </div>
+    </div>
+
+    <div class="unit">
+      <div class="caption"><em>對照</em> · 現在的樣子</div>
+      <div class="phone"><div class="screen">
+        <div class="top"><span class="back">‹</span><b>揚翼運動按摩</b><span class="step">1 / 2</span></div>
+        <div class="body">
+          <div class="days">
+            <span class="day on"><i>日</i><b>2</b></span>
+            <span class="day"><i>一</i><b>3</b></span>
+            <span class="day"><i>二</i><b>4</b></span>
+            <span class="day"><i>三</i><b>5</b></span>
+            <span class="day"><i>四</i><b>6</b></span>
+          </div>
+          <p class="lbl" style="color:var(--clay)">揚翼運動按摩_鳳山五甲　◎ 鳳南路301號20樓</p>
+          <div class="slots">
+            <span class="slot">14:30</span><span class="slot">15:00</span><span class="slot">15:30</span>
+            <span class="slot">16:00</span><span class="slot">16:30</span><span class="slot">17:00</span>
+            <span class="slot">17:30</span><span class="slot">18:00</span><span class="slot">18:30</span>
+          </div>
+          <p class="lbl" style="color:var(--clay);margin-top:13px">揚翼運動按摩_六合健身房　◎ 六合二路12號8樓</p>
+          <div class="slots">
+            <span class="slot">14:30</span><span class="slot">15:00</span><span class="slot">15:30</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="plain" style="margin-top:13px;width:316px;max-width:100%">
+        <p style="font-size:13.5px">
+          兩間店的時段疊在同一頁，要一直往下捲；
+          地址擠在標題後面，很難讀。
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 2 -->
+<section>
+  <div class="sec-head"><span class="n">2</span><h2>一個要先說清楚的代價</h2></div>
+  <div class="plain">
+    <h3>先選地點會失去什麼</h3>
+    <p>
+      現在的做法有一個好處：客人一眼就看得到<b>「另一間今天有更早的時段」</b>。
+      改成先選地點之後，他進了五甲、發現最早只有 19:00，
+      不會知道六合其實 15:00 就有——除非他退回去換一間。
+    </p>
+    <p>
+      以你的情況（兩間固定店面、客人通常住哪邊就去哪邊）這個代價很小，
+      而且<b>不知道地址根本決定不了要去哪</b>。所以我認為你的判斷是對的。
+    </p>
+    <div class="good">
+      ✅ 補救方式：地點卡片上直接寫「今天還有 N 個時段」，
+      甚至寫「最近可約：今天 15:00」。客人在選之前就比得出來，代價幾乎歸零。
+      <b>這是第 3 節的第 1 題。</b>
+    </div>
+    <div class="note">
+      📌 規格書 §9.5 原本寫的是「先選時間，再選地點」，理由是老師到處跑、時段本來就綁著地點。
+      那是為<b>純到府／多點流動</b>的職人寫的。你是兩間固定店面，情況不同，這次改動只影響有據點的服務。
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="sec-head"><span class="n">3</span><h2>要你決定的三件事</h2></div>
+
+  <div class="ask">
+    <div class="q"><span class="n">1</span><span>地點卡片上要顯示什麼？</span></div>
+    <p class="why">這決定客人在「還沒點進去」的時候能不能比較兩間。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>名稱 + 地址 + 「今天還有 N 個時段」。</b>看得出哪一間比較空，快滿的那間還會變成橘色提醒。</div>
+      <div class="opt"><b>再加一行「最近可約：今天 15:00」。</b>比較力最強，但今天沒空檔時要顯示「最近 8/4（二）10:00」，字會變長。</div>
+      <div class="opt"><b>只有名稱和地址。</b>最乾淨，但客人得一間一間點進去才知道有沒有位。</div>
+    </div>
+  </div>
+
+  <div class="ask">
+    <div class="q"><span class="n">2</span><span>只有一間店的職人，要不要也多點一次？</span></div>
+    <p class="why">大部分職人只有一個據點。多一個只有一張卡片的畫面，是純粹的多按一下。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>只有一個據點就自動跳過，直接進時段。</b>他們的流程完全不變，步驟仍然顯示 1／2。</div>
+      <div class="opt"><b>一律都要選。</b>流程統一好解釋，但單店客人會覺得「幹嘛叫我選一個沒得選的東西」。</div>
+    </div>
+  </div>
+
+  <div class="ask">
+    <div class="q"><span class="n">3</span><span>到府服務怎麼辦？</span></div>
+    <p class="why">到府沒有據點，客人填的是自己家的地址。你目前沒有到府服務，但之後可能會加。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>到府服務跳過選地點，直接進時段。</b>地址在最後填資料那一步問，跟現在一樣。</div>
+      <div class="opt"><b>先問「到店還是到府」。</b>之後真的做到府服務再說，現在做等於憑空想像。</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 -->
+<section>
+  <div class="sec-head"><span class="n">4</span><h2>順便會改到的小地方</h2></div>
+  <table class="t">
+    <tr><th style="width:38%">項目</th><th>改成</th></tr>
+    <tr><td>右上角的步驟數</td><td>有多個據點時 <b>1 / 3</b>，單一據點維持 1 / 2</td></tr>
+    <tr><td>第 2 步的標題</td><td>從店名改成<b>地點名</b>，客人隨時知道自己在看哪一間</td></tr>
+    <tr><td>時段的地點分組標題</td><td>拿掉。已經選過了，不用再標一次</td></tr>
+    <tr><td>地址</td><td>從標題後面挪到卡片裡獨立一行，<b>點下去開 Google 地圖</b></td></tr>
+    <tr><td>LINE 卡片來的連結</td><td>不受影響。綁定記號一路帶到最後送出</td></tr>
+  </table>
+</section>
+
+</div>
+</body>
+</html>

@@ -61,7 +61,19 @@ export function BookingFlow({
   days: DayOption[]
   initial: SlotsResult & { date: string }
 }) {
-  const [step, setStep] = useState<'time' | 'form' | 'done'>('time')
+  // 有兩個以上據點時多一步「先選地點」（草稿：booking-location-first.html）。
+  //
+  // 只有一個據點就跳過——那一頁只會有一張卡片，等於叫客人選一個沒得選的東西。
+  // 到府服務也跳過，那種預約的地址是客人自己家，最後填資料時才問。
+  const places = Object.entries(locations).map(([id, info]) => ({ id, ...info }))
+  // 只有「多據點」的服務要問。綁死單一店面的服務問了會出事——
+  // 客人選到另一間，那項服務在那裡根本沒開，畫面只會空著
+  const needsPlace = service.location_mode === 'multi_site' && places.length >= 2
+
+  const [step, setStep] = useState<'place' | 'time' | 'form' | 'done'>(
+    needsPlace ? 'place' : 'time'
+  )
+  const [placeId, setPlaceId] = useState<string | null>(null)
   const [date, setDate] = useState(initial.date)
   const [slots, setSlots] = useState<AvailableSlot[]>(initial.slots)
   const [nextDate, setNextDate] = useState<string | null>(initial.nextDate)
@@ -84,7 +96,7 @@ export function BookingFlow({
   const price =
     service.price_unit === 'per_hour' ? service.price * (durationMin / 60) : service.price
 
-  function refresh(nextDay: string, nextHours = hours) {
+  function refresh(nextDay: string, nextHours = hours, loc = placeId) {
     setError(null)
     setPicked(null)
     setDate(nextDay)
@@ -93,12 +105,26 @@ export function BookingFlow({
         slug,
         serviceId: service.id,
         date: nextDay,
+        locationId: loc,
         durationMin:
           service.duration_mode === 'hourly' ? Math.round(nextHours * 60) : null,
       })
       setSlots(res.slots)
       setNextDate(res.nextDate)
     })
+  }
+
+  /**
+   * 選了地點就重問一次時段。
+   *
+   * 明明手上已經有全部的時段可以自己篩，為什麼還要多跑一趟：
+   * 「最近可以約的是哪一天」必須只看這一間。用手邊的資料篩，
+   * 客人會在五甲的頁面上看到六合才有的日期。
+   */
+  function pickPlace(id: string) {
+    setPlaceId(id)
+    setStep('time')
+    refresh(date, hours, id)
   }
 
   function changeHours(next: number) {
@@ -146,16 +172,54 @@ export function BookingFlow({
   const grouped = groupByLocation(slots)
   const showGroupTitle = grouped.length > 1
 
+  const stepNumber = needsPlace
+    ? step === 'place'
+      ? 1
+      : step === 'time'
+        ? 2
+        : 3
+    : step === 'time'
+      ? 1
+      : 2
+
+  // 選地點那一頁的「今天還有 N 個時段」。用伺服器一開始就算好的那份，
+  // 不再多問一次——客人還沒選任何東西，不該讓他先等一輪
+  const countByPlace = new Map<string, number>()
+  for (const s of initial.slots) {
+    if (!s.location_id) continue
+    countByPlace.set(s.location_id, (countByPlace.get(s.location_id) ?? 0) + 1)
+  }
+  const countLabel = initial.date === days[0]?.date ? '今天' : formatDay(initial.date)
+
+  // 單一店面的服務沒有選地點那一步，地址就從時段本身反推——
+  // 客人一樣要在送出之前知道自己要去哪裡
+  const shownPlaceId = placeId ?? slots.find((s) => s.location_id)?.location_id ?? null
+  const shownPlace = shownPlaceId ? locations[shownPlaceId] : null
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pt-6 pb-28">
       <header className="mb-5 flex items-baseline gap-2.5">
-        <Link href={`/p/${slug}`} className="text-[17px] font-extrabold text-ink-3">
-          ‹
-        </Link>
-        <h1 className="text-[17px] font-extrabold tracking-tight">{tenant.name}</h1>
+        {/* 選過地點之後，上一步是「換一間」而不是「離開預約」 */}
+        {needsPlace && step === 'time' ? (
+          <button
+            onClick={() => setStep('place')}
+            aria-label="換一個地點"
+            className="text-[17px] font-extrabold text-ink-3"
+          >
+            ‹
+          </button>
+        ) : (
+          <Link href={`/p/${slug}`} className="text-[17px] font-extrabold text-ink-3">
+            ‹
+          </Link>
+        )}
+        {/* 選完地點就把標題換成地點名，客人隨時知道自己在看哪一間 */}
+        <h1 className="min-w-0 truncate text-[17px] font-extrabold tracking-tight">
+          {step === 'time' && placeId ? (locations[placeId]?.name ?? tenant.name) : tenant.name}
+        </h1>
         {step !== 'done' && (
-          <span className="num ml-auto text-[11.5px] font-extrabold text-ink-3">
-            {step === 'time' ? '1' : '2'} / 2
+          <span className="num ml-auto shrink-0 text-[11.5px] font-extrabold text-ink-3">
+            {stepNumber} / {needsPlace ? 3 : 2}
           </span>
         )}
       </header>
@@ -171,6 +235,70 @@ export function BookingFlow({
           locations={locations}
           slug={slug}
         />
+      ) : step === 'place' ? (
+        <>
+          <ServiceRecap service={service} hours={hours} price={price} />
+
+          <p className="mt-4 mb-2.5 px-1 text-[11.5px] font-extrabold tracking-[0.1em] text-ink-3">
+            要去哪一間？
+          </p>
+
+          <div className="flex flex-col gap-2.5">
+            {places.map((p) => {
+              const count = countByPlace.get(p.id) ?? 0
+              return (
+                <div
+                  key={p.id}
+                  className="rounded-lg bg-card px-4 py-3.5 text-left shadow-soft transition hover:shadow-card"
+                >
+                  {/* 地址獨立一行、字級拉到 13px：客人是靠這一行決定去哪一間的，
+                      不是附註。擠在店名底下當小字會讓人得瞇著眼看 */}
+                  <button onClick={() => pickPlace(p.id)} className="block w-full text-left">
+                    <b className="block text-[15px] font-extrabold tracking-tight">{p.name}</b>
+                    {p.address && (
+                      <span className="mt-1.5 block text-[13px] leading-relaxed text-ink-2">
+                        {p.address}
+                      </span>
+                    )}
+                  </button>
+
+                  <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    {/* 狀態不能只靠顏色，一定要有文字（設計鐵則 4） */}
+                    <span
+                      className={cn(
+                        'rounded-full px-2.5 py-0.5 text-[10.5px] font-extrabold',
+                        count === 0
+                          ? 'bg-sunk text-ink-3'
+                          : count <= 4
+                            ? 'bg-warn-bg text-warn'
+                            : 'bg-ok-bg text-ok'
+                      )}
+                    >
+                      {count === 0 ? `${countLabel}沒有空檔` : `${countLabel}還有 ${count} 個時段`}
+                    </span>
+
+                    {/* 地址上面已經寫過了，這裡只要一個短的入口——
+                        整串再印一次會把卡片撐成兩行，兩張卡也就不等高 */}
+                    <MapLink address={p.address} variant="text" label="看地圖" />
+
+                    <button
+                      onClick={() => pickPlace(p.id)}
+                      className="ml-auto text-[12px] font-extrabold text-primary"
+                    >
+                      選這裡 ›
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <p className="mt-4 text-[11.5px] leading-relaxed text-ink-3">
+            兩邊都可以約，挑近的就好。選好之後只會看到那一間的時段。
+          </p>
+
+          <ContactLinks tenant={tenant} className="mt-4" />
+        </>
       ) : step === 'form' ? (
         <>
           <Recap
@@ -252,15 +380,13 @@ export function BookingFlow({
         </>
       ) : (
         <>
-          <div className="mb-3 rounded-lg bg-card px-4 py-3 shadow-soft">
-            <b className="text-[14px] font-extrabold">{service.name}</b>
-            <p className="num mt-0.5 text-[11.5px] text-ink-3">
-              {service.duration_mode === 'hourly'
-                ? `${hours} 小時`
-                : `${service.duration_min} 分鐘`}
-              　·　NT$ {Math.round(price).toLocaleString('zh-TW')}
-            </p>
-          </div>
+          <ServiceRecap
+            service={service}
+            hours={hours}
+            price={price}
+            className="mb-3"
+            sub={shownPlace?.address ?? null}
+          />
 
           {service.duration_mode === 'hourly' && (
             <div className="mb-4">
@@ -426,6 +552,33 @@ export function BookingFlow({
         </>
       )}
     </main>
+  )
+}
+
+/** 選地點與選時段兩頁都要提醒客人「你正在約的是哪一項」 */
+function ServiceRecap({
+  service,
+  hours,
+  price,
+  className,
+  sub,
+}: {
+  service: BookingService
+  hours: number
+  price: number
+  className?: string
+  /** 已經選好地點時，把地址接在時長後面，省一個區塊 */
+  sub?: string | null
+}) {
+  return (
+    <div className={cn('rounded-lg bg-card px-4 py-3 shadow-soft', className)}>
+      <b className="text-[14px] font-extrabold">{service.name}</b>
+      <p className="num mt-0.5 text-[11.5px] text-ink-3">
+        {service.duration_mode === 'hourly' ? `${hours} 小時` : `${service.duration_min} 分鐘`}
+        　·　NT$ {Math.round(price).toLocaleString('zh-TW')}
+        {sub && `　·　${sub}`}
+      </p>
+    </div>
   )
 }
 

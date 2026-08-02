@@ -22,6 +22,8 @@ export async function loadSlots(input: {
   slug: string
   serviceId: string
   date: string
+  /** 客人選好地點之後只問那一間，「最近可約」也要跟著只看那一間 */
+  locationId?: string | null
   durationMin?: number | null
 }): Promise<SlotsResult> {
   const found = await lookupTenantBySlug(input.slug)
@@ -31,6 +33,7 @@ export async function loadSlots(input: {
     tenantId: found.tenant.id,
     serviceId: input.serviceId,
     date: input.date,
+    locationId: input.locationId ?? null,
     durationMin: input.durationMin ?? null,
   })
 
@@ -42,6 +45,7 @@ export async function loadSlots(input: {
       tenantId: found.tenant.id,
       serviceId: input.serviceId,
       date: probe,
+      locationId: input.locationId ?? null,
       durationMin: input.durationMin ?? null,
     })
     if (ahead.length > 0) return { slots: [], nextDate: probe }
