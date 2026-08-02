@@ -82,9 +82,12 @@ export function DashboardShell({
             {current?.label ?? '後台'}
           </span>
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <span className="flex items-center gap-2 rounded-full bg-sunk py-1.5 pr-1.5 pl-3.5 text-[11.5px] font-bold text-ink-2">
-              <span className="hidden sm:inline">/p/</span>
-              <b className="font-extrabold text-primary">{slug}</b>
+            {/* 顯示完整網址：這是要傳給客人的東西，看得到全貌才敢直接唸給對方聽 */}
+            <span className="flex min-w-0 items-center gap-2 rounded-full bg-sunk py-1.5 pr-1.5 pl-3.5 text-[11.5px] font-bold text-ink-2">
+              <span className="num max-w-[46vw] truncate sm:max-w-none">
+                {bookingHost(bookingUrl)}
+                <b className="font-extrabold text-primary">/p/{slug}</b>
+              </span>
               <CopyLinkButton url={bookingUrl} />
             </span>
             <Link
@@ -101,6 +104,11 @@ export function DashboardShell({
       </div>
     </div>
   )
+}
+
+/** 去掉 https://，留下網域。網址列已經夠長，前綴對職人沒有意義 */
+function bookingHost(url: string): string {
+  return url.replace(/^https?:\/\//, '').replace(/\/p\/.*$/, '')
 }
 
 function isActive(pathname: string, href: string): boolean {
