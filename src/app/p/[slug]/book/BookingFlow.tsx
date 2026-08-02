@@ -35,6 +35,7 @@ const WEEKDAY_LABEL = ['日', '一', '二', '三', '四', '五', '六']
 
 export function BookingFlow({
   slug,
+  linkRef,
   tenant,
   service,
   locations,
@@ -42,6 +43,12 @@ export function BookingFlow({
   initial,
 }: {
   slug: string
+  /**
+   * 加好友那則訊息帶來的綁定記號。客人從那顆按鈕進來才有，
+   * 送出時一起帶上去，系統就能把他的 LINE 接到這支手機號碼上。
+   * 這裡只是原封不動地轉交，內容看不懂也不需要看懂。
+   */
+  linkRef: string | null
   tenant: {
     name: string
     timezone: string
@@ -108,6 +115,7 @@ export function BookingFlow({
     startTransition(async () => {
       const res = await submitBooking({
         slug,
+        linkRef,
         serviceId: service.id,
         startAt: picked.start_at,
         bookableIds: picked.bookable_ids,

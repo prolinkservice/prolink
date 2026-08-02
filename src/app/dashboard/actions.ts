@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getCurrentTenant } from '@/lib/tenant'
 import { fetchAvailableSlots, type AvailableSlot } from '@/lib/availability'
 import type { PaymentMethod } from '@/lib/bookings'
+import { notifyTenantCancelled } from '@/lib/line/notify'
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
@@ -140,6 +141,55 @@ export async function createManualBooking(
       console.error('[create_manual_booking] 地址沒存進去', {
         bookingId: created.booking_id,
         message: addressError.message,
+      })
+    }
+  }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/dashboard/calendar')
+  return { ok: true }
+}
+
+/**
+ * 取消一筆還沒發生的預約（草稿：line-notifications.html §5）。
+ *
+ * 跟「待結案」的三選一是兩回事：那是時間過了才用的，這是還沒發生就不做了，
+ * 時段要放回去讓別人約得到。
+ *
+ * 原因只留在後台。發給客人的一律是制式道歉文案——職人填的很可能是
+ * 內部備註，不該直接送到客人眼前（2026-08-02 定案）。
+ */
+export async function cancelBooking(input: {
+  bookingId: string
+  reason?: string
+  /** 有綁 LINE 的客人才問得到這一題。職人可以自己打電話講就好 */
+  notifyCustomer: boolean
+}): Promise<ActionResult> {
+  const current = await getCurrentTenant()
+  if (!current) return { ok: false, error: '請先登入' }
+
+  const supabase = await createServerSupabaseClient()
+  const { error } = await supabase.rpc('cancel_booking', {
+    p_booking_id: input.bookingId,
+    p_actor: 'tenant',
+    p_reason: input.reason ?? null,
+    p_line_user_id: null,
+  })
+
+  if (error) {
+    if (error.code?.startsWith('P0')) return { ok: false, error: error.message }
+    console.error('[cancel_booking] 取消失敗', { code: error.code, message: error.message })
+    return { ok: false, error: '取消失敗，請稍後再試' }
+  }
+
+  // 預約已經取消了，通知發不出去不該讓職人以為沒取消成功
+  if (input.notifyCustomer) {
+    try {
+      await notifyTenantCancelled(input.bookingId)
+    } catch (notifyError) {
+      console.error('[cancel_booking] 取消通知沒發出去', {
+        bookingId: input.bookingId,
+        notifyError,
       })
     }
   }

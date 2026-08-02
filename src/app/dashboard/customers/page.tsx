@@ -20,7 +20,8 @@ export default async function CustomersPage() {
   const { data, error } = await supabase
     .from('customers')
     .select(
-      `id, name, phone, line_user_id, visit_count, total_spent, no_show_points,
+      `id, name, phone, line_user_id, line_blocked_at,
+       visit_count, total_spent, no_show_points,
        is_blocked, is_exempt, first_visit_at, last_visit_at, created_at`
     )
     .eq('tenant_id', tenant.id)

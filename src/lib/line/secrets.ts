@@ -12,7 +12,8 @@ import { createCipheriv, createDecipheriv, randomBytes, timingSafeEqual } from '
 const ALGORITHM = 'aes-256-gcm'
 const VERSION = 'v1'
 
-function encryptionKey(): Buffer {
+/** 同一把金鑰也給綁定記號用（linkToken.ts），少一個要顧的環境變數 */
+export function encryptionKey(): Buffer {
   const raw = process.env.LINE_CREDENTIALS_KEY
   if (!raw) {
     throw new Error('缺少 LINE_CREDENTIALS_KEY，無法處理 LINE 憑證')

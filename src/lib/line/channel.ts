@@ -120,6 +120,34 @@ export type LineMessage =
   | { type: 'flex'; altText: string; contents: unknown }
 
 /**
+ * 回覆訊息。**不計入免費額度**，所以能用回覆的就不要用推播——
+ * 歡迎訊息、客人按按鈕之後的答覆都走這條，一個月省下的量很可觀。
+ * 回覆權杖只在事件發生後短時間內有效，過期就發不出去，這是刻意的。
+ */
+export async function replyMessage(
+  accessToken: string,
+  replyToken: string | undefined,
+  messages: LineMessage[]
+): Promise<void> {
+  if (!replyToken || messages.length === 0) return
+  try {
+    const res = await fetch(`${API}/message/reply`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ replyToken, messages }),
+    })
+    if (!res.ok) {
+      console.error('[line] 回覆失敗', { status: res.status, detail: await res.text() })
+    }
+  } catch (error) {
+    console.error('[line] 回覆時連不上 LINE', error)
+  }
+}
+
+/**
  * 用職人的名義發訊息，並記一筆用量。
  *
  * 記用量是為了後台的看板：LINE 免費方案每月 200 則，系統自動發確認與

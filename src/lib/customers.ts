@@ -5,6 +5,8 @@ export type CustomerRow = {
   name: string
   phone: string | null
   line_user_id: string | null
+  /** 他封鎖了官方帳號。有綁但發不出去，跟沒綁一樣收不到通知 */
+  line_blocked_at: string | null
   visit_count: number
   total_spent: number
   no_show_points: number

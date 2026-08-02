@@ -7,6 +7,37 @@ import { getCurrentTenant } from '@/lib/tenant'
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
 /**
+ * 自動通知的兩個設定。
+ *
+ * 「有新預約也通知我」預設開著，但關掉能省下約四分之一的免費額度——
+ * 職人本來就會看後台，這則對他價值最低（草稿 line-notifications.html §4）。
+ */
+export async function saveNotifySettings(input: {
+  notifySelfOnNewBooking: boolean
+  welcomeMessage: string
+}): Promise<ActionResult> {
+  const current = await getCurrentTenant()
+  if (!current) return { ok: false, error: '請先登入' }
+  const { tenant } = current
+
+  const supabase = await createServerSupabaseClient()
+  // 租戶剛建立時可能還沒有 settings 這一列，用 upsert 一次解決
+  const { error } = await supabase.from('tenant_settings').upsert(
+    {
+      tenant_id: tenant.id,
+      notify_self_on_new_booking: input.notifySelfOnNewBooking,
+      line_welcome_message: input.welcomeMessage.trim() || null,
+    },
+    { onConflict: 'tenant_id' }
+  )
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/dashboard/line')
+  return { ok: true }
+}
+
+/**
  * 客人找得到店家的兩個欄位。免費方案沒有任何自動通知，
  * 這條 LINE 連結就是客人唯一的售後管道，比什麼設定都重要。
  */

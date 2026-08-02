@@ -78,14 +78,6 @@ export function ContactForm({
         </div>
       </Card>
 
-      <Card title="自動通知" sub="Sprint 2">
-        <div className="px-5 pt-1 pb-5">
-          <p className="text-[12.5px] leading-relaxed text-ink-3">
-            接上你自己的官方帳號之後，系統就能用你的名義自動發預約確認、前一天晚上與出發前的提醒、
-            以及取消通知。那一段還在做，完成後會出現在這一頁。
-          </p>
-        </div>
-      </Card>
     </>
   )
 }

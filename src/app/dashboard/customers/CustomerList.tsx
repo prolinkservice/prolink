@@ -136,10 +136,19 @@ export function CustomerList({
                       {groups.includes('new') && <Tag tone="info">新客</Tag>}
                       {c.is_blocked && <Tag tone="danger">已封鎖</Tag>}
                       {c.is_exempt && <Tag tone="mute">豁免</Tag>}
+
+                      {/* 通知發不發得出去，是這張列表上最實用的一格。
+                          「未綁」＝他收不到任何自動通知，要自己打電話 */}
+                      {c.line_blocked_at ? (
+                        <Tag tone="danger">已封鎖我</Tag>
+                      ) : c.line_user_id ? (
+                        <Tag tone="ok">LINE 已綁</Tag>
+                      ) : (
+                        <Tag tone="mute">LINE 未綁</Tag>
+                      )}
                     </div>
                     <p className="num mt-0.5 text-[11.5px] text-ink-3">
                       {c.phone ?? '沒有手機號碼'}
-                      {c.line_user_id && '　·　已綁 LINE'}
                     </p>
                   </div>
 
@@ -168,6 +177,9 @@ export function CustomerList({
           )}
 
           <p className="mt-4 px-1 text-[11.5px] leading-relaxed text-ink-3">
+            「LINE 未綁」的客人收不到自動通知——他是從你的官網或自己存的網址進來預約的。
+            把加好友連結傳給他，之後他從 LINE 那顆按鈕預約一次就會自動接上。
+            <br />
             點客人看詳細資料、預約歷史與備註的頁面還在做；批次匯入舊客人也還沒好。
           </p>
         </>

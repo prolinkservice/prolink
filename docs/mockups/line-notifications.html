@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 客人的 LINE 怎麼接上，通知怎麼發</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1ea; --card:#fffcf8; --sunk:#efe7dc;
+  --ink:#2a211c; --ink-2:#574a42; --ink-3:#857466; --ink-4:#b0a093;
+  --hairline:#e4d9cc;
+  --clay:#a34e33; --clay-soft:#f4e3da; --clay-ink:#8f452c;
+  --ochre:#a9762b; --ochre-soft:#f7ebd6;
+  --brick:#a63e33; --brick-soft:#f8e4e0;
+  --olive:#6b7a45; --olive-soft:#ecefdf;
+  --line-green:#06C755;
+  --sh-1:0 1px 2px rgba(42,33,28,.05), 0 4px 14px -10px rgba(42,33,28,.35);
+  --sh-2:0 2px 4px rgba(42,33,28,.05), 0 22px 44px -28px rgba(42,33,28,.45);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Noto Sans TC","GenSen","PingFang TC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.7;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E")}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.page{max-width:1120px;margin:0 auto;padding:56px 24px 100px;position:relative;z-index:1}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:18px}
+.kicker::before{content:"";width:36px;height:1px;background:var(--clay)}
+h1{font-family:var(--display);font-size:clamp(28px,4.6vw,44px);font-weight:600;line-height:1.12;letter-spacing:-.025em}
+h1 em{font-style:italic;color:var(--clay)}
+.lede{margin-top:16px;max-width:62ch;color:var(--ink-2);font-size:15.5px}
+.lede b{color:var(--ink);font-weight:700}
+section{margin-top:64px}
+.sec-head{display:flex;align-items:flex-end;gap:14px;padding-bottom:12px;margin-bottom:22px;border-bottom:1px solid var(--hairline);position:relative}
+.sec-head .n{font-family:var(--display);font-size:32px;font-weight:400;color:var(--clay);line-height:.9}
+.sec-head h2{font-size:19px;font-weight:700}
+.sec-head::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:7px;
+  background:repeating-linear-gradient(90deg,var(--hairline) 0 1px,transparent 1px 13px);
+  -webkit-mask-image:linear-gradient(90deg,#000,transparent 42%);mask-image:linear-gradient(90deg,#000,transparent 42%)}
+
+.plain{background:var(--card);border-radius:18px;box-shadow:var(--sh-1);padding:22px 26px;margin-bottom:22px}
+.plain h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:13px}
+.plain p{font-size:15px;color:var(--ink-2)}
+.plain p + p{margin-top:11px}
+.plain b{color:var(--ink);font-weight:700}
+.plain ul{list-style:none;font-size:15px;color:var(--ink-2);margin-top:6px}
+.plain li{padding:7px 0 7px 22px;position:relative}
+.plain li::before{content:"";position:absolute;left:2px;top:18px;width:9px;height:1.5px;background:var(--clay)}
+.warn{margin-top:14px;background:var(--brick-soft);color:var(--brick);border-radius:13px;padding:13px 16px;font-size:13.5px;font-weight:600}
+.note{margin-top:14px;background:var(--clay-soft);color:var(--clay-ink);border-radius:13px;padding:13px 16px;font-size:13.5px;font-weight:600}
+.good{margin-top:14px;background:var(--olive-soft);color:var(--olive);border-radius:13px;padding:13px 16px;font-size:13.5px;font-weight:600}
+
+table.t{width:100%;border-collapse:collapse;background:var(--card);border-radius:18px;box-shadow:var(--sh-1);overflow:hidden}
+table.t th,table.t td{padding:13px 16px;text-align:left;font-size:14px;border-bottom:1px solid var(--hairline);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t th{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);font-weight:700}
+table.t td b{font-weight:700}
+table.t td.n2{font-family:var(--display);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.t tr.pick td{background:var(--olive-soft)}
+.tag{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.06em}
+.t-ok{background:var(--olive-soft);color:var(--olive)}
+.t-no{background:var(--brick-soft);color:var(--brick)}
+.t-mute{background:var(--sunk);color:var(--ink-3)}
+.t-warn{background:var(--ochre-soft);color:var(--ochre)}
+
+/* 步驟 */
+.steps{display:grid;gap:10px;margin-top:18px}
+.step{display:grid;grid-template-columns:28px 1fr;gap:14px;background:var(--card);border-radius:14px;box-shadow:var(--sh-1);padding:15px 18px}
+.step .n{font-family:var(--display);font-size:17px;font-weight:600;color:var(--clay);line-height:1.3}
+.step b{font-size:14px;font-weight:700;display:block}
+.step p{font-size:13px;color:var(--ink-3);margin-top:3px}
+.step code{font-family:var(--display);background:var(--sunk);padding:1px 7px;border-radius:6px;font-size:12.5px;word-break:break-all}
+
+/* 手機 */
+.stage{display:flex;flex-wrap:wrap;gap:34px;margin-top:26px;align-items:flex-start}
+.unit{flex:0 0 auto;max-width:100%}
+.caption{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin-bottom:12px;font-weight:700}
+.caption em{font-style:normal;color:var(--clay)}
+.phone{width:330px;max-width:100%;border-radius:36px;padding:10px;background:linear-gradient(160deg,#3a3733,#1a1817);
+  box-shadow:0 30px 60px -30px rgba(0,0,0,.5)}
+.screen{background:#e9e5df;border-radius:28px;overflow:hidden}
+.nav{display:flex;align-items:center;gap:10px;padding:13px 15px;background:var(--card)}
+.nav .dot{width:26px;height:26px;border-radius:9px;background:var(--line-green);flex:0 0 26px}
+.nav b{font-size:13px;font-weight:700}
+.nav small{font-size:9.5px;color:var(--ink-4);margin-left:auto;letter-spacing:.1em;font-weight:700}
+.chat{padding:16px 13px 20px;display:flex;flex-direction:column;gap:13px;min-height:120px}
+.row{display:flex;gap:8px;align-items:flex-end}
+.row.me{justify-content:flex-end}
+.ava{width:26px;height:26px;border-radius:50%;background:var(--ink-3);flex:0 0 26px;font-size:8.5px;color:var(--card);display:grid;place-items:center;font-weight:700}
+.bub{max-width:222px;padding:10px 13px;border-radius:16px;font-size:13px;line-height:1.6;background:var(--card);color:var(--ink);box-shadow:var(--sh-1);border-bottom-left-radius:5px}
+.bub.me{background:var(--line-green);color:#04331a;border-radius:16px;border-bottom-right-radius:5px}
+.ts{font-size:9px;color:var(--ink-4);align-self:flex-end;padding-bottom:3px;font-weight:700}
+
+/* LINE 卡片 */
+.fc{width:250px;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--sh-2)}
+.fc-head{padding:12px 15px;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.fc-head.clay{background:var(--clay)}
+.fc-head.olive{background:var(--olive)}
+.fc-head.brick{background:var(--brick)}
+.fc-head.ochre{background:var(--ochre)}
+.fc-body{padding:13px 15px}
+.fc-body .hi{font-size:13px;color:var(--ink-2);line-height:1.65}
+.fc-f{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--hairline)}
+.fc-f:last-child{border-bottom:0}
+.fc-f dt{font-size:11px;color:var(--ink-4);flex:0 0 42px;font-weight:700}
+.fc-f dd{font-size:12.5px;color:var(--ink);flex:1;font-weight:600}
+.fc-f dd.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.fc-foot{padding:11px 13px 13px;display:grid;gap:7px}
+.fcbtn{display:block;text-align:center;padding:10px 0;border-radius:999px;font-size:12.5px;font-weight:700}
+.fcbtn.p{background:var(--clay);color:#fff}
+.fcbtn.g{background:var(--olive);color:#fff}
+.fcbtn.s{background:var(--sunk);color:var(--ink-2)}
+.fc-note{padding:9px 15px;background:var(--sunk);font-size:11px;color:var(--ink-3);font-weight:600}
+
+/* 後台面板 */
+.panel{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);overflow:hidden;width:430px;max-width:100%}
+.pbar{display:flex;align-items:center;gap:11px;padding:16px 20px 4px}
+.pbar h3{font-size:15px;font-weight:700}
+.pbar .right{margin-left:auto}
+.pbody{padding:8px 20px 20px}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:999px}
+.p-ok{background:var(--olive-soft);color:var(--olive)}
+.p-mute{background:var(--sunk);color:var(--ink-3)}
+.p-warn{background:var(--ochre-soft);color:var(--ochre)}
+.p-bad{background:var(--brick-soft);color:var(--brick)}
+.crow{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--hairline)}
+.crow:last-child{border-bottom:0}
+.crow .who b{font-size:14px;font-weight:700;display:block}
+.crow .who span{font-family:var(--display);font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.crow .right{margin-left:auto;display:flex;gap:7px;align-items:center}
+.btn{border:0;border-radius:999px;padding:10px 17px;font-family:var(--body);font-size:12.5px;font-weight:700;cursor:pointer}
+.btn-p{background:var(--clay);color:#fff}
+.btn-s{background:var(--sunk);color:var(--ink-2)}
+.btn-d{background:var(--brick-soft);color:var(--brick)}
+.f{margin-bottom:13px}
+.f label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+.f .hint{font-size:11.5px;color:var(--ink-3);margin-top:5px}
+.input{width:100%;background:var(--sunk);border:0;border-radius:13px;padding:12px 15px;font-family:var(--body);font-size:13.5px;color:var(--ink)}
+.check{display:flex;align-items:flex-start;gap:10px;background:var(--sunk);border-radius:13px;padding:12px 14px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.check .box{width:19px;height:19px;border-radius:6px;background:var(--clay);color:#fff;display:grid;place-items:center;font-size:12px;flex:0 0 19px;margin-top:1px}
+.bar{height:12px;border-radius:999px;background:var(--sunk);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.brow{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--hairline);font-size:13px;font-weight:600;color:var(--ink-2)}
+.brow:last-child{border-bottom:0}
+.brow .sw{width:10px;height:10px;border-radius:3px;flex:0 0 10px}
+.brow b{margin-left:auto;font-family:var(--display);font-variant-numeric:tabular-nums;font-size:14px}
+.quota{display:flex;align-items:flex-end;gap:12px;margin-bottom:12px}
+.quota .big{font-family:var(--display);font-size:36px;font-weight:600;line-height:1}
+.quota .of{font-size:13px;color:var(--ink-3);font-weight:700;padding-bottom:4px}
+
+/* 決策 */
+.ask{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);padding:22px 26px;margin-bottom:16px}
+.ask .q{font-size:16px;font-weight:700;display:flex;gap:11px;align-items:baseline}
+.ask .q .n{font-family:var(--display);color:var(--clay);font-size:20px}
+.ask .why{font-size:13.5px;color:var(--ink-3);margin:8px 0 14px 31px}
+.opts{display:grid;gap:9px;margin-left:31px}
+.opt{background:var(--sunk);border-radius:13px;padding:12px 15px;font-size:13.5px;color:var(--ink-2)}
+.opt b{color:var(--ink);font-weight:700}
+.opt.rec{background:var(--olive-soft);color:var(--olive)}
+.opt.rec b{color:var(--olive)}
+.opt .rectag{float:right;font-size:10px;font-weight:700;letter-spacing:.08em}
+
+@media(max-width:900px){.page{padding:40px 18px 80px}.stage{gap:26px}.phone{width:100%;max-width:330px}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 13 · Sprint 2 第二批</span>
+  <h1>客人的 LINE <em>怎麼接上</em>，<br>通知怎麼發</h1>
+  <p class="lede">
+    第一批做完的是「你的官方帳號接上系統」，現在測試訊息你已經收得到了。
+    這一批要做的是<b>對客人的部分</b>：客人加你好友之後系統認得出他是誰、
+    預約成立自動發訊息、取消也自動通知。
+    先看過這份，確認方向對了我再寫進系統。
+  </p>
+</header>
+
+<!-- ══════════════════ 1 ══════════════════ -->
+<section>
+  <div class="sec-head"><span class="n">1</span><h2>最麻煩的一件事：LINE 只給我們一串代號</h2></div>
+
+  <div class="plain">
+    <h3>問題</h3>
+    <p>
+      客人加你好友的時候，LINE 通知我們的內容大概是這樣：<b>「代號 U4af8…9c2 加了你好友」</b>。
+      就這樣。<b>沒有名字、沒有電話</b>。
+    </p>
+    <p>
+      所以系統不知道這位是不是「上週來做推拿的陳小姐」。
+      要能發通知給陳小姐，中間<b>一定要有一次動作</b>把「LINE 代號」跟「手機號碼」接起來。
+      這件事沒有捷徑，差別只在要不要客人多做事。
+    </p>
+    <div class="warn">
+      ⚠️ 沒接起來的客人，之後所有自動通知都發不出去——不是壞掉，是系統根本不知道要發給誰。
+    </div>
+  </div>
+
+  <table class="t">
+    <tr>
+      <th style="width:30%">三種做法</th>
+      <th>客人要做什麼</th>
+      <th style="width:34%">問題</th>
+    </tr>
+    <tr class="pick">
+      <td>
+        <b>A · 歡迎訊息裡的預約按鈕</b><br>
+        <span class="tag t-ok" style="margin-top:6px">建議</span>
+      </td>
+      <td>什麼都不用多做。<br>加好友 → 點訊息裡的「立即預約」→ 照常填手機送出，就綁好了。</td>
+      <td>沒從那顆按鈕進來預約的客人（例如自己存了網址）就綁不到。</td>
+    </tr>
+    <tr>
+      <td><b>B · 請客人在 LINE 回覆手機號碼</b></td>
+      <td>要自己打十碼手機傳過來。</td>
+      <td>會打錯、會不想打、會覺得「幹嘛要我給電話」。<b>把好不容易加的好友嚇跑。</b></td>
+    </tr>
+    <tr>
+      <td><b>C · 用 LINE 內建的登入頁</b></td>
+      <td>多按一次「同意」。</td>
+      <td>你要多申請一組 LINE 的設定（LIFF）並貼進後台。<b>而且它一樣只給代號，還是要對手機</b>——多一道工，沒解決問題。</td>
+    </tr>
+  </table>
+
+  <div class="plain" style="margin-top:22px">
+    <h3>建議做法怎麼跑</h3>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div>
+        <b>客人掃你的 QR Code 或點加好友連結</b>
+        <p>跟現在完全一樣，你不用改任何習慣。</p>
+      </div></div>
+      <div class="step"><span class="n">2</span><div>
+        <b>系統立刻用你的名義發一則歡迎訊息</b>
+        <p>裡面有一顆「立即預約」按鈕。這顆按鈕的網址上帶了一小段記號，代表「按下去的是這位客人」。</p>
+        <p><code>prolink.tw/p/yangyi/book?ref=9f3e…</code></p>
+      </div></div>
+      <div class="step"><span class="n">3</span><div>
+        <b>客人照常選服務、選時段、填姓名與手機，送出</b>
+        <p>畫面跟現在一模一樣，不會多任何一個步驟。</p>
+      </div></div>
+      <div class="step"><span class="n">4</span><div>
+        <b>送出的那一瞬間，兩邊接起來了</b>
+        <p>系統同時知道手機 0912-345-678 與那串 LINE 代號 → 寫進客戶資料 → 綁定完成。</p>
+      </div></div>
+      <div class="step"><span class="n">5</span><div>
+        <b>從此這位客人收得到所有通知</b>
+        <p>預約確認、行前提醒、取消通知，全部用你的官方帳號發。</p>
+      </div></div>
+    </div>
+
+    <div class="note">
+      🔒 網址上那段記號是<b>加密過的</b>，別人看到也認不出是誰，更不可能改一改就變成別人。有效期 30 天，過期就失效。
+    </div>
+    <div class="good">
+      ✅ 已經來過的舊客也適用：只要他哪天從那顆按鈕預約，填的手機對得上舊資料，就自動補綁，不會變成第二筆客戶。
+    </div>
+    <div class="warn">
+      ⚠️ 綁不到的情況：客人自己存了預約網址、或從你的官網／IG 連結進來。這些人就是綁不到，後台客戶名單上會標「LINE 未綁定」，你可以自己把加好友連結傳給他。
+      <b>之後補綁的工具排在 Sprint 4 客戶管理一起做。</b>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 2 ══════════════════ -->
+<section>
+  <div class="sec-head"><span class="n">2</span><h2>客人會收到的三種訊息</h2></div>
+
+  <div class="stage">
+
+    <div class="unit">
+      <div class="caption"><em>① 加好友的那一刻</em> · 給客人</div>
+      <div class="phone"><div class="screen">
+        <div class="nav"><span class="dot"></span><b>揚翼運動按摩</b><small>LINE</small></div>
+        <div class="chat" style="min-height:330px">
+          <div class="row">
+            <span class="ava">揚翼</span>
+            <div class="bub">
+              謝謝你加入揚翼運動按摩 🙌<br><br>
+              有需要預約的話，直接按下面的按鈕就可以看時段，不用打電話。<br><br>
+              有任何問題也可以在這裡直接問我。
+            </div>
+            <span class="ts">14:02</span>
+          </div>
+          <div class="row">
+            <span class="ava">揚翼</span>
+            <div class="fc">
+              <div class="fc-head clay">🗓 立即預約</div>
+              <div class="fc-body">
+                <div class="fc-f"><dt>營業</dt><dd>週一至週六 10:00–21:00</dd></div>
+                <div class="fc-f"><dt>地點</dt><dd>六合館 · 五甲館</dd></div>
+                <div class="fc-f"><dt>電話</dt><dd class="num">07-123-4567</dd></div>
+              </div>
+              <div class="fc-foot">
+                <span class="fcbtn p">查看可預約時段</span>
+              </div>
+            </div>
+            <span class="ts">14:02</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="plain" style="margin-top:14px;width:330px;max-width:100%">
+        <p style="font-size:13.5px">
+          文字部分<b>你可以自己改</b>，改不改都能用。<br>
+          下面那張卡片的內容是系統自動帶的（營業時間、據點、電話），不用你維護。
+        </p>
+      </div>
+    </div>
+
+    <div class="unit">
+      <div class="caption"><em>② 客人送出預約之後</em> · 給客人</div>
+      <div class="phone"><div class="screen">
+        <div class="nav"><span class="dot"></span><b>揚翼運動按摩</b><small>LINE</small></div>
+        <div class="chat" style="min-height:330px">
+          <div class="row">
+            <span class="ava">揚翼</span>
+            <div class="fc">
+              <div class="fc-head ochre">⏳ 請確認你的預約</div>
+              <div class="fc-body">
+                <div class="fc-f"><dt>項目</dt><dd>深層運動按摩 90 分</dd></div>
+                <div class="fc-f"><dt>時間</dt><dd class="num">8/6（三）19:00</dd></div>
+                <div class="fc-f"><dt>地點</dt><dd>六合館<br><span style="font-weight:400;color:var(--ink-3);font-size:11.5px">高雄市新興區六合二路 88 號</span></dd></div>
+                <div class="fc-f"><dt>金額</dt><dd class="num">NT$ 1,800</dd></div>
+              </div>
+              <div class="fc-foot">
+                <span class="fcbtn g">確認預約</span>
+                <span class="fcbtn s">我要取消</span>
+              </div>
+              <div class="fc-note">24 小時內沒有確認，時段會自動釋出</div>
+            </div>
+            <span class="ts">14:31</span>
+          </div>
+          <div class="row me">
+            <span class="ts">14:31</span>
+            <div class="bub me">確認預約</div>
+          </div>
+          <div class="row">
+            <span class="ava">揚翼</span>
+            <div class="bub">
+              收到，8/6（三）19:00 六合館見 👍<br>
+              當天前一晚會再提醒你一次。
+            </div>
+            <span class="ts">14:31</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="plain" style="margin-top:14px;width:330px;max-width:100%">
+        <p style="font-size:13.5px">
+          客人按了「確認預約」，你後台那筆就從<b>待確認</b>變成<b>已確認</b>，紅點消失。<br>
+          按「我要取消」則直接釋出時段，並通知你。
+        </p>
+        <div class="note" style="font-size:12.5px">
+          ⚠️ 這一套只有<b>付費方案</b>才跑。免費方案不發任何訊息，預約送出就直接成立 —— 見第 3 節。
+        </div>
+      </div>
+    </div>
+
+    <div class="unit">
+      <div class="caption"><em>③ 預約被取消</em> · 給客人</div>
+      <div class="phone"><div class="screen">
+        <div class="nav"><span class="dot"></span><b>揚翼運動按摩</b><small>LINE</small></div>
+        <div class="chat" style="min-height:330px">
+          <div class="row">
+            <span class="ava">揚翼</span>
+            <div class="fc">
+              <div class="fc-head brick">✕ 預約已取消</div>
+              <div class="fc-body">
+                <div class="fc-body hi" style="padding:0 0 10px">
+                  不好意思，這筆預約已經取消。造成不便請見諒，想改約隨時跟我說。
+                </div>
+                <div class="fc-f"><dt>項目</dt><dd>深層運動按摩 90 分</dd></div>
+                <div class="fc-f"><dt>原時間</dt><dd class="num">8/6（三）19:00</dd></div>
+                <div class="fc-f"><dt>地點</dt><dd>六合館</dd></div>
+              </div>
+              <div class="fc-foot">
+                <span class="fcbtn p">重新預約</span>
+              </div>
+            </div>
+            <span class="ts">09:14</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="plain" style="margin-top:14px;width:330px;max-width:100%">
+        <p style="font-size:13.5px">
+          你在後台取消一筆<b>還沒發生的</b>預約時發出。<br>
+          取消理由如果你有填，會不會出現在訊息裡——<b>這是第 6 節要你決定的其中一題。</b>
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════ 3 ══════════════════ -->
+<section>
+  <div class="sec-head"><span class="n">3</span><h2>你自己會收到的通知</h2></div>
+
+  <div class="stage">
+    <div class="unit">
+      <div class="caption"><em>④ 有新預約</em> · 給你</div>
+      <div class="phone"><div class="screen">
+        <div class="nav"><span class="dot"></span><b>揚翼運動按摩</b><small>你的操作帳號</small></div>
+        <div class="chat" style="min-height:290px">
+          <div class="row">
+            <span class="ava">揚翼</span>
+            <div class="fc">
+              <div class="fc-head olive">🔔 新預約</div>
+              <div class="fc-body">
+                <div class="fc-f"><dt>客人</dt><dd>陳小姐 <span style="font-weight:400;color:var(--ink-3);font-size:11.5px">· 第 4 次</span></dd></div>
+                <div class="fc-f"><dt>電話</dt><dd class="num">0912-345-678</dd></div>
+                <div class="fc-f"><dt>項目</dt><dd>深層運動按摩 90 分</dd></div>
+                <div class="fc-f"><dt>時間</dt><dd class="num">8/6（三）19:00</dd></div>
+                <div class="fc-f"><dt>地點</dt><dd>六合館</dd></div>
+              </div>
+              <div class="fc-foot"><span class="fcbtn p">打開後台看</span></div>
+            </div>
+            <span class="ts">14:31</span>
+          </div>
+          <div class="row">
+            <span class="ava">揚翼</span>
+            <div class="fc">
+              <div class="fc-head brick">⚠️ 客人取消了</div>
+              <div class="fc-body">
+                <div class="fc-f"><dt>客人</dt><dd>林先生</dd></div>
+                <div class="fc-f"><dt>原時間</dt><dd class="num">8/7（四）15:00</dd></div>
+                <div class="fc-f"><dt>距離</dt><dd style="color:var(--brick)">剩 26 小時（48 小時內）</dd></div>
+              </div>
+              <div class="fc-note">時段已經釋出，其他客人約得到了</div>
+            </div>
+            <span class="ts">13:02</span>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="unit" style="flex:1 1 380px">
+      <div class="caption">兩個方案分別發什麼</div>
+      <table class="t">
+        <tr>
+          <th style="width:44%">情況</th>
+          <th>體驗（免費）</th>
+          <th>進階（付費）</th>
+        </tr>
+        <tr>
+          <td>客人加好友</td>
+          <td><span class="tag t-no">不發</span></td>
+          <td><span class="tag t-ok">歡迎訊息</span></td>
+        </tr>
+        <tr>
+          <td>客人送出線上預約</td>
+          <td><span class="tag t-no">不發</span><br><span style="font-size:12px;color:var(--ink-3)">直接成立</span></td>
+          <td><span class="tag t-ok">請客人確認</span></td>
+        </tr>
+        <tr>
+          <td>你收到新預約通知</td>
+          <td><span class="tag t-no">不發</span><br><span style="font-size:12px;color:var(--ink-3)">後台紅點</span></td>
+          <td><span class="tag t-ok">發</span></td>
+        </tr>
+        <tr>
+          <td>你取消一筆預約</td>
+          <td><span class="tag t-no">不發</span></td>
+          <td><span class="tag t-ok">發</span></td>
+        </tr>
+        <tr>
+          <td>客人自己取消</td>
+          <td><span class="tag t-mute">沒這功能</span><br><span style="font-size:12px;color:var(--ink-3)">客人只能打給你</span></td>
+          <td><span class="tag t-ok">通知你</span></td>
+        </tr>
+      </table>
+      <div class="plain" style="margin-top:16px">
+        <h3>為什麼免費方案一則都不發</h3>
+        <p>
+          兩個理由。第一，LINE 訊息是<b>要錢的</b>，平台不替免費用戶付這筆。
+          第二，「客人自己約、系統自己提醒」正是最有感的價值——
+          體驗過一陣子手動盯的日子，才會覺得月費划算。
+        </p>
+        <p>
+          這是規格書早就定案的（§4.3），這裡只是再確認一次<b>包括「給你自己的新預約通知」也不發</b>。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 4 ══════════════════ -->
+<section>
+  <div class="sec-head"><span class="n">4</span><h2>算一下額度：200 則可以撐幾筆預約</h2></div>
+
+  <div class="stage">
+    <div class="unit" style="flex:1 1 420px">
+      <table class="t">
+        <tr><th>一筆預約的完整流程</th><th style="width:22%">用掉幾則</th></tr>
+        <tr><td>請客人確認（給客人）</td><td class="n2">1</td></tr>
+        <tr><td>新預約通知（給你）</td><td class="n2">1</td></tr>
+        <tr><td>客人按下「確認」後的回覆</td><td class="n2">0 <span class="tag t-ok">不計費</span></td></tr>
+        <tr><td>前一晚提醒（第三批要做）</td><td class="n2">1</td></tr>
+        <tr><td>出發前 2 小時提醒（第三批要做）</td><td class="n2">1</td></tr>
+        <tr style="background:var(--sunk)"><td><b>合計</b></td><td class="n2"><b>4 則</b></td></tr>
+      </table>
+      <div class="plain" style="margin-top:16px">
+        <h3>結論</h3>
+        <p>
+          LINE 免費額度每月 200 則 → <b>大約 50 筆預約就用完</b>。
+          一個月做超過 50 筆的職人（也就是有在認真接客的那些），一定會超過。
+        </p>
+        <p>
+          超過之後 LINE 會直接跟職人收錢，而且是<b>月底帳單來了才知道</b>。
+          所以後台一定要有這個看板，還要在 80% 的時候就先講。
+        </p>
+        <div class="good">
+          ✅ 省一半的方法：把「給你自己的新預約通知」關掉。你本來就會看後台，這則對你價值最低。
+          <b>設定裡放一個開關，預設開著。</b>
+        </div>
+
+        <h3 style="margin-top:20px">能不能繞過 LINE 的 200 則限制？</h3>
+        <p>
+          <b>不能，也不該試。</b>那是 LINE 官方的計費門檻，任何繞過手法都違反條款——
+          被停權的話你的客人會全部聯絡不到你，這個風險換不到那點錢。
+        </p>
+        <p>但可以<b>合法地少用很多</b>，以下四層都已經做進去或排進計畫：</p>
+        <ul>
+          <li><b>能用「回覆」就不用「推播」。</b>客人傳訊息或按按鈕後 30 秒內的回覆<b>完全不計額度</b>。歡迎訊息、按下確認之後的答覆全部走這條</li>
+          <li><b>資訊塞進同一張卡片。</b>LINE 是按「訊息則數」算的，「文字＋卡片」就是兩則</li>
+          <li><b>關掉發給自己的通知</b>（上面那個開關）</li>
+          <li><b>兩段式提醒只留出發前那一次</b>（第三批做）</li>
+        </ul>
+        <div class="note">
+          💡 <b>真正的答案：一個月穩定超過的話，去升級 LINE 官方帳號自己的方案。</b>
+          輕用量方案月費約 NT$800 含 3,000 則，比一則一則被計費划算太多。
+          後台的用量看板會直接把這句話寫給你看，不會讓你省到不敢發提醒。
+        </div>
+      </div>
+    </div>
+
+    <div class="unit">
+      <div class="caption">後台 · 訊息用量看板（把類別拆開）</div>
+      <div class="panel">
+        <div class="pbar">
+          <h3>本月 LINE 訊息</h3>
+          <span class="right pill p-warn">已用 82%</span>
+        </div>
+        <div class="pbody">
+          <div class="quota">
+            <span class="big num">164</span><span class="of">/ 200 則 · 8 月</span>
+          </div>
+          <div class="bar">
+            <i style="width:34%;background:var(--clay)"></i>
+            <i style="width:26%;background:var(--ochre)"></i>
+            <i style="width:14%;background:var(--olive)"></i>
+            <i style="width:8%;background:var(--ink-4)"></i>
+          </div>
+          <div style="margin-top:14px">
+            <div class="brow"><span class="sw" style="background:var(--clay)"></span>行前提醒<b>68</b></div>
+            <div class="brow"><span class="sw" style="background:var(--ochre)"></span>預約確認<b>52</b></div>
+            <div class="brow"><span class="sw" style="background:var(--olive)"></span>發給我自己的<b>28</b></div>
+            <div class="brow"><span class="sw" style="background:var(--ink-4)"></span>取消通知<b>16</b></div>
+          </div>
+          <div class="warn" style="font-size:13px">
+            ⚠️ 這個月剩 <b>36 則</b>，照目前速度大約 <b>6 天後</b>用完。
+            用完之後 LINE 會另外跟你收費（每則約 NT$0.2）。
+          </div>
+          <div class="check" style="margin-top:12px">
+            <span class="box">✓</span>
+            <span>有新預約時也通知我<br>
+              <span style="font-weight:400;color:var(--ink-3);font-size:12px">關掉可省下約四分之一的額度。你仍然會在後台看到紅點。</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 5 ══════════════════ -->
+<section>
+  <div class="sec-head"><span class="n">5</span><h2>後台要多出來的東西</h2></div>
+
+  <div class="stage">
+
+    <div class="unit">
+      <div class="caption">客戶名單 · 多一個 LINE 狀態</div>
+      <div class="panel">
+        <div class="pbar"><h3>客戶</h3><span class="right pill p-mute">4 位</span></div>
+        <div class="pbody">
+          <div class="crow">
+            <div class="who"><b>陳小姐</b><span>0912-345-678 · 來過 4 次</span></div>
+            <div class="right"><span class="pill p-ok">LINE 已綁</span></div>
+          </div>
+          <div class="crow">
+            <div class="who"><b>林先生</b><span>0955-222-111 · 來過 1 次</span></div>
+            <div class="right"><span class="pill p-mute">LINE 未綁</span></div>
+          </div>
+          <div class="crow">
+            <div class="who"><b>王太太</b><span>0933-888-999 · 來過 12 次</span></div>
+            <div class="right"><span class="pill p-ok">LINE 已綁</span></div>
+          </div>
+          <div class="crow">
+            <div class="who"><b>張先生</b><span>0977-456-123 · 來過 2 次</span></div>
+            <div class="right"><span class="pill p-bad">已封鎖我</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="plain" style="margin-top:14px;width:430px;max-width:100%">
+        <p style="font-size:13.5px">
+          <b>「LINE 未綁」</b>＝這位收不到自動通知，你要自己打電話或手動傳訊息。<br>
+          <b>「已封鎖我」</b>＝他把你的官方帳號封鎖了。系統發訊息時 LINE 會回報，我們順手記下來，
+          免得你以為他收到了。
+        </p>
+      </div>
+    </div>
+
+    <div class="unit">
+      <div class="caption">預約詳情 · 新增「取消這筆預約」</div>
+      <div class="panel">
+        <div class="pbar">
+          <h3>8/6（三）19:00 · 陳小姐</h3>
+          <span class="right pill p-ok">已確認</span>
+        </div>
+        <div class="pbody">
+          <div class="f">
+            <label>取消原因</label>
+            <input class="input" value="臨時有事，已電話跟客人說過">
+            <p class="hint">會記在這筆預約上。要不要一併寫進發給客人的訊息，見下面的勾選。</p>
+          </div>
+          <div class="check">
+            <span class="box">✓</span>
+            <span>用 LINE 通知陳小姐<br>
+              <span style="font-weight:400;color:var(--ink-3);font-size:12px">她已綁定 LINE，會馬上收到取消卡片。</span>
+            </span>
+          </div>
+          <div style="display:flex;gap:9px;margin-top:16px;justify-content:flex-end">
+            <button class="btn btn-s">先不要</button>
+            <button class="btn btn-d">取消這筆預約</button>
+          </div>
+          <div class="warn" style="font-size:12.5px">
+            ⚠️ 距離開始只剩 <b>26 小時</b>。若這筆有收定金，依民法 §249② <b>職人取消應加倍返還</b>——
+            定金功能排在 Sprint 5，屆時這裡會跳出提醒。
+          </div>
+        </div>
+      </div>
+      <div class="plain" style="margin-top:14px;width:430px;max-width:100%">
+        <p style="font-size:13.5px">
+          現在後台只有<b>「待結案」</b>的三選一（有來結帳／沒出現／取消不計），
+          那是<b>事情發生完之後</b>才用的。
+          這次補上的是<b>事情還沒發生前</b>的取消——時段要放回去讓別人約得到，客人也該被通知。
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════ 6 ══════════════════ -->
+<section>
+  <div class="sec-head"><span class="n">6</span><h2>要你決定的四件事</h2></div>
+
+  <div class="ask">
+    <div class="q"><span class="n">1</span><span>綁定就用「歡迎訊息裡的預約按鈕」這個做法？</span></div>
+    <p class="why">這是整批的地基，選錯要重做。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>用 A。</b>客人零負擔，加好友之後照常預約就綁好了。代價是沒走那條路的客人綁不到。</div>
+      <div class="opt"><b>改用 B。</b>歡迎訊息直接請客人回覆手機號碼，綁定率高一點，但會嚇跑一部分人。</div>
+    </div>
+  </div>
+
+  <div class="ask">
+    <div class="q"><span class="n">2</span><span>付費方案要不要「請客人按確認」？</span></div>
+    <p class="why">規格書寫的是要（送出後 24 小時沒確認就自動釋出），但這代表客人多按一次，也可能有人忘了按、時段就白白釋出了。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">已定案</span><b>要。</b>放鳥的第一名原因就是「忘了」，按過確認的人記得住。時段釋出前也會再提醒一次。</div>
+      <div class="opt"><b>不要，送出就直接成立。</b>客人比較順，但你會接到更多沒人來的單。</div>
+    </div>
+
+    <div class="warn" style="margin-left:31px">
+      ⚠️ <b>補一個洞：客人約的是明天早上 10:00，只剩 20 小時，他又不按確認怎麼辦？</b><br>
+      「24 小時未確認自動釋出」在這種單上永遠不會觸發——釋出的時間點會晚於預約本身，
+      那筆就卡在「待確認」直到時間過去，變成一筆沒人管的單。
+    </div>
+    <div class="good" style="margin-left:31px">
+      ✅ <b>解法（2026-08-02 定案）：開始時間在 24 小時以內的預約，跳過確認、直接成立。</b><br>
+      確認機制是為了防止客人忘記，而剛剛才自己送出、明天就要來的預約本來就不會忘。
+      這樣「釋出時間」永遠早於「預約時間」，矛盾從根本消失。
+      這種單改發「預約成立」卡片，上面放<b>「我無法前往」</b>按鈕，反悔一樣按得到。
+    </div>
+    <div class="note" style="margin-left:31px">
+      另外：付費方案的客人如果<b>沒綁 LINE</b>，他收不到那則要確認的訊息，卻會被排程釋出。
+      所以送出後確認訊息發不出去的，一律直接改成成立。
+    </div>
+  </div>
+
+  <div class="ask">
+    <div class="q"><span class="n">3</span><span>你取消預約時，要不要把原因寫進發給客人的訊息？</span></div>
+    <p class="why">「臨時有事」這種寫進去沒問題，但你有時填的可能是內部備註。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>不寫進去。</b>發給客人的一律是制式的道歉文案；你填的原因只留在後台自己看。要解釋你自己在 LINE 補一句更好。</div>
+      <div class="opt"><b>寫進去。</b>少打一次字，但要小心別把內部備註寫成客人會看到的東西。</div>
+    </div>
+  </div>
+
+  <div class="ask">
+    <div class="q"><span class="n">4</span><span>免費方案真的一則都不發，包括發給你自己的？</span></div>
+    <p class="why">再確認一次。免費方案的職人加了 LINE 官方帳號但完全收不到東西，可能會覺得「我接了半天沒用」。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>一則都不發，但後台講清楚。</b>LINE 設定頁直接寫「免費方案不發送任何通知，升級後啟用」，不要讓他接完才發現。</div>
+      <div class="opt"><b>只有發給職人自己的通知照發。</b>量小（一筆一則），也讓免費用戶感受到一點價值。但額度還是從他自己的 200 則扣。</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ 7 ══════════════════ -->
+<section>
+  <div class="sec-head"><span class="n">7</span><h2>這批做完之後，還沒有的東西</h2></div>
+  <table class="t">
+    <tr><th style="width:40%">項目</th><th>排在哪</th></tr>
+    <tr><td>前一晚 + 出發前 2 小時的行前提醒</td><td>Sprint 2 <b>第三批</b>（下一批）</td></tr>
+    <tr><td>提醒訊息裡的「我無法前往」按鈕</td><td>Sprint 2 <b>第三批</b></td></tr>
+    <tr><td>幫已經來過但沒綁 LINE 的舊客補綁</td><td>Sprint 4 客戶管理</td></tr>
+    <tr><td>圖文選單一鍵套用（立即預約／我的預約／聯絡我）</td><td>Sprint 2 收尾</td></tr>
+    <tr><td>老師在 LINE 打一句話就建立預約</td><td>Sprint 2 收尾</td></tr>
+    <tr><td>群組預約（健身房那套）</td><td>Sprint 8</td></tr>
+  </table>
+</section>
+
+</div>
+</body>
+</html>

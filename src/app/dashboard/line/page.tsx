@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getCurrentTenant } from '@/lib/tenant'
 import { decryptSecret, hasEncryptionKey, maskTail } from '@/lib/line/secrets'
 import { ContactForm } from './ContactForm'
+import { NotifyForm } from './NotifyForm'
 import { ChannelCard, type ChannelState } from './ChannelCard'
 import { UsageCard, type UsageRow } from './UsageCard'
 
@@ -19,7 +20,7 @@ export default async function LinePage() {
   const supabase = await createServerSupabaseClient()
   const month = new Date().toISOString().slice(0, 7)
 
-  const [channelRes, operatorRes, usageRes] = await Promise.all([
+  const [channelRes, operatorRes, usageRes, settingsRes] = await Promise.all([
     supabase
       .from('tenant_line_channels')
       .select(
@@ -39,6 +40,11 @@ export default async function LinePage() {
       .select('type, sent_at')
       .eq('tenant_id', tenant.id)
       .eq('quota_month', month),
+    supabase
+      .from('tenant_settings')
+      .select('notify_self_on_new_booking, line_welcome_message')
+      .eq('tenant_id', tenant.id)
+      .maybeSingle(),
   ])
 
   const row = channelRes.data
@@ -77,6 +83,13 @@ export default async function LinePage() {
         month={month}
         rows={(usageRes.data ?? []) as UsageRow[]}
         connected={state.connected}
+      />
+
+      <NotifyForm
+        plan={tenant.plan}
+        connected={state.connected}
+        notifySelfOnNewBooking={settingsRes.data?.notify_self_on_new_booking ?? true}
+        welcomeMessage={settingsRes.data?.line_welcome_message ?? ''}
       />
 
       <ContactForm

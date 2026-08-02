@@ -23,7 +23,7 @@ export default async function TodayPage() {
   const { start, end } = zonedDayRange(today, tenant.timezone)
 
   const supabase = await createServerSupabaseClient()
-  const [todayBookings, olderBookings, servicesRes, locationsRes, travelRes] =
+  const [todayBookings, olderBookings, servicesRes, locationsRes, travelRes, settingsRes] =
     await Promise.all([
       fetchBookings({ tenantId: tenant.id, from: start, to: end }),
       fetchBookings({
@@ -47,6 +47,11 @@ export default async function TodayPage() {
         .from('location_travel_times')
         .select('from_location_id, to_location_id, minutes')
         .eq('tenant_id', tenant.id),
+      supabase
+        .from('tenant_settings')
+        .select('refundable_hours')
+        .eq('tenant_id', tenant.id)
+        .maybeSingle(),
     ])
 
   const pendingClose = olderBookings.filter((b) => needsClosing(b))
@@ -67,6 +72,7 @@ export default async function TodayPage() {
       services={(servicesRes.data ?? []) as unknown as ServiceOption[]}
       locations={(locationsRes.data ?? []) as unknown as LocationInfo[]}
       travel={travel}
+      refundableHours={Number(settingsRes.data?.refundable_hours ?? 48)}
     />
   )
 }

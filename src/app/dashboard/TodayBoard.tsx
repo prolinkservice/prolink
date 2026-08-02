@@ -5,6 +5,7 @@ import {
   STATUS_LABEL,
   STATUS_TONE,
   SOURCE_LABEL,
+  canCancel,
   durationMinutes,
   isInProgress,
   isLive,
@@ -15,6 +16,7 @@ import {
 import { formatDayLabel, formatTime } from '@/lib/datetime'
 import { cn } from '@/lib/utils'
 import { MapLink } from '@/components/MapLink'
+import { CancelSheet } from './CancelSheet'
 import { CheckoutSheet } from './CheckoutSheet'
 import { NewBookingSheet, type ServiceOption } from './NewBookingSheet'
 
@@ -34,10 +36,13 @@ export function TodayBoard({
   locations,
   travel,
   todayDate,
+  refundableHours,
 }: {
   today: BookingRow[]
   pendingClose: BookingRow[]
   timezone: string
+  /** 取消時要跟職人講「剩幾小時、算不算臨時」，用的是同一個門檻 */
+  refundableHours: number
   services: ServiceOption[]
   locations: LocationInfo[]
   /** `${from}|${to}` → 分鐘。查不到就不顯示移動時間，不亂猜 */
@@ -45,6 +50,7 @@ export function TodayBoard({
   todayDate: string
 }) {
   const [checkout, setCheckout] = useState<BookingRow | null>(null)
+  const [cancelling, setCancelling] = useState<BookingRow | null>(null)
   const [creating, setCreating] = useState(false)
 
   const live = today.filter(isLive)
@@ -221,7 +227,17 @@ export function TodayBoard({
                     {/* 到府服務的地址在預約上，不在據點上 */}
                     <MapLink address={b.service_address} label="到府地址" />
 
-                    {b.kind === 'booking' &&
+                    {/* 還沒開始的只給「取消」，開始之後才給「結案」——
+                        時間還沒到就問老師客人有沒有來，是問一個他還不知道的問題 */}
+                    {canCancel(b) ? (
+                      <button
+                        onClick={() => setCancelling(b)}
+                        className="ml-auto min-h-11 rounded-full bg-sunk px-4 text-[12px] font-extrabold text-ink-2 transition hover:bg-danger-bg hover:text-danger"
+                      >
+                        取消
+                      </button>
+                    ) : (
+                      b.kind === 'booking' &&
                       (b.status === 'confirmed' || b.status === 'pending') && (
                         <button
                           onClick={() => setCheckout(b)}
@@ -229,7 +245,8 @@ export function TodayBoard({
                         >
                           結案
                         </button>
-                      )}
+                      )
+                    )}
                   </div>
                 </article>
               </li>
@@ -260,6 +277,15 @@ export function TodayBoard({
           booking={checkout}
           timezone={timezone}
           onClose={() => setCheckout(null)}
+        />
+      )}
+
+      {cancelling && (
+        <CancelSheet
+          booking={cancelling}
+          timezone={timezone}
+          refundableHours={refundableHours}
+          onClose={() => setCancelling(null)}
         />
       )}
     </main>

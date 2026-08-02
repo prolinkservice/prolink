@@ -68,6 +68,21 @@ export function formatTime(iso: string, timeZone: string): string {
   }).format(new Date(iso))
 }
 
+/** 8/6（三）19:00。LINE 訊息裡用，客人一眼要看得懂是哪一天 */
+export function formatDateTime(iso: string, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat('zh-TW', {
+    timeZone,
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'narrow',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date(iso))
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
+  return `${get('month')}/${get('day')}（${get('weekday')}）${get('hour')}:${get('minute')}`
+}
+
 /** 08/02（六） */
 export function formatDayLabel(date: string): string {
   const [, m, d] = date.split('-').map(Number)

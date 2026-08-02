@@ -43,6 +43,17 @@ export type BookingRow = {
   /** 出發前心裡有數：這位客人放過幾次鳥（規格 §6.5 的軟性提醒） */
   customer_no_show_points: number
   customer_visit_count: number
+  /** 這位客人收得到 LINE 通知嗎（有綁、而且沒把官方帳號封鎖） */
+  customer_line_linked: boolean
+}
+
+/** 還沒開始、可以直接取消的預約。時間過了要走結案的三選一（規格 §4.2） */
+export function canCancel(b: BookingRow, now = Date.now()): boolean {
+  return (
+    b.kind === 'booking' &&
+    (b.status === 'pending' || b.status === 'confirmed') &&
+    new Date(b.start_at).getTime() > now
+  )
 }
 
 /** 狀態不能只靠顏色，一定要有文字（設計鐵則 4） */

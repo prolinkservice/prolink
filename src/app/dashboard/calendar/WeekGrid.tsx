@@ -4,12 +4,14 @@ import { useState } from 'react'
 import Link from 'next/link'
 import {
   STATUS_LABEL,
+  canCancel,
   durationMinutes,
   money,
   type BookingRow,
 } from '@/lib/bookings'
 import { addDays, formatTime, minutesOfDay } from '@/lib/datetime'
 import { cn } from '@/lib/utils'
+import { CancelSheet } from '../CancelSheet'
 import { CheckoutSheet } from '../CheckoutSheet'
 import { NewBookingSheet, type ServiceOption } from '../NewBookingSheet'
 import type { LocationInfo } from '../TodayBoard'
@@ -30,6 +32,7 @@ export function WeekGrid({
   timezone,
   services,
   locations,
+  refundableHours,
 }: {
   weekStart: string
   today: string
@@ -37,8 +40,10 @@ export function WeekGrid({
   timezone: string
   services: ServiceOption[]
   locations: LocationInfo[]
+  refundableHours: number
 }) {
   const [checkout, setCheckout] = useState<BookingRow | null>(null)
+  const [cancelling, setCancelling] = useState<BookingRow | null>(null)
   const [creating, setCreating] = useState<{ date: string; time: string } | null>(null)
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
@@ -146,7 +151,12 @@ export function WeekGrid({
                     return (
                       <button
                         key={b.id}
-                        onClick={() => b.kind === 'booking' && setCheckout(b)}
+                        // 還沒開始的點開是「要不要取消」，開始過的點開是「結案」。
+                        // 同一格在不同時間點該做的事本來就不一樣
+                        onClick={() =>
+                          b.kind === 'booking' &&
+                          (canCancel(b) ? setCancelling(b) : setCheckout(b))
+                        }
                         className={cn(
                           'absolute inset-x-1 overflow-hidden rounded-[10px] px-2 py-1.5 text-left',
                           b.kind === 'block'
@@ -212,6 +222,15 @@ export function WeekGrid({
           booking={checkout}
           timezone={timezone}
           onClose={() => setCheckout(null)}
+        />
+      )}
+
+      {cancelling && (
+        <CancelSheet
+          booking={cancelling}
+          timezone={timezone}
+          refundableHours={refundableHours}
+          onClose={() => setCancelling(null)}
         />
       )}
     </main>

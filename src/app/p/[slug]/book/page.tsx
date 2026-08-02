@@ -12,7 +12,7 @@ import { BookingFlow, type BookingService, type DayOption } from './BookingFlow'
 
 type Props = {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ service?: string }>
+  searchParams: Promise<{ service?: string; ref?: string }>
 }
 
 /** 往後開放多久。太長沒人約，太短熱門的老師會不夠用 */
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BookPage({ params, searchParams }: Props) {
   const { slug } = await params
-  const { service: serviceId } = await searchParams
+  const { service: serviceId, ref } = await searchParams
 
   const found = await lookupTenantBySlug(slug)
   if (found.kind === 'moved') permanentRedirect(`/p/${found.slug}`)
@@ -93,6 +93,7 @@ export default async function BookPage({ params, searchParams }: Props) {
   return (
     <BookingFlow
       slug={slug}
+      linkRef={ref ?? null}
       tenant={{
         name: tenant.name,
         timezone: tenant.timezone,

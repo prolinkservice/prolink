@@ -9,7 +9,11 @@ import { Stamp } from '@/components/Stamp'
 // 職人改過 slug 之後舊網址會 301 轉到新的，
 // 名片上印的、LINE 對話裡的舊連結才不會死掉。
 
-type Props = { params: Promise<{ slug: string }> }
+type Props = {
+  params: Promise<{ slug: string }>
+  /** ref 是加好友那則訊息帶來的綁定記號，一路傳到預約送出才會用到 */
+  searchParams: Promise<{ ref?: string }>
+}
 
 type PublicService = {
   id: string
@@ -32,8 +36,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function TenantPublicPage({ params }: Props) {
+export default async function TenantPublicPage({ params, searchParams }: Props) {
   const { slug } = await params
+  const { ref } = await searchParams
   const found = await lookupTenantBySlug(slug)
 
   if (found.kind === 'moved') permanentRedirect(`/p/${found.slug}`)
@@ -75,7 +80,7 @@ export default async function TenantPublicPage({ params }: Props) {
             {services.map((s) => (
               <li key={s.id}>
                 <Link
-                  href={`/p/${tenant.slug}/book?service=${s.id}`}
+                  href={`/p/${tenant.slug}/book?service=${s.id}${ref ? `&ref=${encodeURIComponent(ref)}` : ''}`}
                   className="flex w-full items-center gap-3 rounded-lg bg-card px-4 py-3.5 text-left shadow-soft transition hover:shadow-card"
                 >
                   <div className="min-w-0 flex-1">

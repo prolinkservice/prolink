@@ -28,7 +28,7 @@ export default async function CalendarPage({ searchParams }: Props) {
   const { start: end } = zonedDayRange(weekEnd, tenant.timezone)
 
   const supabase = await createServerSupabaseClient()
-  const [bookings, servicesRes, locationsRes] = await Promise.all([
+  const [bookings, servicesRes, locationsRes, settingsRes] = await Promise.all([
     fetchBookings({ tenantId: tenant.id, from: start, to: end }),
     supabase
       .from('services')
@@ -42,6 +42,11 @@ export default async function CalendarPage({ searchParams }: Props) {
       .eq('tenant_id', tenant.id)
       .eq('is_active', true)
       .order('sort_order', { ascending: true }),
+    supabase
+      .from('tenant_settings')
+      .select('refundable_hours')
+      .eq('tenant_id', tenant.id)
+      .maybeSingle(),
   ])
 
   return (
@@ -52,6 +57,7 @@ export default async function CalendarPage({ searchParams }: Props) {
       timezone={tenant.timezone}
       services={(servicesRes.data ?? []) as unknown as ServiceOption[]}
       locations={(locationsRes.data ?? []) as unknown as LocationInfo[]}
+      refundableHours={Number(settingsRes.data?.refundable_hours ?? 48)}
     />
   )
 }

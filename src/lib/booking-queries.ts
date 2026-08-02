@@ -11,7 +11,7 @@ const BOOKING_FIELDS = `
   location_id, service_id, customer_id,
   locations(name),
   services(name),
-  customers(name, phone, no_show_points, visit_count)
+  customers(name, phone, no_show_points, visit_count, line_user_id, line_blocked_at)
 `
 
 type Joined<T> = T | T[] | null
@@ -39,6 +39,8 @@ type BookingQueryRow = {
     phone: string | null
     no_show_points: number
     visit_count: number
+    line_user_id: string | null
+    line_blocked_at: string | null
   }>
 }
 
@@ -95,6 +97,8 @@ export async function fetchBookings(input: {
       customer_phone: customer?.phone ?? null,
       customer_no_show_points: Number(customer?.no_show_points ?? 0),
       customer_visit_count: Number(customer?.visit_count ?? 0),
+      // 取消預約時要知道「通知得到他嗎」。封鎖過的人發了也收不到
+      customer_line_linked: Boolean(customer?.line_user_id) && !customer?.line_blocked_at,
     }
   })
 }
