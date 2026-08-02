@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 接上你自己的 LINE 官方帳號</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1ea; --card:#fffcf8; --sunk:#efe7dc;
+  --ink:#2a211c; --ink-2:#574a42; --ink-3:#857466; --ink-4:#b0a093;
+  --hairline:#e4d9cc;
+  --clay:#a34e33; --clay-soft:#f4e3da; --clay-ink:#8f452c;
+  --ochre:#a9762b; --ochre-soft:#f7ebd6;
+  --brick:#a63e33; --brick-soft:#f8e4e0;
+  --olive:#6b7a45; --olive-soft:#ecefdf;
+  --line:#06C755;
+  --sh-1:0 1px 2px rgba(42,33,28,.05), 0 4px 14px -10px rgba(42,33,28,.35);
+  --sh-2:0 2px 4px rgba(42,33,28,.05), 0 22px 44px -28px rgba(42,33,28,.45);
+  --sh-3:0 30px 70px -32px rgba(42,33,28,.5);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Noto Sans TC","GenSen","PingFang TC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.7;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.055'/%3E%3C/svg%3E")}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.page{max-width:1120px;margin:0 auto;padding:56px 24px 100px;position:relative;z-index:1}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:18px}
+.kicker::before{content:"";width:36px;height:1px;background:var(--clay)}
+h1{font-family:var(--display);font-size:clamp(28px,4.6vw,44px);font-weight:600;line-height:1.12;letter-spacing:-.025em}
+h1 em{font-style:italic;color:var(--clay)}
+.lede{margin-top:16px;max-width:62ch;color:var(--ink-2);font-size:15.5px}
+.lede b{color:var(--ink);font-weight:700}
+section{margin-top:64px}
+.sec-head{display:flex;align-items:flex-end;gap:14px;padding-bottom:12px;margin-bottom:20px;border-bottom:1px solid var(--hairline);position:relative}
+.sec-head .n{font-family:var(--display);font-size:32px;font-weight:400;color:var(--clay);line-height:.9}
+.sec-head h2{font-size:19px;font-weight:700}
+.sec-head::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:7px;
+  background:repeating-linear-gradient(90deg,var(--hairline) 0 1px,transparent 1px 13px);
+  -webkit-mask-image:linear-gradient(90deg,#000,transparent 42%);mask-image:linear-gradient(90deg,#000,transparent 42%)}
+.plain{background:var(--card);border-radius:18px;box-shadow:var(--sh-1);padding:22px 26px;margin-bottom:22px}
+.plain h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:13px}
+.plain ul{list-style:none;font-size:15px;color:var(--ink-2)}
+.plain li{padding:7px 0 7px 22px;position:relative}
+.plain li::before{content:"";position:absolute;left:2px;top:18px;width:9px;height:1.5px;background:var(--clay)}
+.plain li b{color:var(--ink);font-weight:700}
+.plain .warn{margin-top:14px;background:var(--brick-soft);color:var(--brick);border-radius:13px;padding:13px 16px;font-size:13.5px;font-weight:600}
+.plain .note{margin-top:14px;background:var(--clay-soft);color:var(--clay-ink);border-radius:13px;padding:13px 16px;font-size:13.5px;font-weight:600}
+
+/* 後台卡片 */
+.panel{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);overflow:hidden;margin-bottom:18px}
+.pbar{display:flex;align-items:center;gap:11px;padding:17px 22px 6px}
+.pbar h3{font-size:15.5px;font-weight:700}
+.pbar .sub{font-size:12px;color:var(--ink-3);font-weight:600}
+.pbar .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.body{padding:6px 22px 22px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:4px 11px;border-radius:999px}
+.p-ok{background:var(--olive-soft);color:var(--olive)}
+.p-warn{background:var(--ochre-soft);color:var(--ochre)}
+.p-mute{background:var(--sunk);color:var(--ink-3)}
+.p-bad{background:var(--brick-soft);color:var(--brick)}
+.btn{border:0;border-radius:999px;padding:11px 19px;font-family:var(--body);font-size:12.5px;font-weight:700;cursor:pointer;min-height:44px}
+.btn-p{background:var(--clay);color:#fff}
+.btn-s{background:var(--sunk);color:var(--ink-2)}
+.btn-line{background:var(--line);color:#fff}
+.f{margin-bottom:14px}
+.f label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+.f .hint{font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.6}
+.input{width:100%;background:var(--sunk);border:0;border-radius:13px;padding:12px 15px;font-family:var(--body);font-size:13.5px;color:var(--ink)}
+.input.mono{font-family:var(--display);letter-spacing:.02em}
+.input::placeholder{color:var(--ink-4)}
+.readonly{background:var(--sunk);border-radius:13px;padding:12px 15px;font-family:var(--display);font-size:13px;color:var(--ink-3);display:flex;align-items:center;gap:10px}
+.readonly b{margin-left:auto;font-family:var(--body);font-size:11.5px;color:var(--clay);font-weight:700}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.frow{grid-template-columns:1fr}}
+
+/* 步驟 */
+.steps{counter-reset:s;display:grid;gap:10px}
+.step{display:grid;grid-template-columns:26px 1fr;gap:13px;background:var(--card);border-radius:14px;box-shadow:var(--sh-1);padding:15px 18px}
+.step .n{font-family:var(--display);font-size:15px;font-weight:600;color:var(--clay)}
+.step b{font-size:13.5px;font-weight:700;display:block}
+.step p{font-size:12.5px;color:var(--ink-3);margin-top:3px}
+.step code{font-family:var(--display);background:var(--sunk);padding:1px 7px;border-radius:6px;font-size:12px}
+
+/* 用量 */
+.quota{display:flex;align-items:flex-end;gap:14px;margin-bottom:12px}
+.quota .big{font-family:var(--display);font-size:38px;font-weight:600;line-height:1}
+.quota .of{font-size:13px;color:var(--ink-3);font-weight:700;padding-bottom:4px}
+.bar{height:12px;border-radius:999px;background:var(--sunk);overflow:hidden;position:relative}
+.bar i{display:block;height:100%;background:var(--olive)}
+.bar.warn i{background:var(--ochre)}
+.bar.bad i{background:var(--brick)}
+.legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:12px;font-size:12px;color:var(--ink-3);font-weight:600}
+.legend b{color:var(--ink);font-family:var(--display)}
+.breakdown{margin-top:14px;border-top:1px solid var(--hairline)}
+.brow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--hairline)}
+.brow:last-child{border-bottom:0}
+.brow span{font-size:13px;font-weight:600;color:var(--ink-2)}
+.brow b{margin-left:auto;font-family:var(--display);font-size:14px;font-weight:600}
+
+table.t{width:100%;border-collapse:collapse}
+table.t th,table.t td{padding:11px 12px;text-align:left;font-size:13.5px;border-bottom:1px solid var(--hairline);vertical-align:top}
+table.t th{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);font-weight:700}
+table.t td.n2{font-family:var(--display);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 12 · Sprint 2</span>
+  <h1>接上<em>你自己的</em><br>LINE 官方帳號</h1>
+  <p class="lede">
+    客人加的是<b>你的</b>官方帳號，不是我們的。預約確認、行前提醒都用你的名義發，
+    客人回訊息也是回給你。這條做完，你才不用自己盯著時間提醒客人。
+  </p>
+</header>
+
+<!-- ══ 01 你要先準備的 ══ -->
+<section>
+  <div class="sec-head"><span class="n">01</span><h2>你要先去 LINE 拿三樣東西</h2></div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>如果你<b>已經有官方帳號</b>（客人已經在加的那個），直接用它，不用另外開。</li>
+      <li>要到 <b>LINE Developers</b> 幫那個官方帳號開一個 <b>Messaging API channel</b>——這是讓程式能用你的名義發訊息的門。</li>
+      <li>拿到之後貼三個值進來就好。<b>貼完之後你不會再看到完整的內容</b>，只會看到末四碼。</li>
+    </ul>
+    <div class="note">
+      申請不需要公司行號，個人也可以。整個流程大約十分鐘。
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div><b>到 developers.line.biz 建 Provider</b><p>如果你已經有，跳過。Provider 就是「誰擁有這些帳號」。</p></div></div>
+    <div class="step"><span class="n">2</span><div><b>建立 Messaging API channel，綁到你現有的官方帳號</b><p>不要新開一個官方帳號，不然客人加的還是舊的那個。</p></div></div>
+    <div class="step"><span class="n">3</span><div><b>複製 Channel ID 與 Channel secret</b><p>在 Basic settings 那一頁。</p></div></div>
+    <div class="step"><span class="n">4</span><div><b>發一組 Channel access token</b><p>在 Messaging API 那一頁最下面，選長期的。</p></div></div>
+    <div class="step"><span class="n">5</span><div><b>把 Webhook URL 貼回 LINE，並打開「Use webhook」</b><p>網址我們會產生給你，長得像 <code>/api/line/webhook/你的編號</code>。</p></div></div>
+  </div>
+</section>
+
+<!-- ══ 02 設定畫面 ══ -->
+<section>
+  <div class="sec-head"><span class="n">02</span><h2>設定畫面：貼上、驗證、複製 Webhook</h2></div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>貼完按<b>「驗證並儲存」</b>，系統會立刻拿你的 token 去問 LINE：這個帳號是誰。問得到就把官方帳號名稱顯示出來，你一眼知道有沒有貼錯。</li>
+      <li>憑證<b>加密後才進資料庫</b>，畫面上只留末四碼。那組 token 等於「可以用你的名義發訊息給所有好友」，不能明文躺著。</li>
+      <li>Webhook 網址每個店家不一樣，複製貼回 LINE 後端。<b>沒貼這一步，客人傳訊息我們收不到。</b></li>
+      <li>驗證成功後可以按<b>「發測試訊息給我」</b>——你要先加自己的官方帳號好友，收到才算真的通了。</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <div class="pbar">
+      <h3>LINE 官方帳號</h3>
+      <span class="pill p-ok">● 已連線</span>
+      <div class="right"><button class="btn btn-s">中斷連線</button><button class="btn btn-p">驗證並儲存</button></div>
+    </div>
+    <div class="body">
+      <div class="f">
+        <label>目前連到的帳號</label>
+        <div class="readonly">@youngyee　揚翼運動按摩｜徒手整復　<b>好友 128 人</b></div>
+        <p class="hint">這是系統剛才拿你的 token 去問 LINE 得到的答案，不是你自己打的。</p>
+      </div>
+
+      <div class="frow">
+        <div class="f">
+          <label>Channel ID</label>
+          <input class="input mono" value="2007xxxxxx">
+        </div>
+        <div class="f">
+          <label>Channel secret</label>
+          <input class="input mono" value="••••••••••••••••••••••••4f2c">
+          <p class="hint">已加密儲存，只顯示末四碼。要換就整串重貼。</p>
+        </div>
+      </div>
+
+      <div class="f">
+        <label>Channel access token（長期）</label>
+        <input class="input mono" value="••••••••••••••••••••••••••••••••9aQx">
+        <p class="hint">等同「可用你的名義發訊息給所有好友」，加密儲存，永遠不會再顯示完整內容。</p>
+      </div>
+
+      <div class="f">
+        <label>Webhook URL</label>
+        <div class="readonly">https://prolink.tw/api/line/webhook/b3dba19a…<b>複製</b></div>
+        <p class="hint">貼回 LINE Developers 的 Messaging API 分頁，並把「Use webhook」打開。</p>
+      </div>
+
+      <div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn btn-line">發測試訊息給我</button>
+        <button class="btn btn-s">重新檢查連線</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pbar"><h3>還沒接上的樣子</h3><span class="pill p-mute">● 未連線</span></div>
+    <div class="body">
+      <p style="font-size:13.5px;color:var(--ink-2);line-height:1.75">
+        目前用不到自動通知：客人約完只看得到網頁上的確認，不會收到任何訊息，
+        你也要自己記得提醒他們。貼上憑證之後這些就自動了。
+      </p>
+      <div style="margin-top:12px"><button class="btn btn-p">開始設定</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 03 用量看板 ══ -->
+<section>
+  <div class="sec-head"><span class="n">03</span><h2>訊息用量看板</h2></div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>LINE 免費方案<b>每月 200 則</b>推播。系統會自動發確認、提醒、回訪，很容易在月底爆量。</li>
+      <li>爆量不會擋你發，是<b>你收到 LINE 的帳單才發現</b>——所以這個數字要一直看得到。</li>
+      <li><b>用到 80% 會跳警告</b>，並告訴你剩下的額度大概還能撐幾天。</li>
+      <li>下面拆給你看錢花在哪：確認、提醒、取消通知各佔多少。<b>提醒通常是大宗</b>，覺得太多可以只留出發前那一次。</li>
+    </ul>
+    <div class="warn">
+      同類產品普遍沒做這個。做了就是差異化——但更重要的是，你不會被帳單嚇到。
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="pbar"><h3>本月訊息用量</h3><span class="sub">8 月</span>
+      <div class="right"><span class="pill p-warn">● 已用 82%</span></div>
+    </div>
+    <div class="body">
+      <div class="quota">
+        <span class="big">164</span>
+        <span class="of">/ 200 則　免費額度</span>
+      </div>
+      <div class="bar warn"><i style="width:82%"></i></div>
+      <div class="legend">
+        <span>剩 <b>36</b> 則</span>
+        <span>這個月還剩 <b>9</b> 天</span>
+        <span>最近七天平均一天 <b>5.4</b> 則</span>
+        <span style="color:var(--ochre);font-weight:700">照這個速度大約 7 天後用完</span>
+      </div>
+
+      <div class="breakdown">
+        <div class="brow"><span>行前提醒（前一天晚上）</span><b>62</b></div>
+        <div class="brow"><span>行前提醒（出發前 2 小時）</span><b>58</b></div>
+        <div class="brow"><span>預約確認</span><b>31</b></div>
+        <div class="brow"><span>取消與改期通知</span><b>9</b></div>
+        <div class="brow"><span>你自己手動發的</span><b>4</b></div>
+      </div>
+
+      <p style="font-size:12px;color:var(--ink-3);margin-top:14px;line-height:1.7">
+        超過免費額度之後每則依 LINE 官方計價，由 LINE 直接向你收費，我們不經手。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 04 客人怎麼被認出來 ══ -->
+<section>
+  <div class="sec-head"><span class="n">04</span><h2>客人怎麼跟他的預約對上</h2></div>
+
+  <div class="plain">
+    <h3>白話說明</h3>
+    <ul>
+      <li>訊息要發給誰，靠的是 <b>LINE 的使用者編號</b>。問題是客人在預約頁上只留了手機號碼，兩邊要對得起來。</li>
+      <li>做法：預約成功頁的<b>「加店家 LINE」按鈕帶一個一次性的代碼</b>。客人加好友後，我們收到 follow 事件，就把那個代碼對回他的預約，兩邊接起來。</li>
+      <li>沒加好友的客人<b>收不到任何通知</b>——這是 LINE 的規則，不是我們的選擇。所以完成頁會把「加好友才收得到提醒」講清楚。</li>
+      <li>加過一次就永久記住，之後同一個人再預約直接發得出去。</li>
+    </ul>
+    <div class="note">
+      這一段是 Sprint 2 最容易出錯的地方，我會先讓它能運作、再處理各種例外（換手機、封鎖官方帳號、退追蹤）。
+    </div>
+  </div>
+</section>
+
+<!-- ══ 05 施工順序 ══ -->
+<section>
+  <div class="sec-head"><span class="n">05</span><h2>分三批做</h2></div>
+  <div class="plain" style="padding-bottom:10px">
+    <table class="t">
+      <tr><th style="width:16%">批次</th><th style="width:42%">內容</th><th>你會感覺到什麼</th></tr>
+      <tr>
+        <td class="n2"><b>第一批</b></td>
+        <td>憑證加密儲存、驗證連線、Webhook 收訊息、測試發送、用量看板</td>
+        <td>後台能接上你的官方帳號，按下測試會收到訊息</td>
+      </tr>
+      <tr>
+        <td class="n2"><b>第二批</b></td>
+        <td>客人加好友時綁定、預約確認通知、取消通知</td>
+        <td>客人約完馬上收到一則確認，不用再自己傳</td>
+      </tr>
+      <tr>
+        <td class="n2"><b>第三批</b></td>
+        <td>兩段式行前提醒（前一晚 + 出發前 2 小時）、提醒訊息附「無法前往」按鈕</td>
+        <td>不用再自己盯時間；客人要取消也變好按，放鳥會變少</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
