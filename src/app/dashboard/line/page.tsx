@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getCurrentTenant } from '@/lib/tenant'
 import { decryptSecret, hasEncryptionKey, maskTail } from '@/lib/line/secrets'
+import { DEFAULT_WELCOME } from '@/lib/line/messages'
 import { ConsoleChecklist } from './ConsoleChecklist'
 import { ContactForm } from './ContactForm'
 import { NotifyForm } from './NotifyForm'
@@ -94,6 +95,7 @@ export default async function LinePage() {
         connected={state.connected}
         notifySelfOnNewBooking={settingsRes.data?.notify_self_on_new_booking ?? true}
         welcomeMessage={settingsRes.data?.line_welcome_message ?? ''}
+        defaultWelcome={DEFAULT_WELCOME(tenant.name)}
       />
 
       <ContactForm

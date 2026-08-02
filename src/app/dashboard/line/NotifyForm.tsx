@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, ErrorNote, Field, PrimaryButton, TextBox } from '@/components/FormBits'
+import { Card, ErrorNote, Field, PrimaryButton, TextArea } from '@/components/FormBits'
 import { cn } from '@/lib/utils'
 import { saveNotifySettings } from './actions'
 
@@ -26,11 +26,14 @@ export function NotifyForm({
   connected,
   notifySelfOnNewBooking,
   welcomeMessage,
+  defaultWelcome,
 }: {
   plan: 'free' | 'pro'
   connected: boolean
   notifySelfOnNewBooking: boolean
   welcomeMessage: string
+  /** 沒自己寫的話會發這一段。放在提示框裡讓職人看得到現在到底發什麼 */
+  defaultWelcome: string
 }) {
   const router = useRouter()
   const [notifySelf, setNotifySelf] = useState(notifySelfOnNewBooking)
@@ -133,14 +136,30 @@ export function NotifyForm({
               <Field
                 label="加好友的第一句話"
                 optional
-                hint="留空就用系統預設。下面那張「立即預約」卡片會自動帶上你的營業時間與據點"
+                hint="可以換行、可以放表情符號。留空就用下面灰字那段預設。這句話下面會自動接一張「立即預約」卡片，帶著你的營業時間與據點"
               >
-                <TextBox
+                {/* 歡迎詞通常是三段式（打招呼／怎麼預約／有問題找我），
+                    塞在單行輸入框裡沒人打得下去 */}
+                <TextArea
                   value={greeting}
                   onChange={(e) => setGreeting(e.target.value)}
-                  placeholder="謝謝你加入我的 LINE，有需要預約直接按下面的按鈕就可以。"
+                  placeholder={defaultWelcome}
+                  rows={5}
+                  maxLength={500}
                 />
               </Field>
+              <div className="-mt-1 flex flex-wrap items-baseline gap-x-3 text-[11.5px] text-ink-3">
+                <span className="num">{greeting.length} / 500 字</span>
+                {greeting.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setGreeting('')}
+                    className="font-extrabold text-primary"
+                  >
+                    改回預設
+                  </button>
+                )}
+              </div>
             </div>
 
             <p className="mt-1 rounded-sm bg-sunk px-4 py-3 text-[11.5px] leading-relaxed text-ink-3">

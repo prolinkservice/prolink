@@ -50,6 +50,21 @@ export function TextBox({
   return <input {...props} className={cn(INPUT_BASE, className)} />
 }
 
+/** 要換行的欄位用這個。歡迎詞、公告這類東西寫成一整行會很難讀 */
+export function TextArea({
+  className,
+  rows = 4,
+  ...props
+}: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      rows={rows}
+      className={cn(INPUT_BASE, 'resize-y leading-relaxed', className)}
+    />
+  )
+}
+
 export function SelectBox({
   className,
   ...props
