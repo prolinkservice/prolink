@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getCurrentTenant } from '@/lib/tenant'
 import { Stamp } from '@/components/Stamp'
 
 // 登入與註冊都走 /auth，那頁才有 Google 與 LINE。
@@ -94,6 +95,11 @@ export default async function Home({ searchParams }: Props) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // 標頭顯示店名而不是信箱。信箱是登入用的，招牌才是他認得的自己；
+  // 還沒建工作室的人只能退回信箱
+  const current = user ? await getCurrentTenant() : null
+  const whoami = current?.tenant.name ?? current?.member.display_name ?? user?.email ?? ''
+
   return (
     <div className="min-h-full">
       <header className="bg-card">
@@ -109,8 +115,9 @@ export default async function Home({ searchParams }: Props) {
           <div className="ml-auto flex items-center gap-2.5">
             {user ? (
               <>
-                <span className="hidden text-[12.5px] font-semibold text-ink-4 sm:inline">
-                  {user.email}
+                <span className="hidden items-center gap-2 sm:flex">
+                  {current && <Stamp name={whoami} className="size-7 text-[12px]" />}
+                  <b className="max-w-[22ch] truncate text-[13px] font-extrabold">{whoami}</b>
                 </span>
                 <Link
                   href="/dashboard"
