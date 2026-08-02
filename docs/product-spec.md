@@ -840,7 +840,22 @@ packages / customer_packages / wallet_transactions
 reviews(tenant_id, booking_id, rating, body, is_public)
 ```
 
-### 11.1 給後端的兩個技術重點
+### 11.1 改資料庫函式的一條硬規矩
+
+**`returns table (...)` 的欄位名會跟資料表欄位撞名，函式裡每一個資料表欄位都必須帶別名前綴。**
+
+`create_booking` 回傳一欄叫 `status`，只要函式內出現沒加前綴的 `status`（例如 `where ... and status = 'active'`），PostgreSQL 分不出是回傳變數還是資料表欄位，整支函式直接爆：
+
+```
+42702 column reference "status" is ambiguous
+```
+
+客人端看到的症狀不是錯誤訊息，而是**填完資料送出後被丟回上一步**——所以很容易被當成前端問題。
+
+> 這個坑在 `20260730000004` 修過一次，`20260802000001` 又踩回去，`20260802000002` 再修一次。
+> **改這支函式之前先讀 `20260802000002` 開頭那段註解。**
+
+### 11.2 給後端的兩個技術重點
 
 1. **防衝堂**：`booking_bookables` + PostgreSQL `tstzrange` 的 GiST exclusion constraint，讓資料庫層直接擋掉重複佔用，不要只靠應用層檢查
 2. **容量 > 1 的團課例外**：exclusion constraint 不適用，改用交易內 `SELECT ... FOR UPDATE` 加總席次判斷。兩條路徑分開寫
