@@ -2,7 +2,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 import { loadChannel, replyMessage, verifySignature } from '@/lib/line/channel'
 import { codeMatches } from '@/lib/line/secrets'
-import { buildWelcome, notifyCustomerCancelled } from '@/lib/line/notify'
+import {
+  buildWelcome,
+  looksLikeBookingRequest,
+  notifyCustomerCancelled,
+} from '@/lib/line/notify'
 
 // 每個租戶自己的 webhook（規格 §9.1）。
 // 網址帶 tenantId，簽章用「那一家店的」channel secret 驗——
@@ -104,7 +108,11 @@ async function handleFollow(ctx: Ctx) {
     .eq('tenant_id', ctx.tenantId)
     .eq('line_user_id', ctx.userId)
 
-  const messages = await buildWelcome({ tenantId: ctx.tenantId, lineUserId: ctx.userId })
+  const messages = await buildWelcome({
+    tenantId: ctx.tenantId,
+    lineUserId: ctx.userId,
+    withGreeting: true,
+  })
   if (!messages) return
   await replyMessage(ctx.accessToken, ctx.replyToken, messages)
 }
@@ -184,7 +192,10 @@ async function handlePostback(ctx: Ctx & { data: string }) {
  * 不用「第一個傳訊息的人就是老闆」，那等於誰先傳誰是老闆。
  */
 async function handleText(input: Ctx & { text: string; bindCode: string | null }) {
-  if (!codeMatches(input.text, input.bindCode)) return
+  if (!codeMatches(input.text, input.bindCode)) {
+    await handleKeyword(input)
+    return
+  }
 
   const supabase = createAdminSupabaseClient()
   const { error } = await supabase.from('tenant_line_operators').upsert(
@@ -210,6 +221,39 @@ async function handleText(input: Ctx & { text: string; bindCode: string | null }
   await replyMessage(input.accessToken, input.replyToken, [
     { type: 'text', text: '綁定完成，之後的通知會從這個帳號發給客人。' },
   ])
+}
+
+/**
+ * 客人自己打「預約」「我要預約」時，回同一張「立即預約」卡片。
+ *
+ * 這是綁定漏洞最划算的補法：早就加了好友、歡迎訊息卻早已滑不見的舊客人，
+ * 打兩個字就拿得到帶記號的按鈕。回覆訊息不計免費額度，等於零成本。
+ *
+ * 兩件刻意不做的事：
+ *   · **對不上的訊息一律不回。** 客人傳「你好」或問「腰痛適合哪一種」時
+ *     系統保持安靜，讓職人自己回。罐頭訊息會蓋掉他想講的話，
+ *     也會讓客人以為在跟機器人講話
+ *   · **職人自己打「預約」不觸發。** 那個位置留給之後的「一句話建立預約」
+ */
+async function handleKeyword(ctx: Ctx & { text: string }) {
+  if (!looksLikeBookingRequest(ctx.text)) return
+
+  const supabase = createAdminSupabaseClient()
+  const { data: operator } = await supabase
+    .from('tenant_line_operators')
+    .select('id')
+    .eq('tenant_id', ctx.tenantId)
+    .eq('line_user_id', ctx.userId)
+    .maybeSingle()
+  if (operator) return
+
+  const messages = await buildWelcome({
+    tenantId: ctx.tenantId,
+    lineUserId: ctx.userId,
+    withGreeting: false,
+  })
+  if (!messages) return
+  await replyMessage(ctx.accessToken, ctx.replyToken, messages)
 }
 
 /**

@@ -5,13 +5,13 @@ import { pushMessage, type LineMessage } from './channel'
 import { issueLinkToken } from './linkToken'
 import {
   DEFAULT_WELCOME,
+  bookingCardMessage,
   bookingConfirmedMessage,
   cancelledForCustomerMessage,
   confirmRequestMessage,
   customerCancelledForOperatorMessage,
   expiredForCustomerMessage,
   newBookingForOperatorMessage,
-  welcomeMessages,
   type BookingBrief,
 } from './messages'
 
@@ -113,6 +113,8 @@ async function markBlocked(customerId: string) {
 export async function buildWelcome(input: {
   tenantId: string
   lineUserId: string
+  /** 第一次加好友才打招呼。客人自己打「預約」時只要那張卡片 */
+  withGreeting: boolean
 }): Promise<LineMessage[] | null> {
   const supabase = createAdminSupabaseClient()
 
@@ -149,9 +151,8 @@ export async function buildWelcome(input: {
 
   const locations = (locationsRes.data ?? []).map((l) => l.name as string)
 
-  return welcomeMessages({
+  const card = bookingCardMessage({
     tenantName: tenant.name,
-    greeting: settingsRes.data?.line_welcome_message?.trim() || DEFAULT_WELCOME(tenant.name),
     bookUrl,
     openDays: describeHours(
       (hoursRes.data ?? []) as { weekday: number; start_time: string; end_time: string }[]
@@ -159,6 +160,34 @@ export async function buildWelcome(input: {
     locations: locations.length ? locations.join(' · ') : null,
     phone: tenant.contact_phone ?? null,
   })
+
+  // 打招呼只在第一次見面時說。之後客人自己打「預約」時再說一次
+  // 「謝謝你加入」會很怪，直接給卡片就好
+  if (!input.withGreeting) return [card]
+
+  return [
+    { type: 'text', text: settingsRes.data?.line_welcome_message?.trim() || DEFAULT_WELCOME(tenant.name) },
+    card,
+  ]
+}
+
+/**
+ * 客人自己打「預約」時回同一張卡片。
+ *
+ * 這是綁定漏洞最划算的補法：早就加了好友、歡迎訊息卻早已滑不見的舊客人，
+ * 只要打兩個字就拿得到帶記號的按鈕，順手就綁上了。
+ * 而且回覆訊息不計免費額度，等於零成本。
+ */
+export function looksLikeBookingRequest(text: string): boolean {
+  // 全形空白與 emoji 都可能夾在中間，先清成乾淨的字串再比對
+  const t = text.replace(/[\s　]/g, '')
+  if (!t || t.length > 20) return false
+
+  // 「請問可以預約嗎？」比「預約」兩個字常見得多，所以用包含而不是相等
+  if (/預約|預訂|訂位|約時間|排時間/.test(t)) return true
+
+  // 這幾個字單獨出現才算。「約」放進包含會把「大約」「約會」一起掃進來
+  return ['約', '我要約', '想約', '時段', '看時段'].includes(t)
 }
 
 const WEEKDAY = ['日', '一', '二', '三', '四', '五', '六']

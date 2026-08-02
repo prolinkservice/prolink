@@ -107,35 +107,36 @@ function bubble(input: {
 export const DEFAULT_WELCOME = (tenantName: string) =>
   `謝謝你加入${tenantName} 🙌\n\n有需要預約的話，直接按下面的按鈕就可以看時段，不用打電話。\n\n有任何問題也可以在這裡直接問我。`
 
-/** 加好友的第一句話。那顆按鈕帶著綁定記號，客人照常預約就把 LINE 接上了 */
-export function welcomeMessages(input: {
+/**
+ * 「立即預約」卡片。那顆按鈕帶著綁定記號，客人照常預約就把 LINE 接上了。
+ *
+ * 兩個時機用同一張：加好友的時候，以及客人自己打「預約」的時候。
+ * 同一張卡片重複出現是刻意的——客人第二次看到就知道「按這裡就對了」。
+ */
+export function bookingCardMessage(input: {
   tenantName: string
-  greeting: string
   bookUrl: string
   openDays: string | null
   locations: string | null
   phone: string | null
-}): LineMessage[] {
+}): LineMessage {
   const rows: Row[] = []
   if (input.openDays) rows.push({ label: '營業', value: input.openDays })
   if (input.locations) rows.push({ label: '地點', value: input.locations })
   if (input.phone) rows.push({ label: '電話', value: input.phone })
 
-  return [
-    { type: 'text', text: input.greeting },
-    {
-      type: 'flex',
-      altText: `${input.tenantName}．線上預約`,
-      contents: bubble({
-        title: '🗓 立即預約',
-        color: CLAY,
-        rows,
-        buttons: [
-          { label: '查看可預約時段', action: { type: 'uri', label: '查看可預約時段', uri: input.bookUrl } },
-        ],
-      }),
-    },
-  ]
+  return {
+    type: 'flex',
+    altText: `${input.tenantName}．線上預約`,
+    contents: bubble({
+      title: '🗓 立即預約',
+      color: CLAY,
+      rows,
+      buttons: [
+        { label: '查看可預約時段', action: { type: 'uri', label: '查看可預約時段', uri: input.bookUrl } },
+      ],
+    }),
+  }
 }
 
 export type BookingBrief = {
