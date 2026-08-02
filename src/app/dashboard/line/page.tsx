@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getCurrentTenant } from '@/lib/tenant'
 import { decryptSecret, hasEncryptionKey, maskTail } from '@/lib/line/secrets'
+import { ConsoleChecklist } from './ConsoleChecklist'
 import { ContactForm } from './ContactForm'
 import { NotifyForm } from './NotifyForm'
 import { ChannelCard, type ChannelState } from './ChannelCard'
@@ -84,6 +85,9 @@ export default async function LinePage() {
         rows={(usageRes.data ?? []) as UsageRow[]}
         connected={state.connected}
       />
+
+      {/* 接上之後才看得懂這張表在講什麼，所以放在頻道卡下面、通知設定上面 */}
+      {state.connected && <ConsoleChecklist />}
 
       <NotifyForm
         plan={tenant.plan}
