@@ -940,7 +940,7 @@ reviews(tenant_id, booking_id, rating, body, is_public)
 
 **已知缺口**
 
-- 專案沒有測試框架，純函式的規則（時段格點、地址樓層、分群）只能靠手動跑案例驗證
+- 專案沒有測試框架。綁定記號與關鍵字判斷這兩塊已經有 `npm run preflight` 可以跑（`scripts/preflight.mts`），其餘純函式的規則（時段格點、地址樓層、分群）仍只能手動驗
 - 舊的 `/practitioner` 目錄與全站共用的 `LINE_MESSAGING_*` 環境變數還沒清（規格 §13）
 
 ---

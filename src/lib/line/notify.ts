@@ -181,7 +181,15 @@ export async function buildWelcome(input: {
 export function looksLikeBookingRequest(text: string): boolean {
   // 全形空白與 emoji 都可能夾在中間，先清成乾淨的字串再比對
   const t = text.replace(/[\s　]/g, '')
-  if (!t || t.length > 20) return false
+  if (!t) return false
+
+  // 長訊息一律交給職人自己回。那多半是「我腰痛想問哪一種適合，順便想預約」
+  // 這種需要人回答的話，丟一張卡片過去等於答非所問
+  if (t.length > 20) return false
+
+  // 「我要取消預約」也含「預約」。要取消的人收到叫他去預約的卡片會很惱人，
+  // 這種一律不回，讓職人自己處理——取消的按鈕本來就在他的預約卡片上
+  if (/取消|改期|改時間|退費|退款/.test(t)) return false
 
   // 「請問可以預約嗎？」比「預約」兩個字常見得多，所以用包含而不是相等
   if (/預約|預訂|訂位|約時間|排時間/.test(t)) return true
