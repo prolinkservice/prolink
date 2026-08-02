@@ -70,6 +70,8 @@ export type CreateBookingInput = {
   bookableIds?: string[] | null
   locationId?: string | null
   durationMin?: number | null
+  /** 到府服務才有：客人家的地址 */
+  serviceAddress?: string
   note?: string
   internalNote?: string
 }
@@ -95,7 +97,7 @@ export async function createManualBooking(
     if (!location) locationId = null
   }
 
-  const { error } = await supabase.rpc('create_manual_booking', {
+  const { data, error } = await supabase.rpc('create_manual_booking', {
     p_tenant_id: current.tenant.id,
     p_service_id: input.serviceId,
     p_start_at: input.startAt,
@@ -121,6 +123,25 @@ export async function createManualBooking(
       message: error.message,
     })
     return { ok: false, error: '建立失敗，請稍後再試' }
+  }
+
+  // 到府地址補在建立之後，而不是塞進函式再多一個參數：
+  // 改函式簽名要再跑一次 migration，而這只是一個備註性質的欄位，
+  // 寫失敗也不會讓預約本身出問題（RLS 仍然只讓自己的租戶改得動）
+  const address = input.serviceAddress?.trim()
+  const created = (Array.isArray(data) ? data[0] : data) as { booking_id?: string } | null
+  if (address && created?.booking_id) {
+    const { error: addressError } = await supabase
+      .from('bookings')
+      .update({ service_address: address })
+      .eq('id', created.booking_id)
+      .eq('tenant_id', current.tenant.id)
+    if (addressError) {
+      console.error('[create_manual_booking] 地址沒存進去', {
+        bookingId: created.booking_id,
+        message: addressError.message,
+      })
+    }
   }
 
   revalidatePath('/dashboard')

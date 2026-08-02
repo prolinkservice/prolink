@@ -33,7 +33,7 @@ export default async function TodayPage() {
       }),
       supabase
         .from('services')
-        .select('id, name, duration_mode, duration_min, min_hours, price, location_id')
+        .select('id, name, duration_mode, duration_min, min_hours, price, location_id, location_mode')
         .eq('tenant_id', tenant.id)
         .eq('is_active', true)
         .order('sort_order', { ascending: true }),

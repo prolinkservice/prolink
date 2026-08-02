@@ -19,7 +19,7 @@ type NavItem = { href: string; label: string; ready: boolean }
 const DAILY: NavItem[] = [
   { href: '/dashboard', label: '今日行程', ready: true },
   { href: '/dashboard/calendar', label: '行事曆', ready: true },
-  { href: '/dashboard/customers', label: '客戶管理', ready: false },
+  { href: '/dashboard/customers', label: '客戶管理', ready: true },
 ]
 
 const SETTINGS: NavItem[] = [

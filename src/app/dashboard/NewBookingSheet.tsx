@@ -35,6 +35,8 @@ export type ServiceOption = {
   min_hours: number | null
   price: number
   location_id: string | null
+  /** 到府的服務沒有據點，地址要現場問客人 */
+  location_mode: 'fixed' | 'multi_site' | 'mobile'
 }
 
 export type LocationOption = { id: string; name: string }
@@ -74,6 +76,7 @@ export function NewBookingSheet({
   const [time, setTime] = useState(initialTime ?? '19:00')
   const [slots, setSlots] = useState<AvailableSlot[] | null>(null)
 
+  const [serviceAddress, setServiceAddress] = useState('')
   const [note, setNote] = useState('')
   const [internalNote, setInternalNote] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -129,6 +132,7 @@ export function NewBookingSheet({
         phone: customer ? undefined : newPhone,
         locationId,
         durationMin,
+        serviceAddress: service.location_mode === 'mobile' ? serviceAddress : undefined,
         note,
         internalNote,
       })
@@ -296,6 +300,16 @@ export function NewBookingSheet({
                   </option>
                 ))}
               </SelectBox>
+            </Field>
+          )}
+
+          {service?.location_mode === 'mobile' && (
+            <Field label="到府地址" hint="接電話當下就問清楚，出發前才不用再打一次">
+              <TextBox
+                value={serviceAddress}
+                onChange={(e) => setServiceAddress(e.target.value)}
+                placeholder="高雄市三民區建工路100號12樓"
+              />
             </Field>
           )}
 
