@@ -29,7 +29,7 @@ export type BookingService = {
 
 export type DayOption = { date: string; weekday: number; open: boolean }
 
-type LocationInfo = { name: string; address: string | null }
+type LocationInfo = { name: string; address: string | null; photoUrl?: string | null }
 
 const WEEKDAY_LABEL = ['日', '一', '二', '三', '四', '五', '六']
 
@@ -249,14 +249,37 @@ export function BookingFlow({
               return (
                 <div
                   key={p.id}
-                  className="rounded-lg bg-card px-4 py-3.5 text-left shadow-soft transition hover:shadow-card"
+                  className="overflow-hidden rounded-lg bg-card px-4 py-3.5 text-left shadow-soft transition hover:shadow-card"
                 >
+                  {/* 有照片就整寬鋪滿、店名壓在上面。
+                      文字講不出「20 樓、安靜、不被打擾」是什麼感覺，照片可以。
+                      沒傳照片不放灰色佔位圖——那只是在提醒客人這家店很隨便 */}
+                  {p.photoUrl && (
+                    <button
+                      onClick={() => pickPlace(p.id)}
+                      className="relative -mx-4 -mt-3.5 mb-3 block h-32 w-[calc(100%+2rem)] overflow-hidden"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.photoUrl} alt="" className="size-full object-cover" />
+                      <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/70 to-transparent px-4 pt-8 pb-2.5 text-left text-[15px] font-extrabold text-white">
+                        {p.name}
+                      </span>
+                    </button>
+                  )}
+
                   {/* 地址獨立一行、字級拉到 13px：客人是靠這一行決定去哪一間的，
                       不是附註。擠在店名底下當小字會讓人得瞇著眼看 */}
                   <button onClick={() => pickPlace(p.id)} className="block w-full text-left">
-                    <b className="block text-[15px] font-extrabold tracking-tight">{p.name}</b>
+                    {!p.photoUrl && (
+                      <b className="block text-[15px] font-extrabold tracking-tight">{p.name}</b>
+                    )}
                     {p.address && (
-                      <span className="mt-1.5 block text-[13px] leading-relaxed text-ink-2">
+                      <span
+                        className={cn(
+                          'block text-[13px] leading-relaxed text-ink-2',
+                          !p.photoUrl && 'mt-1.5'
+                        )}
+                      >
                         {p.address}
                       </span>
                     )}

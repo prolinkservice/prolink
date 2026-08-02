@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 據點照片放哪裡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1ea; --card:#fffcf8; --sunk:#efe7dc;
+  --ink:#2a211c; --ink-2:#574a42; --ink-3:#857466; --ink-4:#b0a093;
+  --hairline:#e4d9cc;
+  --clay:#a34e33; --clay-soft:#f4e3da;
+  --ochre:#a9762b; --ochre-soft:#f7ebd6;
+  --brick:#a63e33; --brick-soft:#f8e4e0;
+  --olive:#6b7a45; --olive-soft:#ecefdf;
+  --sh-1:0 1px 2px rgba(42,33,28,.05), 0 4px 14px -10px rgba(42,33,28,.35);
+  --sh-2:0 2px 4px rgba(42,33,28,.05), 0 22px 44px -28px rgba(42,33,28,.45);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Noto Sans TC","PingFang TC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.7;-webkit-font-smoothing:antialiased}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.page{max-width:1120px;margin:0 auto;padding:50px 22px 90px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:15px}
+.kicker::before{content:"";width:36px;height:1px;background:var(--clay)}
+h1{font-family:var(--display);font-size:clamp(26px,4.2vw,40px);font-weight:600;line-height:1.12;letter-spacing:-.025em}
+h1 em{font-style:italic;color:var(--clay)}
+.lede{margin-top:14px;max-width:60ch;color:var(--ink-2);font-size:15.5px}
+.lede b{color:var(--ink);font-weight:700}
+section{margin-top:54px}
+.sec-head{display:flex;align-items:flex-end;gap:14px;padding-bottom:12px;margin-bottom:20px;border-bottom:1px solid var(--hairline)}
+.sec-head .n{font-family:var(--display);font-size:30px;font-weight:400;color:var(--clay);line-height:.9}
+.sec-head h2{font-size:19px;font-weight:700}
+
+.plain{background:var(--card);border-radius:18px;box-shadow:var(--sh-1);padding:20px 24px;margin-bottom:18px}
+.plain h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:11px}
+.plain p{font-size:15px;color:var(--ink-2)}
+.plain p+p{margin-top:9px}
+.plain b{color:var(--ink);font-weight:700}
+.plain ul{list-style:none;font-size:14.5px;color:var(--ink-2);margin-top:5px}
+.plain li{padding:6px 0 6px 20px;position:relative}
+.plain li::before{content:"";position:absolute;left:2px;top:17px;width:9px;height:1.5px;background:var(--clay)}
+.warn{margin-top:12px;background:var(--brick-soft);color:var(--brick);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+.good{margin-top:12px;background:var(--olive-soft);color:var(--olive);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+.note{margin-top:12px;background:var(--clay-soft);color:var(--clay);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+
+.stage{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.caption{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin-bottom:10px;font-weight:700}
+.caption em{font-style:normal;color:var(--clay)}
+.col{flex:0 0 auto;width:322px;max-width:100%}
+
+.phone{border-radius:32px;padding:9px;background:linear-gradient(160deg,#3a3733,#1a1817);box-shadow:0 26px 52px -30px rgba(0,0,0,.5)}
+.screen{background:var(--bg);border-radius:25px;overflow:hidden;padding:15px}
+.hd{display:flex;align-items:baseline;gap:8px;margin-bottom:12px}
+.hd .b{font-size:15px;font-weight:800}
+.hd .s{margin-left:auto;font-size:11px;font-weight:800;color:var(--ink-3)}
+
+.loc{background:var(--card);border-radius:15px;box-shadow:var(--sh-1);margin-bottom:11px;overflow:hidden}
+.loc .pad{padding:13px 14px}
+.loc b{font-size:15px;font-weight:800;display:block;letter-spacing:-.01em}
+.loc .addr{font-size:13px;color:var(--ink-2);margin-top:5px;line-height:1.5}
+.loc .row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:9px}
+.tag{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px}
+.t-ok{background:var(--olive-soft);color:var(--olive)}
+.t-warn{background:var(--ochre-soft);color:var(--ochre)}
+.map{font-size:11.5px;font-weight:800;color:var(--clay);text-decoration:underline;text-underline-offset:4px}
+.go{margin-left:auto;font-size:12px;font-weight:800;color:var(--clay)}
+
+/* 假照片 */
+.ph{background:
+   linear-gradient(135deg,#c9b8a4 0%,#a89279 45%,#8d7a63 100%);
+   position:relative;overflow:hidden}
+.ph::after{content:"";position:absolute;inset:0;
+  background:
+   radial-gradient(circle at 72% 22%, rgba(255,255,255,.42), transparent 42%),
+   linear-gradient(180deg, transparent 55%, rgba(42,33,28,.28));}
+.ph i{position:absolute;left:0;right:0;bottom:0;height:44%;
+  background:linear-gradient(180deg,transparent,rgba(42,33,28,.55));z-index:1}
+.ph.b{background:linear-gradient(135deg,#a9b3bd 0%,#7f8b98 50%,#5f6b78 100%)}
+
+/* A：右側縮圖 */
+.a-wrap{display:flex;gap:12px;padding:13px 14px}
+.a-wrap .thumb{width:76px;height:76px;border-radius:12px;flex:0 0 76px}
+.a-wrap .txt{min-width:0;flex:1}
+
+/* B：頂部橫幅 */
+.banner{height:132px;width:100%}
+.banner .name{position:absolute;left:14px;bottom:10px;z-index:2;color:#fff;font-size:15.5px;font-weight:800;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+
+/* 沒照片時 */
+.empty{background:var(--sunk);display:grid;place-items:center;color:var(--ink-4);font-size:10.5px;font-weight:800}
+
+/* 後台上傳框 */
+.panel{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);overflow:hidden;width:430px;max-width:100%}
+.pbar{display:flex;align-items:center;gap:10px;padding:16px 20px 4px}
+.pbar h3{font-size:15px;font-weight:800}
+.pbody{padding:8px 20px 20px}
+.f{margin-bottom:13px}
+.f label{display:block;font-size:11.5px;font-weight:800;color:var(--ink-2);margin-bottom:6px}
+.f .hint{font-size:11.5px;color:var(--ink-3);margin-top:5px;line-height:1.6}
+.input{width:100%;background:var(--sunk);border:0;border-radius:13px;padding:11px 14px;font-family:var(--body);font-size:13.5px;color:var(--ink)}
+.drop{display:flex;gap:12px;align-items:center;background:var(--sunk);border-radius:13px;padding:12px}
+.drop .prev{width:78px;height:78px;border-radius:11px;flex:0 0 78px}
+.drop .txt{flex:1;min-width:0}
+.drop .txt b{font-size:13px;font-weight:800;display:block}
+.drop .txt span{font-size:11.5px;color:var(--ink-3);display:block;margin-top:2px;line-height:1.5}
+.btn{border:0;border-radius:999px;padding:9px 16px;font-family:var(--body);font-size:12px;font-weight:800;cursor:pointer;margin-top:7px}
+.btn-s{background:var(--card);color:var(--ink-2)}
+
+.ask{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);padding:20px 24px;margin-bottom:14px}
+.ask .q{font-size:16px;font-weight:700;display:flex;gap:11px;align-items:baseline}
+.ask .q .n{font-family:var(--display);color:var(--clay);font-size:20px}
+.ask .why{font-size:13.5px;color:var(--ink-3);margin:7px 0 12px 31px}
+.opts{display:grid;gap:9px;margin-left:31px}
+.opt{background:var(--sunk);border-radius:13px;padding:11px 14px;font-size:13.5px;color:var(--ink-2)}
+.opt b{color:var(--ink);font-weight:700}
+.opt.rec{background:var(--olive-soft);color:var(--olive)}
+.opt.rec b{color:var(--olive)}
+.opt .rectag{float:right;font-size:10px;font-weight:800;letter-spacing:.08em}
+
+@media(max-width:860px){.page{padding:36px 16px 70px}.col{width:100%;max-width:322px}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 15 · 據點照片</span>
+  <h1>照片放<em>哪裡</em></h1>
+  <p class="lede">
+    你圈的是卡片右邊那塊空白。那是可以放，但<b>還有一個更適合你的位置</b>——
+    你賣的是「20 樓、安靜、不被打擾」，那種感覺一張小縮圖傳達不出來。
+    兩種都畫出來比一比。
+  </p>
+</header>
+
+<!-- 1 -->
+<section>
+  <div class="sec-head"><span class="n">1</span><h2>兩種放法</h2></div>
+
+  <div class="stage">
+
+    <div class="col">
+      <div class="caption"><em>A</em> · 右側小縮圖（你圈的位置）</div>
+      <div class="phone"><div class="screen">
+        <div class="hd"><span class="b">要去哪一間？</span><span class="s">1 / 3</span></div>
+
+        <div class="loc">
+          <div class="a-wrap">
+            <div class="txt">
+              <b>揚翼運動按摩_鳳山五甲</b>
+              <p class="addr">高雄市鳳山區鳳南路 301 號 20 樓</p>
+            </div>
+            <div class="ph thumb"></div>
+          </div>
+          <div class="pad" style="padding-top:0">
+            <div class="row">
+              <span class="tag t-ok">今天還有 13 個時段</span>
+              <span class="map">◎ 看地圖</span>
+              <span class="go">選這裡 ›</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="loc">
+          <div class="a-wrap">
+            <div class="txt">
+              <b>揚翼運動按摩_六合健身房</b>
+              <p class="addr">高雄市新興區秋山里六合二路 12 號 8 樓</p>
+            </div>
+            <div class="ph b thumb"></div>
+          </div>
+          <div class="pad" style="padding-top:0">
+            <div class="row">
+              <span class="tag t-warn">今天剩 2 個時段</span>
+              <span class="map">◎ 看地圖</span>
+              <span class="go">選這裡 ›</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="plain" style="margin-top:12px">
+        <p style="font-size:13.5px">
+          <b>優點</b>：兩間並排看得到全部，捲動最少。<br>
+          <b>缺點</b>：76×76 只夠讓人「認得出是哪一間」，
+          <b>看不出氣氛</b>。長地址還會被擠成三行。
+        </p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption"><em>B</em> · 頂部橫幅 <span style="color:var(--olive)">建議</span></div>
+      <div class="phone"><div class="screen">
+        <div class="hd"><span class="b">要去哪一間？</span><span class="s">1 / 3</span></div>
+
+        <div class="loc">
+          <div class="ph banner" style="position:relative">
+            <i></i>
+            <span class="name">揚翼運動按摩_鳳山五甲</span>
+          </div>
+          <div class="pad">
+            <p class="addr" style="margin-top:0">高雄市鳳山區鳳南路 301 號 20 樓</p>
+            <div class="row">
+              <span class="tag t-ok">今天還有 13 個時段</span>
+              <span class="map">◎ 看地圖</span>
+              <span class="go">選這裡 ›</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="loc">
+          <div class="ph b banner" style="position:relative">
+            <i></i>
+            <span class="name">揚翼運動按摩_六合健身房</span>
+          </div>
+          <div class="pad">
+            <p class="addr" style="margin-top:0">高雄市新興區秋山里六合二路 12 號 8 樓</p>
+            <div class="row">
+              <span class="tag t-warn">今天剩 2 個時段</span>
+              <span class="map">◎ 看地圖</span>
+              <span class="go">選這裡 ›</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="plain" style="margin-top:12px">
+        <p style="font-size:13.5px">
+          <b>優點</b>：照片夠大，<b>「安靜、高隱私、20 樓」這件事看一眼就懂</b>。
+          店名壓在照片上，版面反而更乾淨。<br>
+          <b>缺點</b>：要多捲一點。兩間店還好，五間以上會嫌長。
+        </p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption"><em>沒傳照片時</em> · 兩種都要能看</div>
+      <div class="phone"><div class="screen">
+        <div class="hd"><span class="b">要去哪一間？</span><span class="s">1 / 3</span></div>
+
+        <div class="loc">
+          <div class="pad">
+            <b>揚翼運動按摩_鳳山五甲</b>
+            <p class="addr">高雄市鳳山區鳳南路 301 號 20 樓</p>
+            <div class="row">
+              <span class="tag t-ok">今天還有 13 個時段</span>
+              <span class="map">◎ 看地圖</span>
+              <span class="go">選這裡 ›</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="loc">
+          <div class="pad">
+            <b>揚翼運動按摩_六合健身房</b>
+            <p class="addr">高雄市新興區秋山里六合二路 12 號 8 樓</p>
+            <div class="row">
+              <span class="tag t-warn">今天剩 2 個時段</span>
+              <span class="map">◎ 看地圖</span>
+              <span class="go">選這裡 ›</span>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="plain" style="margin-top:12px">
+        <p style="font-size:13.5px">
+          <b>不放灰色佔位圖。</b>大部分職人不會馬上傳照片，
+          擺一個「無圖片」的灰塊只是提醒客人這家店很隨便。
+          沒傳就是現在這個樣子，一點都不醜。
+        </p>
+        <div class="good">
+          ✅ 一間有傳、一間沒傳也不會怪：有照片的那張自然更吸引人，
+          這反而會推著職人去補照片。
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 2 -->
+<section>
+  <div class="sec-head"><span class="n">2</span><h2>你在後台怎麼傳</h2></div>
+
+  <div class="stage">
+    <div>
+      <div class="caption">後台 · 據點設定</div>
+      <div class="panel">
+        <div class="pbar"><h3>揚翼運動按摩_鳳山五甲</h3></div>
+        <div class="pbody">
+          <div class="f">
+            <label>名稱</label>
+            <input class="input" value="揚翼運動按摩_鳳山五甲">
+          </div>
+          <div class="f">
+            <label>地址</label>
+            <input class="input" value="高雄市鳳山區鳳南路301號20樓">
+          </div>
+          <div class="f">
+            <label>照片</label>
+            <div class="drop">
+              <div class="ph prev"></div>
+              <div class="txt">
+                <b>已上傳</b>
+                <span>客人選地點時會看到。拍空間就好，不用拍到人。</span>
+                <button class="btn btn-s">換一張</button>
+                <button class="btn btn-s">移除</button>
+              </div>
+            </div>
+            <p class="hint">
+              JPG／PNG，5MB 以內。上傳後自動壓縮成寬 1200，不會拖慢客人的手機。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1 1 340px;min-width:300px">
+      <div class="plain">
+        <h3>要動到的東西</h3>
+        <ul>
+          <li>資料表 <b>locations</b> 加一個 <b>photo_url</b> 欄位</li>
+          <li>Supabase Storage 開一個 <b>location-photos</b> 的公開 bucket</li>
+          <li>後台據點設定加一個上傳框（品牌頁已經有一模一樣的機制可以直接沿用）</li>
+          <li>客人端的地點卡片顯示照片</li>
+        </ul>
+        <div class="note">
+          📌 上傳與壓縮的程式碼專案裡已經有了（品牌頁的封面照就是這樣做的），
+          這件事的成本主要在後台那個框，不是在技術。
+        </div>
+        <div class="warn">
+          ⚠️ 照片是<b>公開</b>的，任何人拿到網址都看得到。
+          別傳到會拍進客人臉的照片——這不只是禮貌問題，是個資。
+          後台那行提示會寫「拍空間就好，不用拍到人」。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="sec-head"><span class="n">3</span><h2>要你決定的兩件事</h2></div>
+
+  <div class="ask">
+    <div class="q"><span class="n">1</span><span>照片放右邊小縮圖，還是頂部橫幅？</span></div>
+    <p class="why">你只有兩個據點，捲動不是問題；但你賣的是空間的感覺。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>B 頂部橫幅。</b>「20 樓、安靜、不被打擾」要看得出來才有說服力，76×76 傳達不了。店名壓在照片上，版面還更乾淨。</div>
+      <div class="opt"><b>A 右側縮圖。</b>畫面最短，兩間一眼看完。適合之後開到四、五個據點的情況。</div>
+    </div>
+  </div>
+
+  <div class="ask">
+    <div class="q"><span class="n">2</span><span>同一張照片要不要也用在別的地方？</span></div>
+    <p class="why">現在還有兩個地方會提到據點：LINE 的「立即預約」卡片、預約成功頁。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>先只做選地點那一頁。</b>其他地方等這個真的有用再說，不要一次鋪開。</div>
+      <div class="opt"><b>LINE 卡片也放。</b>Flex 訊息支援首圖，客人加好友第一眼就看到空間。但那張卡目前是共用版型，要多開一種。</div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

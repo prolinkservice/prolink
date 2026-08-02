@@ -23,7 +23,7 @@ export default async function SchedulePage() {
   const [locationsRes, bookablesRes, hoursRes, travelRes, mobileRes] = await Promise.all([
     supabase
       .from('locations')
-      .select('id, name, address, type, is_active')
+      .select('id, name, address, type, is_active, photo_url')
       .eq('tenant_id', tenant.id)
       .order('sort_order', { ascending: true }),
     supabase

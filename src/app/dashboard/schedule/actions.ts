@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 import { getCurrentTenant } from '@/lib/tenant'
 import type { BookableType, DaySegment, LocationType } from '@/lib/catalog'
 
@@ -16,6 +17,98 @@ function refresh(slug: string) {
 }
 
 // ── 據點 ──────────────────────────────────────────────────────
+
+/**
+ * 據點照片（草稿：docs/mockups/location-photo.html）。
+ *
+ * 三個決定：
+ *   ① **走伺服器動作、用 service role 寫入**，而不是讓瀏覽器直接傳。
+ *      這樣不必替 storage.objects 另外開政策，也不會有「換一張之後
+ *      舊檔案還躺在別人的資料夾裡」這種只靠前端把關的漏洞。
+ *   ② 檔名固定成據點 id，換照片直接覆蓋，不會愈積愈多。
+ *   ③ 網址後面掛時間戳，不然職人換了照片自己還看到舊的（CDN 快取）。
+ *
+ * 壓縮在瀏覽器做完才送上來——伺服器動作的請求有大小限制，
+ * 手機直出的 4MB 原圖會直接被擋掉。
+ */
+export async function saveLocationPhoto(input: {
+  locationId: string
+  /** 已經壓好的 JPEG，base64（不含 data: 前綴） */
+  base64: string
+}): Promise<ActionResult> {
+  const current = await getCurrentTenant()
+  if (!current) return { ok: false, error: '請先登入' }
+  const { tenant } = current
+
+  const supabase = await createServerSupabaseClient()
+  // 這個據點必須是自己的。等一下要用 service role 寫檔，
+  // RLS 不會再替我們擋一次
+  const { data: location } = await supabase
+    .from('locations')
+    .select('id')
+    .eq('id', input.locationId)
+    .eq('tenant_id', tenant.id)
+    .maybeSingle()
+  if (!location) return { ok: false, error: '找不到這個據點' }
+
+  const bytes = Buffer.from(input.base64, 'base64')
+  if (bytes.length === 0) return { ok: false, error: '照片是空的，請重選一張' }
+  if (bytes.length > 3 * 1024 * 1024) {
+    return { ok: false, error: '照片太大了，請換一張' }
+  }
+
+  const admin = createAdminSupabaseClient()
+  const path = `${tenant.id}/${input.locationId}.jpg`
+  const { error: uploadError } = await admin.storage
+    .from('location-photos')
+    .upload(path, bytes, { upsert: true, contentType: 'image/jpeg' })
+
+  if (uploadError) {
+    console.error('[location-photo] 上傳失敗', {
+      locationId: input.locationId,
+      message: uploadError.message,
+    })
+    return { ok: false, error: '上傳失敗，請再試一次' }
+  }
+
+  const { data: pub } = admin.storage.from('location-photos').getPublicUrl(path)
+  const url = `${pub.publicUrl}?v=${Date.now()}`
+
+  const { error } = await supabase
+    .from('locations')
+    .update({ photo_url: url })
+    .eq('id', input.locationId)
+    .eq('tenant_id', tenant.id)
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/dashboard/schedule')
+  revalidatePath(`/p/${tenant.slug}`)
+  return { ok: true }
+}
+
+export async function removeLocationPhoto(locationId: string): Promise<ActionResult> {
+  const current = await getCurrentTenant()
+  if (!current) return { ok: false, error: '請先登入' }
+  const { tenant } = current
+
+  const supabase = await createServerSupabaseClient()
+  const { error } = await supabase
+    .from('locations')
+    .update({ photo_url: null })
+    .eq('id', locationId)
+    .eq('tenant_id', tenant.id)
+  if (error) return { ok: false, error: error.message }
+
+  // 檔案本身留著。移除只是不再顯示，職人反悔時重傳一次就好，
+  // 而且刪檔失敗不該讓「拿掉照片」這個動作看起來失敗
+  await createAdminSupabaseClient()
+    .storage.from('location-photos')
+    .remove([`${tenant.id}/${locationId}.jpg`])
+
+  revalidatePath('/dashboard/schedule')
+  revalidatePath(`/p/${tenant.slug}`)
+  return { ok: true }
+}
 
 export async function saveLocation(input: {
   id?: string

@@ -28,6 +28,8 @@ export type Location = {
   address: string | null
   type: LocationType
   is_active: boolean
+  /** 客人選地點時看到的橫幅照片。公開網址，沒傳就是 null */
+  photo_url: string | null
 }
 
 export type ServiceRow = {

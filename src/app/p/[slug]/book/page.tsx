@@ -50,9 +50,10 @@ export default async function BookPage({ params, searchParams }: Props) {
       .maybeSingle(),
     supabase
       .from('locations')
-      .select('id, name, address')
+      .select('id, name, address, photo_url')
       .eq('tenant_id', tenant.id)
-      .eq('is_active', true),
+      .eq('is_active', true)
+      .order('sort_order', { ascending: true }),
     supabase.from('business_hours').select('weekday').eq('tenant_id', tenant.id),
   ])
 
@@ -86,7 +87,11 @@ export default async function BookPage({ params, searchParams }: Props) {
   const locations = Object.fromEntries(
     (locationsRes.data ?? []).map((l) => [
       l.id as string,
-      { name: l.name as string, address: (l.address as string | null) ?? null },
+      {
+        name: l.name as string,
+        address: (l.address as string | null) ?? null,
+        photoUrl: (l.photo_url as string | null) ?? null,
+      },
     ])
   )
 
