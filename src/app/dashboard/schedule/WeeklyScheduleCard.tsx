@@ -72,7 +72,8 @@ export function WeeklyScheduleCard({
   }).length
 
   function locationName(id: string | null): string {
-    if (!id) return locations.length > 0 ? '不限地點' : ''
+    // 有兩個以上據點時，「不限」是一個會出事的狀態，格子上就要看得出來
+    if (!id) return locations.length >= 2 ? '未指定據點' : locations.length > 0 ? '不限地點' : ''
     return locations.find((l) => l.id === id)?.name ?? '已停用的據點'
   }
 
@@ -128,12 +129,16 @@ export function WeeklyScheduleCard({
       }
     >
       <div className="px-5 pt-1 pb-5">
-        {/* 有兩個以上據點卻沒綁，車程永遠算不到，兩邊時段會重疊開放 */}
+        {/* 舊文案寫「兩個據點的時段會同時開放」，害人以為不綁就是聰明地兩邊都算。
+            實際上沒綁 = 沒有地點可以算，travel_minutes 兩邊都是 null 會直接回 0 */}
         {locations.length >= 2 && unassigned > 0 && (
           <p className="mb-3 rounded-sm bg-warn-bg px-4 py-3 text-[11.5px] leading-relaxed font-semibold text-warn">
             你有 {locations.length} 個據點，但有 {unassigned} 天還沒指定在哪一邊。
-            沒綁的話系統會當成「哪裡都可以」，據點之間的車程不會被算進去，
-            兩個據點的時段會同時開放給客人。點下面的日子選一下就好。
+            沒指定的那天，時段不屬於任何據點——客人選不到地點、行事曆上也不會顯示，
+            而且兩筆預約之間的<b>車程一律算 0</b>，你會來不及趕過去。
+            <br />
+            想兩邊都開放的話，在同一天<b>加第二段</b>、時間填一樣、據點選另一間就好。
+            那樣一邊被約走時，另一邊會自動扣掉車程與整理時間。
           </p>
         )}
 
@@ -232,7 +237,9 @@ export function WeeklyScheduleCard({
                         })
                       }
                     >
-                      <option value="">不限地點</option>
+                      <option value="">
+                        {locations.length >= 2 ? '不指定（車程不計）' : '不限地點'}
+                      </option>
                       {locations.map((l) => (
                         <option key={l.id} value={l.id}>
                           {l.name}
