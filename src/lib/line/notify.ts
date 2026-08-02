@@ -7,6 +7,7 @@ import {
   DEFAULT_WELCOME,
   bookingCardMessage,
   bookingConfirmedMessage,
+  cancelConfirmMessage,
   cancelledForCustomerMessage,
   confirmRequestMessage,
   customerCancelledForOperatorMessage,
@@ -337,6 +338,39 @@ export async function notifyBookingExpired(bookingId: string): Promise<void> {
     ],
     type: 'booking_expired',
     customerId: row.customers?.id ?? null,
+  })
+}
+
+/**
+ * 客人按了取消，先問一次「確定嗎」。
+ *
+ * 回傳要回覆的訊息，實際發送交給 webhook——那邊有 replyToken，
+ * 走回覆不計免費額度。
+ */
+export async function buildCancelConfirm(
+  bookingId: string,
+  lineUserId: string
+): Promise<LineMessage | null> {
+  const row = await load(bookingId)
+  if (!row?.tenants) return null
+
+  // 不是這個人的預約就不給看內容。轉傳出去的卡片按下來會落在這裡
+  if (row.customers?.line_user_id !== lineUserId) return null
+  if (row.status !== 'pending' && row.status !== 'confirmed') return null
+
+  const start = new Date(row.start_at).getTime()
+  const hoursLeft = Math.max(0, Math.round((start - Date.now()) / 3_600_000))
+
+  const { data: settings } = await createAdminSupabaseClient()
+    .from('tenant_settings')
+    .select('refundable_hours')
+    .eq('tenant_id', row.tenant_id)
+    .maybeSingle()
+
+  return cancelConfirmMessage({
+    booking: briefOf(row),
+    late: hoursLeft < Number(settings?.refundable_hours ?? 48),
+    hoursLeft,
   })
 }
 

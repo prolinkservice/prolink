@@ -3,6 +3,7 @@ import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 import { loadChannel, replyMessage, verifySignature } from '@/lib/line/channel'
 import { codeMatches } from '@/lib/line/secrets'
 import {
+  buildCancelConfirm,
   buildWelcome,
   looksLikeBookingRequest,
   notifyCustomerCancelled,
@@ -140,9 +141,32 @@ async function handlePostback(ctx: Ctx & { data: string }) {
   const params = new URLSearchParams(ctx.data)
   const action = params.get('a')
   const bookingId = params.get('b')
-  if (!bookingId || (action !== 'confirm' && action !== 'cancel')) return
+  const known = ['confirm', 'cancel', 'cancel_yes', 'cancel_no']
+  if (!bookingId || !action || !known.includes(action)) return
 
   const supabase = createAdminSupabaseClient()
+
+  // 按下取消先問一次「確定嗎」。卡片會一直留在對話裡，
+  // 客人幾天後回頭捲訊息很容易誤觸，而取消是不可逆的——
+  // 時段當場釋出，可能立刻被別人約走。這一則走回覆，不計額度
+  if (action === 'cancel') {
+    const confirm = await buildCancelConfirm(bookingId, ctx.userId)
+    await replyMessage(
+      ctx.accessToken,
+      ctx.replyToken,
+      confirm
+        ? [confirm]
+        : [{ type: 'text', text: '這筆預約已經不能取消了，麻煩直接跟我說一聲。' }]
+    )
+    return
+  }
+
+  if (action === 'cancel_no') {
+    await replyMessage(ctx.accessToken, ctx.replyToken, [
+      { type: 'text', text: '好的，預約保留著，到時候見 👍' },
+    ])
+    return
+  }
 
   if (action === 'confirm') {
     const { error } = await supabase.rpc('confirm_booking_by_line', {

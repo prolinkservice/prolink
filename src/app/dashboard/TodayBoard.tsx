@@ -6,7 +6,9 @@ import {
   STATUS_TONE,
   SOURCE_LABEL,
   canCancel,
+  countsTowardRevenue,
   durationMinutes,
+  isDropped,
   isInProgress,
   isLive,
   money,
@@ -55,9 +57,14 @@ export function TodayBoard({
 
   const live = today.filter(isLive)
   const expected = today
-    .filter((b) => b.kind === 'booking' && b.status !== 'cancelled' && b.status !== 'no_show')
+    .filter(countsTowardRevenue)
     .reduce((sum, b) => sum + Number(b.actual_amount ?? b.quoted_price ?? 0), 0)
   const toClose = [...pendingClose, ...today.filter((b) => needsClosing(b))]
+
+  // 取消掉的不排進行程。那一格已經還回去了，
+  // 留在時間軸上只會讓老師以為那個時段還被佔著
+  const shown = today.filter((b) => !isDropped(b))
+  const dropped = today.length - shown.length
 
   const label = formatDayLabel(todayDate)
 
@@ -83,6 +90,14 @@ export function TodayBoard({
         <Stat label="預計收入" value={`NT$ ${money(expected)}`} />
         <Stat label="待結案" value={String(toClose.length)} tone={toClose.length > 0} />
       </div>
+
+      {/* 取消的不排進行程，但要讓老師知道本來有人——
+          不然他會覺得「今天怎麼這麼閒」卻不知道是被退掉的 */}
+      {dropped > 0 && shown.length > 0 && (
+        <p className="mt-3 px-1 text-[11.5px] font-semibold text-ink-3">
+          今天另有 {dropped} 筆已取消，時段已經放回去了。
+        </p>
+      )}
 
       {toClose.length > 0 && (
         <section className="mt-4 rounded-lg bg-warn-bg px-4 py-3.5">
@@ -115,11 +130,13 @@ export function TodayBoard({
         </section>
       )}
 
-      {today.length === 0 ? (
+      {shown.length === 0 ? (
         <div className="mt-3.5 flex flex-wrap items-center gap-4 rounded-lg bg-card px-5 py-6 shadow-soft">
           <div className="size-11 shrink-0 rounded-md bg-accent" />
           <div className="min-w-[16ch] flex-1">
-            <b className="block text-[14.5px] font-extrabold">今天還沒有預約</b>
+            <b className="block text-[14.5px] font-extrabold">
+              {dropped > 0 ? '今天的預約都取消了' : '今天還沒有預約'}
+            </b>
             <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">
               把預約連結傳給客人，他們就能自己約；接到電話也可以自己建一筆。
             </p>
@@ -135,8 +152,8 @@ export function TodayBoard({
         <ol className="relative mt-4 flex flex-col gap-2.5 pl-14 before:absolute before:top-3 before:bottom-3 before:left-[46px] before:w-px before:bg-hairline">
           {/* 左邊那條線加每筆的時間，就是一把刻度尺：
               時間離開卡片、變成行程的骨架 */}
-          {today.map((b, i) => {
-            const prev = today[i - 1]
+          {shown.map((b, i) => {
+            const prev = shown[i - 1]
             const gap = prev ? travelBetween(prev, b, travel) : null
             const running = isInProgress(b)
             const location = locations.find((l) => l.id === b.location_id)

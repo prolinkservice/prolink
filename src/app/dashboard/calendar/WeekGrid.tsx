@@ -5,7 +5,9 @@ import Link from 'next/link'
 import {
   STATUS_LABEL,
   canCancel,
+  countsTowardRevenue,
   durationMinutes,
+  isDropped,
   money,
   type BookingRow,
 } from '@/lib/bookings'
@@ -45,6 +47,9 @@ export function WeekGrid({
   const [checkout, setCheckout] = useState<BookingRow | null>(null)
   const [cancelling, setCancelling] = useState<BookingRow | null>(null)
   const [creating, setCreating] = useState<{ date: string; time: string } | null>(null)
+
+  // 取消的雖然不畫在格子上，還是要讓老師知道「這週有人退掉」
+  const dropped = bookings.filter((b) => b.kind === 'booking' && isDropped(b)).length
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
   const hours = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i)
@@ -123,7 +128,10 @@ export function WeekGrid({
             </div>
 
             {days.map((date) => {
-              const dayBookings = bookings.filter((b) => dayOf(b.start_at) === date)
+              // 取消掉的不畫。那一格已經還回去了，畫著會讓人以為還被佔著
+              const dayBookings = bookings.filter(
+                (b) => dayOf(b.start_at) === date && !isDropped(b)
+              )
               return (
                 <div
                   key={date}
@@ -144,10 +152,9 @@ export function WeekGrid({
                     const top =
                       ((minutesOfDay(b.start_at, timezone) - START_HOUR * 60) / 60) * HOUR_PX
                     const height = Math.max((durationMinutes(b) / 60) * HOUR_PX - 3, 22)
-                    const dimmed =
-                      b.status === 'cancelled' ||
-                      b.status === 'expired' ||
-                      b.status === 'no_show'
+                    // 取消的已經在上面濾掉了，剩下會淡化的只有放鳥——
+                    // 那筆時間確實被佔用過，所以留在格子上
+                    const dimmed = b.status === 'no_show'
                     return (
                       <button
                         key={b.id}
@@ -198,12 +205,14 @@ export function WeekGrid({
       </div>
 
       <p className="mt-2 px-1 text-[11.5px] text-ink-3">
-        本週共 {bookings.filter((b) => b.kind === 'booking').length} 筆，預計收入 NT${' '}
+        本週共 {bookings.filter((b) => b.kind === 'booking' && !isDropped(b)).length} 筆，
+        預計收入 NT${' '}
         {money(
           bookings
-            .filter((b) => b.kind === 'booking' && b.status !== 'cancelled')
+            .filter(countsTowardRevenue)
             .reduce((sum, b) => sum + Number(b.actual_amount ?? b.quoted_price ?? 0), 0)
         )}
+        {dropped > 0 && `　·　另有 ${dropped} 筆已取消`}
       </p>
 
       {creating && (

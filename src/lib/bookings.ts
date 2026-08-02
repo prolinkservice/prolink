@@ -125,6 +125,31 @@ export function isLive(b: BookingRow): boolean {
   return b.kind === 'booking' && (b.status === 'confirmed' || b.status === 'pending')
 }
 
+/**
+ * 預約沒了、時段已經還回去。
+ *
+ * 這三個狀態的共通點是「別人現在約得到那一格」，所以行事曆與今日行程
+ * 都不該再畫出來——畫著會讓老師以為那個時間還被佔著。
+ *
+ * 一定要走這支而不是自己列狀態：`cancelled_late`（客人臨時取消）
+ * 就是這樣被漏掉的，漏掉的那筆在行事曆上長得跟正常預約一模一樣。
+ */
+export function isDropped(b: BookingRow): boolean {
+  return (
+    b.status === 'cancelled' || b.status === 'cancelled_late' || b.status === 'expired'
+  )
+}
+
+/**
+ * 算得進營收的預約。
+ *
+ * 還沒發生的用定價估、已完成的用實收；放鳥與各種取消一律不算——
+ * 客人沒來就是沒有收入，把它算進「預計收入」只會讓數字騙自己。
+ */
+export function countsTowardRevenue(b: BookingRow): boolean {
+  return b.kind === 'booking' && (isLive(b) || b.status === 'completed')
+}
+
 export function money(n: number | null | undefined): string {
   return Number(n ?? 0).toLocaleString('zh-TW')
 }

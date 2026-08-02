@@ -255,6 +255,51 @@ export function cancelledForCustomerMessage(input: {
   }
 }
 
+/**
+ * 按下取消之後先問一次「確定嗎」。
+ *
+ * 規格 §6.5 說「取消愈好按，放鳥愈少」，但那指的是**找得到**取消的入口，
+ * 不是手滑就沒了。卡片會一直留在對話裡，客人幾天後回頭捲訊息很容易誤觸，
+ * 而取消是不可逆的——時段當場釋出，可能立刻被別人約走。
+ *
+ * 這一則走回覆訊息，不計免費額度，所以問這一句是零成本。
+ */
+export function cancelConfirmMessage(input: {
+  booking: BookingBrief
+  late: boolean
+  hoursLeft: number
+}): LineMessage {
+  const b = input.booking
+  return {
+    type: 'flex',
+    altText: `確定要取消 ${b.when} 的預約嗎？`,
+    contents: bubble({
+      title: '確定要取消嗎？',
+      color: BRICK,
+      lead: '取消之後這個時段會馬上開放給其他人，可能沒辦法再約回來。',
+      rows: [
+        { label: '項目', value: b.serviceName },
+        { label: '時間', value: b.when },
+      ],
+      buttons: [
+        {
+          label: '確定取消',
+          tone: 'primary',
+          action: { type: 'postback', label: '確定取消', data: `a=cancel_yes&b=${b.bookingId}` },
+        },
+        {
+          label: '不取消，我會到',
+          tone: 'quiet',
+          action: { type: 'postback', label: '不取消', data: `a=cancel_no&b=${b.bookingId}` },
+        },
+      ],
+      footNote: input.late
+        ? `距離開始剩 ${input.hoursLeft} 小時，這時候取消會計 0.5 點`
+        : undefined,
+    }),
+  }
+}
+
 /** 超過期限沒確認，時段釋出。文案不能責備客人——他可能只是沒看到訊息 */
 export function expiredForCustomerMessage(input: {
   booking: BookingBrief
