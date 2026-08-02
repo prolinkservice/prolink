@@ -30,6 +30,16 @@ export default async function DashboardLayout({
   if (!current) redirect('/onboarding')
 
   const { tenant, member } = current
+
+  // 測試模式開著的時候，每一頁都要看得到。這是唯一一個
+  // 「開著的時候所有東西看起來都壞掉」的設定——藏在 LINE 設定頁裡
+  // 一定會被忘記，然後花一小時 debug 一個根本沒壞的系統
+  const { data: settings } = await supabase
+    .from('tenant_settings')
+    .select('test_mode')
+    .eq('tenant_id', tenant.id)
+    .maybeSingle()
+
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://prolink.tw').replace(/\/$/, '')
   const themeCookie = (await cookies()).get(THEME_COOKIE)?.value
   const theme: Theme =
@@ -42,6 +52,7 @@ export default async function DashboardLayout({
       slug={tenant.slug}
       bookingUrl={`${siteUrl}/p/${tenant.slug}`}
       theme={theme}
+      testMode={settings?.test_mode ?? false}
     >
       {children}
     </DashboardShell>

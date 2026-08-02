@@ -44,7 +44,7 @@ export default async function LinePage() {
       .eq('quota_month', month),
     supabase
       .from('tenant_settings')
-      .select('notify_self_on_new_booking, line_welcome_message')
+      .select('notify_self_on_new_booking, line_welcome_message, test_mode')
       .eq('tenant_id', tenant.id)
       .maybeSingle(),
   ])
@@ -96,6 +96,8 @@ export default async function LinePage() {
         notifySelfOnNewBooking={settingsRes.data?.notify_self_on_new_booking ?? true}
         welcomeMessage={settingsRes.data?.line_welcome_message ?? ''}
         defaultWelcome={DEFAULT_WELCOME(tenant.name)}
+        testMode={settingsRes.data?.test_mode ?? false}
+        operatorBound={state.operatorBound}
       />
 
       <ContactForm

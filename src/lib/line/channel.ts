@@ -120,6 +120,36 @@ export type LineMessage =
   | { type: 'flex'; altText: string; contents: unknown }
 
 /**
+ * 測試模式：這則訊息該不該閉嘴。
+ *
+ * 職人接上來的官方帳號通常已經有幾百個好友，導入期他想先自己試，
+ * 又不敢拿真實客人冒險。打開之後只有「已綁定的操作者」收得到，
+ * 也就是他自己與助理。
+ *
+ * 綁定碼那條路徑不套用這道檢查——還沒綁的人本來就不是操作者，
+ * 套下去就永遠綁不上了。
+ */
+export async function isMuted(tenantId: string, lineUserId: string): Promise<boolean> {
+  const supabase = createAdminSupabaseClient()
+
+  const { data: settings } = await supabase
+    .from('tenant_settings')
+    .select('test_mode')
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
+  if (!settings?.test_mode) return false
+
+  const { data: operator } = await supabase
+    .from('tenant_line_operators')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('line_user_id', lineUserId)
+    .maybeSingle()
+
+  return !operator
+}
+
+/**
  * 回覆訊息。**不計入免費額度**，所以能用回覆的就不要用推播——
  * 歡迎訊息、客人按按鈕之後的答覆都走這條，一個月省下的量很可觀。
  * 回覆權杖只在事件發生後短時間內有效，過期就發不出去，這是刻意的。
@@ -160,7 +190,13 @@ export async function pushMessage(input: {
   /** 用量看板要拆給職人看錢花在哪 */
   type: string
   customerId?: string | null
-}): Promise<{ ok: true } | { ok: false; error: string }> {
+}): Promise<{ ok: true } | { ok: false; error: string; muted?: boolean }> {
+  // 測試模式下對真實客人閉嘴。要分得出「沒發」與「發失敗」——
+  // 後者會把客人標成封鎖了官方帳號，那是錯的
+  if (await isMuted(input.tenantId, input.to)) {
+    return { ok: false, error: '測試模式：只發給你自己', muted: true }
+  }
+
   const channel = await loadChannel(input.tenantId)
   if (!channel) return { ok: false, error: '這家店還沒接上 LINE 官方帳號' }
 

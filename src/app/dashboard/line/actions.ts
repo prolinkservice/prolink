@@ -15,6 +15,7 @@ export type ActionResult = { ok: true } | { ok: false; error: string }
 export async function saveNotifySettings(input: {
   notifySelfOnNewBooking: boolean
   welcomeMessage: string
+  testMode: boolean
 }): Promise<ActionResult> {
   const current = await getCurrentTenant()
   if (!current) return { ok: false, error: '請先登入' }
@@ -27,6 +28,7 @@ export async function saveNotifySettings(input: {
       tenant_id: tenant.id,
       notify_self_on_new_booking: input.notifySelfOnNewBooking,
       line_welcome_message: input.welcomeMessage.trim() || null,
+      test_mode: input.testMode,
     },
     { onConflict: 'tenant_id' }
   )

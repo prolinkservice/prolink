@@ -265,7 +265,8 @@ export async function notifyNewBooking(
       customerId: row.customers?.id ?? null,
     })
     reached = res.ok
-    if (!res.ok && row.customers?.id) await markBlocked(row.customers.id)
+    // 測試模式沒發出去不是客人封鎖了你，別把他標記成封鎖
+    if (!res.ok && !res.muted && row.customers?.id) await markBlocked(row.customers.id)
   }
 
   // ③ 收不到確認訊息的人，不能把他的預約留在待確認等著被釋出
@@ -395,7 +396,7 @@ export async function notifyTenantCancelled(bookingId: string): Promise<void> {
     type: 'booking_cancelled',
     customerId: row.customers?.id ?? null,
   })
-  if (!res.ok && row.customers?.id) await markBlocked(row.customers.id)
+  if (!res.ok && !res.muted && row.customers?.id) await markBlocked(row.customers.id)
 }
 
 /** 客人自己在 LINE 按了取消 */

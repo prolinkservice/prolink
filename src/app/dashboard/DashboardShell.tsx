@@ -42,6 +42,7 @@ export function DashboardShell({
   slug,
   bookingUrl,
   theme,
+  testMode,
   children,
 }: {
   tenantName: string
@@ -49,6 +50,8 @@ export function DashboardShell({
   slug: string
   bookingUrl: string
   theme: Theme
+  /** 開著時每一頁都掛一條橫幅。忘記它開著會很痛 */
+  testMode: boolean
   children: React.ReactNode
 }) {
   const pathname = usePathname()
@@ -100,7 +103,18 @@ export function DashboardShell({
           </div>
         </header>
 
-        <div className="w-full max-w-[1080px] px-5 py-6 sm:px-7">{children}</div>
+        <div className="w-full max-w-[1080px] px-5 py-6 sm:px-7">
+          {testMode && (
+            <Link
+              href="/dashboard/line"
+              className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-0.5 rounded-sm bg-warn-bg px-4 py-2.5 text-[12px] font-extrabold text-warn"
+            >
+              測試模式進行中：LINE 訊息只發給你自己，客人收不到
+              <span className="underline underline-offset-4">去關掉</span>
+            </Link>
+          )}
+          {children}
+        </div>
       </div>
     </div>
   )

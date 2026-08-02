@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 手機上的行事曆</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1ea; --card:#fffcf8; --sunk:#efe7dc;
+  --ink:#2a211c; --ink-2:#574a42; --ink-3:#857466; --ink-4:#b0a093;
+  --hairline:#e4d9cc;
+  --clay:#a34e33; --clay-soft:#f4e3da;
+  --ochre:#a9762b; --ochre-soft:#f7ebd6;
+  --brick:#a63e33; --brick-soft:#f8e4e0;
+  --olive:#6b7a45; --olive-soft:#ecefdf;
+  --info:#4a6b8a; --info-soft:#e3ecf3;
+  --sh-1:0 1px 2px rgba(42,33,28,.05), 0 4px 14px -10px rgba(42,33,28,.35);
+  --sh-2:0 2px 4px rgba(42,33,28,.05), 0 22px 44px -28px rgba(42,33,28,.45);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Noto Sans TC","PingFang TC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.7;-webkit-font-smoothing:antialiased}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.page{max-width:1180px;margin:0 auto;padding:50px 22px 90px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:15px}
+.kicker::before{content:"";width:36px;height:1px;background:var(--clay)}
+h1{font-family:var(--display);font-size:clamp(26px,4.2vw,40px);font-weight:600;line-height:1.12;letter-spacing:-.025em}
+h1 em{font-style:italic;color:var(--clay)}
+.lede{margin-top:14px;max-width:62ch;color:var(--ink-2);font-size:15.5px}
+.lede b{color:var(--ink);font-weight:700}
+section{margin-top:54px}
+.sec-head{display:flex;align-items:flex-end;gap:14px;padding-bottom:12px;margin-bottom:20px;border-bottom:1px solid var(--hairline)}
+.sec-head .n{font-family:var(--display);font-size:30px;font-weight:400;color:var(--clay);line-height:.9}
+.sec-head h2{font-size:19px;font-weight:700}
+
+.plain{background:var(--card);border-radius:18px;box-shadow:var(--sh-1);padding:20px 24px;margin-bottom:18px}
+.plain h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:11px}
+.plain p{font-size:15px;color:var(--ink-2)}
+.plain p+p{margin-top:9px}
+.plain b{color:var(--ink);font-weight:700}
+.warn{margin-top:12px;background:var(--brick-soft);color:var(--brick);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+.good{margin-top:12px;background:var(--olive-soft);color:var(--olive);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+.note{margin-top:12px;background:var(--clay-soft);color:var(--clay);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+
+.stage{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.caption{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin-bottom:10px;font-weight:700}
+.caption em{font-style:normal;color:var(--clay)}
+.col{flex:0 0 auto;width:322px;max-width:100%}
+
+.phone{border-radius:32px;padding:9px;background:linear-gradient(160deg,#3a3733,#1a1817);box-shadow:0 26px 52px -30px rgba(0,0,0,.5)}
+.screen{background:var(--bg);border-radius:25px;overflow:hidden;min-height:560px;position:relative}
+.hd{display:flex;align-items:center;gap:9px;padding:15px 16px 10px}
+.hd b{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.hd .mon{font-family:var(--display);font-size:13px;color:var(--ink-3);font-weight:600}
+.hd .nav{margin-left:auto;display:flex;gap:6px}
+.hd .nav span{width:30px;height:30px;border-radius:50%;background:var(--card);box-shadow:var(--sh-1);display:grid;place-items:center;font-size:13px;font-weight:800;color:var(--ink-3)}
+.bd{padding:0 16px 16px}
+
+/* A：七天橫列 */
+.week{display:flex;gap:6px;margin-bottom:14px}
+.d{flex:1;background:var(--card);border-radius:13px;box-shadow:var(--sh-1);padding:8px 0 7px;text-align:center;position:relative}
+.d.on{background:var(--clay);color:#fff;box-shadow:var(--sh-2)}
+.d.today::after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--clay)}
+.d.on.today::after{background:#fff}
+.d i{display:block;font-style:normal;font-size:9.5px;font-weight:800;opacity:.7}
+.d b{display:block;font-family:var(--display);font-size:17px;font-weight:600;margin-top:1px;line-height:1.1}
+.dots{display:flex;gap:2px;justify-content:center;margin-top:4px;height:5px}
+.dots i{width:4px;height:4px;border-radius:50%;background:var(--clay);opacity:.75}
+.d.on .dots i{background:#fff}
+.d.rest{background:var(--sunk);box-shadow:none;color:var(--ink-4)}
+
+/* 時間軸（沿用今日行程的樣子） */
+.tl{position:relative;padding-left:52px}
+.tl::before{content:"";position:absolute;left:44px;top:10px;bottom:10px;width:1px;background:var(--hairline)}
+.ev{position:relative;margin-bottom:9px}
+.ev .clock{position:absolute;left:-52px;top:11px;width:44px;padding-right:10px;text-align:right}
+.ev .clock b{font-family:var(--display);font-size:14px;font-weight:600;display:block;line-height:1}
+.ev .clock small{font-size:9.5px;color:var(--ink-3);display:block;margin-top:2px}
+.ev .card{background:var(--card);border-radius:13px;box-shadow:var(--sh-1);padding:11px 13px}
+.ev .card.now{border-left:3px solid var(--clay);box-shadow:var(--sh-2)}
+.ev .card b{font-size:14px;font-weight:800}
+.ev .card .meta{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.pill{display:inline-block;font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:1px}
+.p-ok{background:var(--olive-soft);color:var(--olive)}
+.p-warn{background:var(--ochre-soft);color:var(--ochre)}
+.p-mute{background:var(--sunk);color:var(--ink-3)}
+.travel{font-size:10.5px;color:var(--ink-3);font-weight:700;margin:0 0 9px 0}
+.gap{background:var(--sunk);border-radius:11px;padding:9px 13px;font-size:11.5px;color:var(--ink-3);font-weight:700;margin-bottom:9px;text-align:center}
+
+.fab{position:absolute;right:18px;bottom:18px;background:var(--clay);color:#fff;border-radius:999px;padding:13px 20px;font-size:13px;font-weight:800;box-shadow:0 12px 26px -12px rgba(163,78,51,.8)}
+
+/* B：月曆 */
+.mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.mhead{font-size:9.5px;font-weight:800;color:var(--ink-4);text-align:center;padding-bottom:5px}
+.mc{aspect-ratio:1;background:var(--card);border-radius:11px;box-shadow:var(--sh-1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.mc b{font-family:var(--display);font-size:14px;font-weight:600;line-height:1}
+.mc .n2{font-size:9px;font-weight:800;color:var(--clay)}
+.mc.rest{background:var(--sunk);box-shadow:none;color:var(--ink-4)}
+.mc.on{background:var(--clay);color:#fff}
+.mc.on .n2{color:#fff}
+.mc.out{opacity:.32}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;box-shadow:0 -18px 44px -24px rgba(42,33,28,.55);padding:14px 16px 18px;max-height:56%;overflow:hidden}
+.sheet .grab{width:36px;height:4px;border-radius:999px;background:var(--hairline);margin:0 auto 11px}
+.sheet .st{display:flex;align-items:baseline;gap:8px;margin-bottom:11px}
+.sheet .st b{font-size:15px;font-weight:800}
+.sheet .st span{font-size:11.5px;color:var(--ink-3);font-weight:700}
+
+table.t{width:100%;border-collapse:collapse;background:var(--card);border-radius:18px;box-shadow:var(--sh-1);overflow:hidden}
+table.t th,table.t td{padding:12px 15px;text-align:left;font-size:14px;border-bottom:1px solid var(--hairline);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t th{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);font-weight:700}
+
+.ask{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);padding:20px 24px;margin-bottom:14px}
+.ask .q{font-size:16px;font-weight:700;display:flex;gap:11px;align-items:baseline}
+.ask .q .n{font-family:var(--display);color:var(--clay);font-size:20px}
+.ask .why{font-size:13.5px;color:var(--ink-3);margin:7px 0 12px 31px}
+.opts{display:grid;gap:9px;margin-left:31px}
+.opt{background:var(--sunk);border-radius:13px;padding:11px 14px;font-size:13.5px;color:var(--ink-2)}
+.opt b{color:var(--ink);font-weight:700}
+.opt.rec{background:var(--olive-soft);color:var(--olive)}
+.opt.rec b{color:var(--olive)}
+.opt .rectag{float:right;font-size:10px;font-weight:800;letter-spacing:.08em}
+
+@media(max-width:860px){.page{padding:36px 16px 70px}.col{width:100%;max-width:322px}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <span class="kicker">Draft 16 · 行事曆手機版</span>
+  <h1>手機上<em>一天一格</em></h1>
+  <p class="lede">
+    現在的週格是七欄併排，在 375 寬的手機上每欄只有 48px——
+    字要瞇著眼看、方塊點不準、還得左右上下兩個方向捲。
+    改成<b>先選一天，再看那天的完整行程</b>。
+    <b>電腦上維持現在的週格</b>，那個排下週班很好用，不動它。
+  </p>
+</header>
+
+<!-- 1 -->
+<section>
+  <div class="sec-head"><span class="n">1</span><h2>兩種選日子的方式</h2></div>
+
+  <div class="stage">
+
+    <div class="col">
+      <div class="caption"><em>A</em> · 七天橫列 <span style="color:var(--olive)">建議</span></div>
+      <div class="phone"><div class="screen">
+        <div class="hd">
+          <b>行事曆</b><span class="mon">8月</span>
+          <span class="nav"><span>‹</span><span>›</span></span>
+        </div>
+        <div class="bd">
+          <div class="week">
+            <span class="d rest"><i>日</i><b>2</b><span class="dots"></span></span>
+            <span class="d"><i>一</i><b>3</b><span class="dots"><i></i><i></i></span></span>
+            <span class="d on today"><i>二</i><b>4</b><span class="dots"><i></i><i></i><i></i></span></span>
+            <span class="d"><i>三</i><b>5</b><span class="dots"><i></i></span></span>
+            <span class="d"><i>四</i><b>6</b><span class="dots"></span></span>
+            <span class="d"><i>五</i><b>7</b><span class="dots"><i></i><i></i></span></span>
+            <span class="d"><i>六</i><b>8</b><span class="dots"><i></i><i></i><i></i><i></i></span></span>
+          </div>
+
+          <div class="tl">
+            <div class="ev">
+              <span class="clock"><b>18:00</b><small>60分</small></span>
+              <div class="card now">
+                <b>陳小姐<span class="pill p-ok">已確認</span></b>
+                <p class="meta">全身運動按摩 · 六合健身房 · 0912-345-678</p>
+              </div>
+            </div>
+
+            <p class="travel">↓ 移動 30 分 · 六合 → 五甲</p>
+
+            <div class="ev">
+              <span class="clock"><b>20:00</b><small>30分</small></span>
+              <div class="card">
+                <b>林先生<span class="pill p-warn">待確認</span></b>
+                <p class="meta">半身運動按摩 · 鳳山五甲</p>
+              </div>
+            </div>
+
+            <div class="gap">20:30–21:00 還空著　·　點一下建立預約</div>
+          </div>
+        </div>
+        <span class="fab">＋ 新增預約</span>
+      </div></div>
+      <div class="plain" style="margin-top:12px">
+        <p style="font-size:13.5px">
+          <b>格子上的圓點＝那天有幾筆</b>，最多畫四顆。
+          一眼看得出哪天滿、哪天空，不用一天一天點進去。
+        </p>
+        <p style="font-size:13.5px">
+          日期底下那顆小點是「今天」。休息日整格變灰。
+          左右箭頭換上下週，跟現在一樣。
+        </p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption"><em>B</em> · 整月格子 + 滑出面板</div>
+      <div class="phone"><div class="screen">
+        <div class="hd">
+          <b>行事曆</b><span class="mon">2026 年 8 月</span>
+          <span class="nav"><span>‹</span><span>›</span></span>
+        </div>
+        <div class="bd">
+          <div class="mgrid" style="margin-bottom:5px">
+            <span class="mhead">日</span><span class="mhead">一</span><span class="mhead">二</span>
+            <span class="mhead">三</span><span class="mhead">四</span><span class="mhead">五</span><span class="mhead">六</span>
+          </div>
+          <div class="mgrid">
+            <span class="mc rest"><b>2</b></span>
+            <span class="mc"><b>3</b><span class="n2">2</span></span>
+            <span class="mc on"><b>4</b><span class="n2">3</span></span>
+            <span class="mc"><b>5</b><span class="n2">1</span></span>
+            <span class="mc"><b>6</b></span>
+            <span class="mc"><b>7</b><span class="n2">2</span></span>
+            <span class="mc"><b>8</b><span class="n2">4</span></span>
+            <span class="mc rest"><b>9</b></span>
+            <span class="mc"><b>10</b><span class="n2">1</span></span>
+            <span class="mc"><b>11</b><span class="n2">3</span></span>
+            <span class="mc"><b>12</b></span>
+            <span class="mc"><b>13</b><span class="n2">2</span></span>
+            <span class="mc"><b>14</b><span class="n2">2</span></span>
+            <span class="mc"><b>15</b><span class="n2">5</span></span>
+            <span class="mc rest"><b>16</b></span>
+            <span class="mc"><b>17</b></span>
+            <span class="mc"><b>18</b><span class="n2">1</span></span>
+            <span class="mc"><b>19</b><span class="n2">2</span></span>
+            <span class="mc"><b>20</b></span>
+            <span class="mc"><b>21</b><span class="n2">3</span></span>
+            <span class="mc"><b>22</b><span class="n2">2</span></span>
+          </div>
+        </div>
+
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="st"><b>8/4（二）</b><span>3 筆 · 預計 NT$ 4,200</span></div>
+          <div class="tl">
+            <div class="ev">
+              <span class="clock"><b>18:00</b><small>60分</small></span>
+              <div class="card now">
+                <b>陳小姐<span class="pill p-ok">已確認</span></b>
+                <p class="meta">全身運動按摩 · 六合健身房</p>
+              </div>
+            </div>
+            <p class="travel">↓ 移動 30 分 · 六合 → 五甲</p>
+            <div class="ev">
+              <span class="clock"><b>20:00</b><small>30分</small></span>
+              <div class="card">
+                <b>林先生<span class="pill p-warn">待確認</span></b>
+                <p class="meta">半身運動按摩 · 鳳山五甲</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="plain" style="margin-top:12px">
+        <p style="font-size:13.5px">
+          <b>看得到整個月</b>，適合回答「這個月大概幾筆」。
+          但格子只有 40px 見方，手指按容易錯格；
+          面板一拉開就蓋掉半個月，等於還是一次只看得到一天。
+        </p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">電腦上 · 不動</div>
+      <div class="plain">
+        <h3>為什麼分兩套</h3>
+        <p>
+          這兩件事本來就不一樣：<br>
+          手機是<b>在外面看「等一下要去哪」</b>，一次只需要一天；<br>
+          電腦是<b>坐下來排下週的班</b>，需要一次看到七天怎麼疊。
+        </p>
+        <p>
+          所以電腦版維持現在的週格（點空白直接建單那個很好用），
+          手機版換成一天一格。<b>寬度 768px 以下自動切換</b>，
+          不需要你去哪裡設定。
+        </p>
+        <div class="note">
+          📌 平板橫著拿會落在電腦版，直的落在手機版——這通常也是對的。
+        </div>
+      </div>
+
+      <div class="plain">
+        <h3>時間軸沿用今日行程</h3>
+        <p>
+          點開某一天之後的長相，跟你每天在看的「今日行程」<b>完全一樣</b>：
+          時間刻在左邊、移動時間獨立一行、卡片上直接有導航與取消。
+        </p>
+        <div class="good">
+          ✅ 等於行事曆點任何一天，都變成那天的「今日行程」。
+          少學一套介面，那些按鈕也不用再做一次。
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 2 -->
+<section>
+  <div class="sec-head"><span class="n">2</span><h2>順便解決的幾件事</h2></div>
+  <table class="t">
+    <tr><th style="width:34%">現在的問題</th><th>改完</th></tr>
+    <tr>
+      <td>七欄併排，每欄 48px</td>
+      <td>一次一天，卡片整寬，字級跟今日行程一樣大</td>
+    </tr>
+    <tr>
+      <td>要左右又要上下捲</td>
+      <td>只往下捲。換日期是點上面那排</td>
+    </tr>
+    <tr>
+      <td>看不出哪天比較滿</td>
+      <td>日期格子下面用圓點標筆數，一眼掃完一週</td>
+    </tr>
+    <tr>
+      <td>方塊太小，點到旁邊那筆</td>
+      <td>整張卡片可點，觸控區 44px 以上</td>
+    </tr>
+    <tr>
+      <td>移動時間看不到</td>
+      <td>兩筆之間獨立一行寫「移動 30 分 · 六合 → 五甲」</td>
+    </tr>
+    <tr>
+      <td>空白時段要很準地點在格子上</td>
+      <td>空檔獨立一列寫「20:30–21:00 還空著」，整列可點</td>
+    </tr>
+  </table>
+</section>
+
+<!-- 3 -->
+<section>
+  <div class="sec-head"><span class="n">3</span><h2>要你決定的三件事</h2></div>
+
+  <div class="ask">
+    <div class="q"><span class="n">1</span><span>選日子用七天橫列，還是整月格子？</span></div>
+    <p class="why">你說的「一天一格」兩種都符合，差別在一次看得到多長。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>A 七天橫列。</b>手指好按、圓點看得出忙閒、下面直接就是那天的行程不用再拉面板。你平常關心的是這幾天，不是月底。</div>
+      <div class="opt"><b>B 整月格子。</b>看得到全月分布，但格子小、面板一開就蓋掉半個月。</div>
+      <div class="opt"><b>兩個都做，上面加一顆切換。</b>最完整，但要多做一套，而且多一個要學的東西。</div>
+    </div>
+  </div>
+
+  <div class="ask">
+    <div class="q"><span class="n">2</span><span>日期格子上顯示什麼？</span></div>
+    <p class="why">格子只有 40px 寬，塞不下幾個字。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>圓點，一筆一顆，最多四顆。</b>不用讀數字就知道忙不忙，滿了自然看起來很密。</div>
+      <div class="opt"><b>直接寫數字。</b>精確，但要多看一眼才讀得出來，而且 1 跟 4 的視覺重量一樣。</div>
+      <div class="opt"><b>什麼都不放。</b>最乾淨，但得一天一天點進去才知道有沒有客人。</div>
+    </div>
+  </div>
+
+  <div class="ask">
+    <div class="q"><span class="n">3</span><span>空白時段還要能直接建單嗎？</span></div>
+    <p class="why">現在電腦版點格子上的空白，就會用那個時間開建單視窗。</p>
+    <div class="opts">
+      <div class="opt rec"><span class="rectag">建議</span><b>要，但改成整列。</b>兩筆之間的空檔獨立一列寫「20:30–21:00 還空著」，整列可點，比在小格子上瞄準容易太多。</div>
+      <div class="opt"><b>不用，右下角那顆「＋ 新增預約」就夠了。</b>畫面最乾淨，但每次都要自己重填時間。</div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

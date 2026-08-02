@@ -27,6 +27,8 @@ export function NotifyForm({
   notifySelfOnNewBooking,
   welcomeMessage,
   defaultWelcome,
+  testMode: initialTestMode,
+  operatorBound,
 }: {
   plan: 'free' | 'pro'
   connected: boolean
@@ -34,9 +36,13 @@ export function NotifyForm({
   welcomeMessage: string
   /** 沒自己寫的話會發這一段。放在提示框裡讓職人看得到現在到底發什麼 */
   defaultWelcome: string
+  testMode: boolean
+  /** 沒綁定自己的 LINE 就打開測試模式，等於誰都收不到 */
+  operatorBound: boolean
 }) {
   const router = useRouter()
   const [notifySelf, setNotifySelf] = useState(notifySelfOnNewBooking)
+  const [testMode, setTestMode] = useState(initialTestMode)
   const [greeting, setGreeting] = useState(welcomeMessage)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
@@ -49,6 +55,7 @@ export function NotifyForm({
       const res = await saveNotifySettings({
         notifySelfOnNewBooking: notifySelf,
         welcomeMessage: greeting,
+        testMode,
       })
       if (!res.ok) return setError(res.error)
       setSaved(true)
@@ -71,6 +78,53 @@ export function NotifyForm({
       }
     >
       <div className="px-5 pt-1 pb-5">
+        {/* 測試模式擺在最上面而且要夠大。這是唯一一個「開著的時候，
+            所有東西看起來都壞掉」的設定——忘記它開著，會花一小時
+            debug 一個根本沒壞的系統 */}
+        {plan === 'pro' && (
+          <div
+            className={cn(
+              'mb-4 rounded-sm px-4 py-3.5',
+              testMode ? 'bg-warn-bg' : 'bg-sunk'
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => setTestMode((v) => !v)}
+              className="flex w-full items-start gap-2.5 text-left"
+            >
+              <span
+                className={cn(
+                  'mt-px grid size-[19px] shrink-0 place-items-center rounded-[6px] text-[12px] font-extrabold',
+                  testMode ? 'bg-warn text-white' : 'bg-card text-transparent'
+                )}
+              >
+                ✓
+              </span>
+              <span className={cn('text-[13px] font-extrabold', testMode && 'text-warn')}>
+                測試模式
+                <small
+                  className={cn(
+                    'mt-0.5 block text-[11.5px] leading-relaxed font-semibold',
+                    testMode ? 'text-warn' : 'text-ink-3'
+                  )}
+                >
+                  {testMode
+                    ? '進行中：所有 LINE 訊息只發給你自己，真實客人一則都收不到。要正式啟用記得關掉。'
+                    : '打開之後，系統發出的 LINE 訊息只會送到你自己綁定的帳號。導入期想先自己試、又不想動到既有客人時用。'}
+                </small>
+              </span>
+            </button>
+
+            {testMode && !operatorBound && (
+              <p className="mt-2.5 rounded-sm bg-danger-bg px-3.5 py-2.5 text-[11.5px] leading-relaxed font-bold text-danger">
+                你還沒把自己的 LINE 綁上來，所以現在等於誰都收不到訊息。
+                先到上面用綁定碼綁一次。
+              </p>
+            )}
+          </div>
+        )}
+
         {/* 免費方案一則都不發是刻意的，但一定要在他接完官方帳號之前就講清楚，
             不要讓他接了半天才發現沒東西發得出去（2026-08-02 定案） */}
         {plan === 'free' ? (

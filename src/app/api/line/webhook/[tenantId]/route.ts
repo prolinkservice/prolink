@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase-admin'
-import { loadChannel, replyMessage, verifySignature } from '@/lib/line/channel'
+import { isMuted, loadChannel, replyMessage, verifySignature } from '@/lib/line/channel'
 import { codeMatches } from '@/lib/line/secrets'
 import {
   buildCancelConfirm,
@@ -102,6 +102,10 @@ type Ctx = {
 async function handleFollow(ctx: Ctx) {
   const supabase = createAdminSupabaseClient()
 
+  // 測試模式：真實客人加好友時我們完全不出聲，
+  // 讓 LINE 後台自己那則歡迎訊息照常運作
+  if (await isMuted(ctx.tenantId, ctx.userId)) return
+
   // 之前封鎖過又回來的舊客：把封鎖記號清掉，他又收得到通知了
   await supabase
     .from('customers')
@@ -143,6 +147,10 @@ async function handlePostback(ctx: Ctx & { data: string }) {
   const bookingId = params.get('b')
   const known = ['confirm', 'cancel', 'cancel_yes', 'cancel_no']
   if (!bookingId || !action || !known.includes(action)) return
+
+  // 測試模式：真實客人手上可能還留著開測試之前發出去的卡片，
+  // 按下去不該真的動到他的預約
+  if (await isMuted(ctx.tenantId, ctx.userId)) return
 
   const supabase = createAdminSupabaseClient()
 
@@ -261,6 +269,9 @@ async function handleText(input: Ctx & { text: string; bindCode: string | null }
  */
 async function handleKeyword(ctx: Ctx & { text: string }) {
   if (!looksLikeBookingRequest(ctx.text)) return
+
+  // 測試模式：這條路本來就只走給非操作者，所以整條關掉
+  if (await isMuted(ctx.tenantId, ctx.userId)) return
 
   const supabase = createAdminSupabaseClient()
   const { data: operator } = await supabase
