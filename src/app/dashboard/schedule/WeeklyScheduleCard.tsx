@@ -255,20 +255,28 @@ export function WeeklyScheduleCard({
               ))}
             </ul>
 
+            {/* 新增的那段沿用上一段的時間，據點自動跳到還沒用過的那一個。
+                最常見的用法是「同一個時段、兩個據點都開放」——老師哪裡都可能跑，
+                去哪由客人的預約決定。原本預設接在上一段結束時間之後，
+                最後一段收在 21:00 時會生出一段 21:00–21:00 的空檔，等於白按一次 */}
             <button
-              onClick={() =>
+              onClick={() => {
+                const last = editing.segments.at(-1)
+                const unused = locations.find(
+                  (l) => !editing.segments.some((s) => s.locationId === l.id)
+                )
                 setEditing({
                   ...editing,
                   segments: [
                     ...editing.segments,
                     {
-                      start: editing.segments.at(-1)?.end ?? '10:00',
-                      end: '21:00',
-                      locationId: locations[0]?.id ?? null,
+                      start: last?.start ?? '10:00',
+                      end: last?.end ?? '21:00',
+                      locationId: unused?.id ?? locations[0]?.id ?? null,
                     },
                   ],
                 })
-              }
+              }}
               className="mt-2.5 text-[11.5px] font-extrabold text-primary hover:underline"
             >
               ＋ 加一段時間
