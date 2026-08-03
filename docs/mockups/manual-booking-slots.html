@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 手動建單的可約時段</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1ea; --card:#fffcf8; --sunk:#efe7dc;
+  --ink:#2a211c; --ink-2:#574a42; --ink-3:#857466; --ink-4:#b0a093;
+  --hairline:#e4d9cc; --clay:#a34e33; --clay-soft:#f4e3da;
+  --brick:#a63e33; --brick-soft:#f8e4e0; --olive:#6b7a45; --olive-soft:#ecefdf;
+  --sh-1:0 1px 2px rgba(42,33,28,.05), 0 4px 14px -10px rgba(42,33,28,.35);
+  --display:"Fraunces",Georgia,serif; --body:"Noto Sans TC","PingFang TC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.7}
+.page{max-width:980px;margin:0 auto;padding:46px 22px 80px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:14px}
+.kicker::before{content:"";width:34px;height:1px;background:var(--clay)}
+h1{font-family:var(--display);font-size:clamp(24px,4vw,34px);font-weight:600;line-height:1.15;letter-spacing:-.02em}
+h1 em{font-style:italic;color:var(--clay)}
+.lede{margin-top:12px;max-width:60ch;color:var(--ink-2);font-size:15px}
+.lede b{color:var(--ink);font-weight:700}
+section{margin-top:44px}
+.sec-head{display:flex;align-items:flex-end;gap:13px;padding-bottom:11px;margin-bottom:18px;border-bottom:1px solid var(--hairline)}
+.sec-head .n{font-family:var(--display);font-size:28px;color:var(--clay);line-height:.9}
+.sec-head h2{font-size:18px;font-weight:700}
+.stage{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.col{width:420px;max-width:100%}
+.caption{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);font-weight:700;margin-bottom:9px}
+.caption em{font-style:normal}
+.caption .bad{color:var(--brick)}
+.caption .good{color:var(--olive)}
+.panel{background:var(--card);border-radius:16px;box-shadow:var(--sh-1);padding:17px 19px}
+.lbl{font-size:11px;font-weight:800;color:var(--ink-2);margin-bottom:6px}
+.sel{display:flex;align-items:center;background:var(--sunk);border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:700;margin-bottom:15px}
+.sel span{margin-left:auto;color:var(--ink-4);font-size:10px}
+.head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.head b{font-size:11px;font-weight:800;color:var(--ink-2)}
+.head a{font-size:11px;font-weight:800;color:var(--clay)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--sunk);color:var(--ink-2);border-radius:999px;padding:8px 14px;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;text-align:center}
+.chip.on{background:var(--clay);color:#fff}
+.chip small{display:block;font-size:9.5px;font-weight:700;opacity:.75;margin-top:1px}
+.chip.dup{outline:2px dashed var(--brick);outline-offset:2px}
+.note{margin-top:13px;border-radius:12px;padding:11px 14px;font-size:13px;font-weight:600}
+.n-bad{background:var(--brick-soft);color:var(--brick)}
+.n-good{background:var(--olive-soft);color:var(--olive)}
+.n-clay{background:var(--clay-soft);color:var(--clay)}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:var(--sh-1);font-size:14px;margin-top:6px}
+th,td{text-align:left;padding:11px 15px;border-top:1px solid var(--hairline);vertical-align:top}
+th{background:var(--sunk);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);border:0}
+td:first-child{white-space:nowrap;font-weight:700}
+@media (max-width:640px){.col{width:100%}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="kicker">修 Bug · 2026-08-03</div>
+  <h1>手動建單的時段列了<em>兩遍</em></h1>
+  <p class="lede">
+    向資料庫要時段的時候<b>沒有帶「哪一間」</b>，所以兩間據點的空檔全列出來，
+    18:00–21:00 那一排出現兩次。點下去<b>兩顆一起亮</b>——因為選中與否只比對「18:30」這個字串，
+    而它們的時間本來就一樣。客人端在規格 §9.5.1 已經改成「先選地點再問時段」，後台這條路沒跟上。
+  </p>
+
+  <section>
+    <div class="sec-head"><div class="n">1</div><h2>選定據點時：只列那一間</h2></div>
+    <div class="stage">
+      <div class="col">
+        <div class="caption">現在 · <em class="bad">壞的</em></div>
+        <div class="panel">
+          <div class="lbl">地點</div>
+          <div class="sel">揚翼運動按摩_鳳山五甲 <span>▾</span></div>
+          <div class="head"><b>可約時段</b><a>重新查</a></div>
+          <div class="chips">
+            <span class="chip">18:00</span><span class="chip on dup">18:30</span>
+            <span class="chip">19:00</span><span class="chip">19:30</span>
+            <span class="chip">20:00</span><span class="chip">20:30</span>
+            <span class="chip">21:00</span>
+            <span class="chip">18:00</span><span class="chip on dup">18:30</span>
+            <span class="chip">19:00</span><span class="chip">19:30</span>
+            <span class="chip">20:00</span><span class="chip">20:30</span>
+            <span class="chip">21:00</span>
+          </div>
+          <div class="note n-bad">上面明明選了五甲，六合的時段還是列出來。點 18:30 兩顆一起變色，你不知道自己選到哪一間。</div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="caption">修好 · <em class="good">只問那一間</em></div>
+        <div class="panel">
+          <div class="lbl">地點</div>
+          <div class="sel">揚翼運動按摩_鳳山五甲 <span>▾</span></div>
+          <div class="head"><b>可約時段</b><a>重新查</a></div>
+          <div class="chips">
+            <span class="chip">18:00</span><span class="chip on">18:30</span>
+            <span class="chip">19:00</span><span class="chip">19:30</span>
+            <span class="chip">20:00</span><span class="chip">20:30</span>
+            <span class="chip">21:00</span>
+          </div>
+          <div class="note n-good">換地點會自動重查一次，不是拿手邊的資料自己篩——理由跟規格 §9.5.1 寫的一樣。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><div class="n">2</div><h2>「不限地點」時：時間底下寫是哪一間</h2></div>
+    <div class="stage">
+      <div class="col">
+        <div class="caption">修好 · <em class="good">重複是對的，但要分得出來</em></div>
+        <div class="panel">
+          <div class="lbl">地點</div>
+          <div class="sel">不限地點 <span>▾</span></div>
+          <div class="head"><b>可約時段</b><a>重新查</a></div>
+          <div class="chips">
+            <span class="chip">18:00<small>五甲</small></span>
+            <span class="chip on">18:30<small>五甲</small></span>
+            <span class="chip">19:00<small>五甲</small></span>
+            <span class="chip">21:00<small>五甲</small></span>
+            <span class="chip">18:00<small>六合</small></span>
+            <span class="chip">18:30<small>六合</small></span>
+            <span class="chip">19:30<small>六合</small></span>
+            <span class="chip">20:00<small>六合</small></span>
+          </div>
+          <div class="note n-good">同一個時間兩間都有空是常態，這時候<b>不能砍掉一個</b>——砍掉等於幫老師決定他要去哪。標上據點就好。</div>
+          <div class="note n-clay">點下去只有那一顆會亮，而且上面的「地點」會跟著跳成那一間。</div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="caption">要改的三個地方</div>
+        <table>
+          <tr><th>改哪裡</th><th>怎麼改</th></tr>
+          <tr><td>要時段時</td><td>把上面選的據點一起帶給 <code>available_slots</code>（客人端本來就有帶，後台漏了）</td></tr>
+          <tr><td>換據點時</td><td>清單已經查過就重查一次，免得留著上一間的時間可以點</td></tr>
+          <tr><td>選中判斷</td><td>記「哪一顆」而不是「幾點」。同一個時間有兩間時才分得出來</td></tr>
+        </table>
+        <div class="note n-clay">到府服務（<code>mobile</code>）不受影響：那種沒有據點，地址是客人自己家。</div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

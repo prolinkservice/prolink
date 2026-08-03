@@ -82,9 +82,15 @@ export function NewBookingSheet({
   const [error, setError] = useState<string | null>(null)
   const [confirmOdd, setConfirmOdd] = useState(false)
 
+  // 選中的是「哪一顆」，不是「幾點」。「不限地點」時同一個時間兩間都會出現，
+  // 只比對時間的話兩顆會一起亮，老師不知道自己選到哪一間（2026-08-03 修）
+  const [picked, setPicked] = useState<string | null>(null)
+
   const slotTimes = (slots ?? []).map((s) => formatTime(s.start_at, timezone))
   // 引擎沒列出這個時間，通常是被約走、來不及移動、或不在營業時間內
   const offGrid = slots !== null && slots.length >= 0 && !slotTimes.includes(time)
+  const locationName = (id: string | null) => locations.find((l) => l.id === id)?.name ?? null
+  const mixedLocations = new Set((slots ?? []).map((s) => s.location_id)).size > 1
 
   function find(value: string) {
     setQuery(value)
@@ -99,16 +105,38 @@ export function NewBookingSheet({
     setDurationMin(defaultDuration(next))
     if (next?.location_id) setLocationId(next.location_id)
     setSlots(null)
+    setPicked(null)
     setConfirmOdd(false)
   }
 
-  function loadSlots(nextDate = date) {
+  function loadSlots(nextDate = date, nextLocation = locationId) {
     if (!serviceId) return
     setDate(nextDate)
+    setPicked(null)
     setConfirmOdd(false)
     startTransition(async () => {
-      setSlots(await manualSlots({ serviceId, date: nextDate, durationMin }))
+      setSlots(
+        await manualSlots({
+          serviceId,
+          date: nextDate,
+          durationMin,
+          // 到府沒有據點，地址是客人自己家
+          locationId: service?.location_mode === 'mobile' ? null : nextLocation,
+        })
+      )
     })
+  }
+
+  /**
+   * 換據點時把時段重查一次，不是拿手邊的資料自己篩。
+   * 理由跟規格 §9.5.1 一樣：那份資料是「別間」算出來的，
+   * 篩出來的東西看起來像答案，其實不是。
+   */
+  function pickLocation(id: string | null) {
+    setLocationId(id)
+    setPicked(null)
+    setConfirmOdd(false)
+    if (slots !== null) loadSlots(date, id)
   }
 
   function submit() {
@@ -291,7 +319,7 @@ export function NewBookingSheet({
             <Field label="地點">
               <SelectBox
                 value={locationId ?? ''}
-                onChange={(e) => setLocationId(e.target.value || null)}
+                onChange={(e) => pickLocation(e.target.value || null)}
               >
                 <option value="">不限地點</option>
                 {locations.map((l) => (
@@ -338,22 +366,31 @@ export function NewBookingSheet({
               <div className="flex flex-wrap gap-1.5">
                 {slots.map((s) => {
                   const label = formatTime(s.start_at, timezone)
+                  const key = `${s.start_at}-${s.location_id ?? ''}`
+                  // 只有這份清單真的混了兩間以上才標名字。
+                  // 用清單本身判斷而不是用上面選的地點——點下去會把地點設成那一間，
+                  // 用選的判斷會讓標籤在點擊後整排消失
+                  const where = mixedLocations ? locationName(s.location_id) : null
                   return (
                     <button
-                      key={`${s.start_at}-${s.location_id ?? ''}`}
+                      key={key}
                       onClick={() => {
                         setTime(label)
+                        setPicked(key)
                         setConfirmOdd(false)
                         if (s.location_id) setLocationId(s.location_id)
                       }}
                       className={cn(
-                        'num rounded-full px-3.5 py-2 text-[12px] font-extrabold transition',
-                        label === time
+                        'num rounded-full px-3.5 py-2 text-[12px] leading-tight font-extrabold transition',
+                        key === picked
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-sunk text-ink-2 hover:text-primary'
                       )}
                     >
                       {label}
+                      {where && (
+                        <small className="block text-[9.5px] font-bold opacity-75">{where}</small>
+                      )}
                     </button>
                   )
                 })}

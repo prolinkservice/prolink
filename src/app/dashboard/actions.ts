@@ -44,11 +44,19 @@ export async function searchCustomers(query: string): Promise<CustomerHit[]> {
   return (data ?? []) as CustomerHit[]
 }
 
-/** 手動建單時列出「引擎認為可以約」的時段，方便老師直接點 */
+/**
+ * 手動建單時列出「引擎認為可以約」的時段，方便老師直接點。
+ *
+ * 一定要把據點帶進去。不帶的話多據點的店會把兩間的空檔一起列出來，
+ * 畫面上就是同一排時間出現兩次，而且分不出哪一顆是哪一間
+ * （2026-08-03 修，草稿：docs/mockups/manual-booking-slots.html）。
+ * 「不限地點」時才回傳全部，那時候按鈕上會標據點名。
+ */
 export async function manualSlots(input: {
   serviceId: string
   date: string
   durationMin?: number | null
+  locationId?: string | null
 }): Promise<AvailableSlot[]> {
   const current = await getCurrentTenant()
   if (!current) return []
@@ -57,6 +65,7 @@ export async function manualSlots(input: {
     tenantId: current.tenant.id,
     serviceId: input.serviceId,
     date: input.date,
+    locationId: input.locationId ?? null,
     durationMin: input.durationMin ?? null,
   })
 }
