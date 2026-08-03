@@ -38,14 +38,19 @@ export function zonedDayRange(date: string, timeZone: string): { start: Date; en
   return { start, end: new Date(start.getTime() + 24 * 60 * 60 * 1000) }
 }
 
-/** 該時區的今天，YYYY-MM-DD */
-export function todayIn(timeZone: string): string {
+/** 某個瞬間在該時區是哪一天，YYYY-MM-DD */
+export function dateIn(at: Date, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-  }).format(new Date())
+  }).format(at)
+}
+
+/** 該時區的今天，YYYY-MM-DD */
+export function todayIn(timeZone: string): string {
+  return dateIn(new Date(), timeZone)
 }
 
 export function addDays(date: string, days: number): string {
@@ -81,6 +86,20 @@ export function formatDateTime(iso: string, timeZone: string): string {
   }).formatToParts(new Date(iso))
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
   return `${get('month')}/${get('day')}（${get('weekday')}）${get('hour')}:${get('minute')}`
+}
+
+/**
+ * 「明天 14:00」。行前提醒的標題用。
+ *
+ * 寫成「8/4（一）14:00」客人還要自己對一次日曆才知道是不是明天——
+ * 而提醒訊息唯一要傳達的就是「快到了」。隔天以後的才寫日期。
+ */
+export function whenLabel(iso: string, timeZone: string, now: Date = new Date()): string {
+  const day = dateIn(new Date(iso), timeZone)
+  const today = dateIn(now, timeZone)
+  if (day === today) return `今天 ${formatTime(iso, timeZone)}`
+  if (day === addDays(today, 1)) return `明天 ${formatTime(iso, timeZone)}`
+  return formatDateTime(iso, timeZone)
 }
 
 /** 08/02（六） */

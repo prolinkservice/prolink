@@ -3,6 +3,15 @@ import { createAdminSupabaseClient } from '@/lib/supabase-admin'
 import { notifyUser } from '@/lib/notifications'
 import { getLineDisplayName } from '@/lib/lineMessaging'
 
+// ⚠️ 這支是舊系統的殘骸，已經從 vercel.json 的排程拿掉（2026-08-03）。
+//
+// 它讀的 practitioners、profiles、notifications 三張表在
+// 20260727000000_drop_legacy 就整個砍掉了，所以它每天跑一次、每天失敗一次。
+// Vercel Hobby 只給兩個排程位子，那個位子讓給了真的會動的行前提醒。
+//
+// 事後回訪本身還是要做（規格 §7），但得照多租戶的架構整支重寫，
+// 不是把這支救回來。清掉舊 /practitioner 目錄時一起刪（規格 §13）。
+
 const FOLLOWUP_DELAY_HOURS = 24
 const DEFAULT_FOLLOWUP_MESSAGE = '{{name}}，謝謝你今天來體驗服務，希望這次的時間讓你感到放鬆～如果有任何感受或建議都歡迎跟我說，期待下次再為你服務！'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'

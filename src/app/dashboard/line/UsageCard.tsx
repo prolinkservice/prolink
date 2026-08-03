@@ -18,8 +18,8 @@ const TYPE_LABEL: Record<string, string> = {
   booking_cancelled: '取消通知（發給客人）',
   new_booking_self: '新預約（發給你自己）',
   customer_cancelled_self: '客人取消（發給你自己）',
-  reminder_evening: '行前提醒（前一天晚上）',
-  reminder_soon: '行前提醒（出發前）',
+  booking_reminder: '行前提醒（前一天中午）',
+  booking_expired: '時段已釋出（發給客人）',
   manual: '你自己手動發的',
 }
 
@@ -124,12 +124,12 @@ export function UsageCard({
             {/* 這裡不該教職人「省到不敢發通知」。一個月做超過 50 筆的人一定會超過，
                 正確答案是升級 LINE 自己的方案，不是關掉對客人有用的提醒 */}
             <p className="mt-3.5 text-[11.5px] leading-relaxed text-ink-3">
-              一筆預約走完全程大約用掉 4 則，所以免費的 200 則大概夠 50 筆。
+              一筆預約走完全程大約用掉 5 則（含行前提醒），所以免費的 200 則大概夠 40 筆。
               超過之後每則依 LINE 官方計價，由 LINE 直接向你收費，我們不經手。
               <br />
               <b className="text-ink-2">一個月穩定超過的話，建議升級 LINE 官方帳號的輕用量方案</b>
               （月費約 NT$800，含 3,000 則），比一則一則計費划算很多。
-              真的要省，可以關掉「有新預約時也通知我」，或把行前提醒只留出發前那一次。
+              真的要省，先關「有新預約時也通知我」——那則對你價值最低，行前提醒留著。
             </p>
           </>
         )}

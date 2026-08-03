@@ -17,6 +17,7 @@ const SENDS = [
   { when: '客人打「預約」', what: '回一張立即預約卡片', cost: '不計額度' },
   { when: '客人送出預約', what: '請他按確認（24 小時內的預約直接成立）', cost: '1 則' },
   { when: '客人按了確認', what: '一句「到時候見」', cost: '不計額度' },
+  { when: '預約前一天中午', what: '行前提醒＋「我無法前往」', cost: '1 則' },
   { when: '你取消預約', what: '取消卡片＋重新預約按鈕', cost: '1 則' },
   { when: '客人自己取消', what: '通知你，時段已釋出', cost: '1 則' },
 ]
@@ -28,6 +29,8 @@ export function NotifyForm({
   welcomeMessage,
   defaultWelcome,
   testMode: initialTestMode,
+  reminderEnabled: initialReminderEnabled,
+  reminderNote: initialReminderNote,
   operatorBound,
 }: {
   plan: 'free' | 'pro'
@@ -37,6 +40,9 @@ export function NotifyForm({
   /** 沒自己寫的話會發這一段。放在提示框裡讓職人看得到現在到底發什麼 */
   defaultWelcome: string
   testMode: boolean
+  reminderEnabled: boolean
+  /** 接在提醒訊息裡的一句話，例如「三樓沒有電梯」 */
+  reminderNote: string
   /** 沒綁定自己的 LINE 就打開測試模式，等於誰都收不到 */
   operatorBound: boolean
 }) {
@@ -44,6 +50,8 @@ export function NotifyForm({
   const [notifySelf, setNotifySelf] = useState(notifySelfOnNewBooking)
   const [testMode, setTestMode] = useState(initialTestMode)
   const [greeting, setGreeting] = useState(welcomeMessage)
+  const [reminder, setReminder] = useState(initialReminderEnabled)
+  const [reminderNote, setReminderNote] = useState(initialReminderNote)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [pending, startTransition] = useTransition()
@@ -56,6 +64,8 @@ export function NotifyForm({
         notifySelfOnNewBooking: notifySelf,
         welcomeMessage: greeting,
         testMode,
+        reminderEnabled: reminder,
+        reminderNote,
       })
       if (!res.ok) return setError(res.error)
       setSaved(true)
@@ -165,10 +175,53 @@ export function NotifyForm({
 
         {plan === 'pro' && (
           <>
+            {/* 行前提醒放在第一個：這是他付費之後最有感的一則，
+                也是唯一一個「客人會回訊息給你」的通知 */}
+            <button
+              type="button"
+              onClick={() => setReminder((v) => !v)}
+              className="mt-4 flex w-full items-start gap-2.5 rounded-sm bg-sunk px-4 py-3 text-left"
+            >
+              <span
+                className={cn(
+                  'mt-px grid size-[19px] shrink-0 place-items-center rounded-[6px] text-[12px] font-extrabold',
+                  reminder ? 'bg-primary text-primary-foreground' : 'bg-card text-transparent'
+                )}
+              >
+                ✓
+              </span>
+              <span className="text-[13px] font-bold text-ink-2">
+                前一天中午提醒客人
+                <small className="mt-0.5 block text-[11.5px] font-semibold text-ink-3">
+                  每天 12:00 提醒明天要來的客人，訊息裡附「我無法前往」。
+                  他前一天就說不能來，那個時段還賣得掉。每筆多 1 則額度。
+                </small>
+              </span>
+            </button>
+
+            {reminder && (
+              <div className="mt-2.5">
+                <Field
+                  label="提醒訊息裡加一句自己的話"
+                  optional
+                  hint="例如「三樓沒有電梯，請走樓梯」「停車場在後棟」。留空就不加"
+                >
+                  <TextArea
+                    value={reminderNote}
+                    onChange={(e) => setReminderNote(e.target.value)}
+                    placeholder="三樓沒有電梯，請走樓梯。"
+                    rows={2}
+                    maxLength={200}
+                  />
+                </Field>
+                <p className="num -mt-1 text-[11.5px] text-ink-3">{reminderNote.length} / 200 字</p>
+              </div>
+            )}
+
             <button
               type="button"
               onClick={() => setNotifySelf((v) => !v)}
-              className="mt-4 flex w-full items-start gap-2.5 rounded-sm bg-sunk px-4 py-3 text-left"
+              className="mt-3 flex w-full items-start gap-2.5 rounded-sm bg-sunk px-4 py-3 text-left"
             >
               <span
                 className={cn(

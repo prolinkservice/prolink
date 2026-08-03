@@ -1,5 +1,6 @@
 import { issueLinkToken, readLinkToken } from '../src/lib/line/linkToken'
 import { looksLikeBookingRequest } from '../src/lib/line/notify'
+import { whenLabel } from '../src/lib/datetime'
 
 // 純規則的自我檢查。專案還沒有測試框架，而這兩塊都是「錯了不會當掉、
 // 只會安靜地做錯事」的東西：記號解不開就是綁不到人，關鍵字判錯就是
@@ -47,6 +48,19 @@ for (const t of [
 ]) {
   check(`「${t || '(空白)'}」不回`, looksLikeBookingRequest(t), false)
 }
+
+console.log('\n── 行前提醒的「今天／明天」──')
+// 排程在台北中午 12:00 跑，往前看 36 小時。這裡固定住「現在」＝ 8/3（一）12:00，
+// 驗的是換算到台北時區之後那句話對不對——伺服器在 UTC，差 8 小時很容易寫反
+const noon = new Date('2026-08-03T04:00:00Z') // 台北 8/3（一）12:00
+const TPE = 'Asia/Taipei'
+
+check('同一天下午 → 今天', whenLabel('2026-08-03T06:00:00Z', TPE, noon), '今天 14:00')
+check('隔天早上 → 明天', whenLabel('2026-08-04T01:00:00Z', TPE, noon), '明天 09:00')
+check('隔天深夜 23:00 → 明天', whenLabel('2026-08-04T15:00:00Z', TPE, noon), '明天 23:00')
+// 台北 8/5 00:30。UTC 那邊還是 8/4，用 UTC 判斷就會錯寫成「明天」
+check('後天凌晨 → 寫日期', whenLabel('2026-08-04T16:30:00Z', TPE, noon), '8/5（三）00:30')
+check('今天稍早 → 今天', whenLabel('2026-08-03T01:00:00Z', TPE, noon), '今天 09:00')
 
 console.log(failed ? `\n${failed} 項沒過` : '\n全部通過')
 process.exit(failed ? 1 : 0)

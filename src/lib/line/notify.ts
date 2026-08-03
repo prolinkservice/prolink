@@ -1,5 +1,6 @@
 import { createAdminSupabaseClient } from '@/lib/supabase-admin'
-import { formatDateTime } from '@/lib/datetime'
+import { formatDateTime, whenLabel } from '@/lib/datetime'
+import { mapsSearchUrl } from '@/lib/maps'
 import { money } from '@/lib/bookings'
 import { pushMessage, type LineMessage } from './channel'
 import { issueLinkToken } from './linkToken'
@@ -13,6 +14,7 @@ import {
   customerCancelledForOperatorMessage,
   expiredForCustomerMessage,
   newBookingForOperatorMessage,
+  reminderMessage,
   type BookingBrief,
 } from './messages'
 
@@ -340,6 +342,63 @@ export async function notifyBookingExpired(bookingId: string): Promise<void> {
     type: 'booking_expired',
     customerId: row.customers?.id ?? null,
   })
+}
+
+/**
+ * 行前提醒。排程每天中午叫一次（草稿：docs/mockups/booking-reminders.html）。
+ *
+ * 回傳這一筆到底怎麼了，讓排程決定要不要蓋「已提醒」的章：
+ *   sent    發出去了
+ *   failed  該發但沒發成功（連不上 LINE、被封鎖）——一樣蓋章，
+ *           因為下一次掃描是 24 小時後，那時候多半已經來不及了
+ *   off     這家店把提醒關了。**不蓋章**，他明天打開就還來得及
+ *   skip    這筆本來就不該提醒（沒綁 LINE、狀態變了、時間過了）
+ */
+export async function notifyReminder(
+  bookingId: string
+): Promise<'sent' | 'failed' | 'off' | 'skip'> {
+  const row = await load(bookingId)
+  if (!row?.tenants) return 'skip'
+
+  // 免費方案一則都不發（規格 §4.3）
+  if (row.tenants.plan !== 'pro') return 'off'
+
+  // 撈出來到現在之間客人可能剛好取消了，或是這筆從沒被確認過
+  if (row.status !== 'confirmed') return 'skip'
+  if (new Date(row.start_at).getTime() <= Date.now()) return 'skip'
+
+  const { data: settings } = await createAdminSupabaseClient()
+    .from('tenant_settings')
+    .select('reminder_enabled, reminder_note')
+    .eq('tenant_id', row.tenant_id)
+    .maybeSingle()
+
+  if (settings?.reminder_enabled === false) return 'off'
+
+  const lineUserId = row.customers?.line_user_id
+  if (!lineUserId) return 'skip'
+
+  const tz = row.tenants.timezone ?? 'Asia/Taipei'
+  const address = row.locations?.address ?? row.service_address
+
+  const res = await pushMessage({
+    tenantId: row.tenant_id,
+    to: lineUserId,
+    messages: [
+      reminderMessage({
+        booking: briefOf(row),
+        whenLabel: whenLabel(row.start_at, tz),
+        note: settings?.reminder_note?.trim() || null,
+        mapUrl: mapsSearchUrl(address),
+      }),
+    ],
+    type: 'booking_reminder',
+    customerId: row.customers?.id ?? null,
+  })
+
+  if (res.ok) return 'sent'
+  if (!res.muted && row.customers?.id) await markBlocked(row.customers.id)
+  return 'failed'
 }
 
 /**

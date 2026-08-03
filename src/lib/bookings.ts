@@ -35,6 +35,8 @@ export type BookingRow = {
   location_name: string | null
   /** 到府服務時客人填的地址。這種預約沒有據點，地址在預約本身上 */
   service_address: string | null
+  /** 客人在行前提醒上按過「我會到場」。沒按不代表不來，多數人本來就不會回 */
+  attendance_confirmed: boolean
   service_id: string | null
   service_name: string | null
   customer_id: string | null

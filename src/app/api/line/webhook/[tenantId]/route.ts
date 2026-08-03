@@ -145,7 +145,7 @@ async function handlePostback(ctx: Ctx & { data: string }) {
   const params = new URLSearchParams(ctx.data)
   const action = params.get('a')
   const bookingId = params.get('b')
-  const known = ['confirm', 'cancel', 'cancel_yes', 'cancel_no']
+  const known = ['confirm', 'coming', 'cancel', 'cancel_yes', 'cancel_no']
   if (!bookingId || !action || !known.includes(action)) return
 
   // 測試模式：真實客人手上可能還留著開測試之前發出去的卡片，
@@ -166,6 +166,42 @@ async function handlePostback(ctx: Ctx & { data: string }) {
         ? [confirm]
         : [{ type: 'text', text: '這筆預約已經不能取消了，麻煩直接跟我說一聲。' }]
     )
+    return
+  }
+
+  // 行前提醒上的「我會到場」。
+  //
+  // 這裡刻意不走 confirm_booking_by_line：那支是把「待確認」轉成「已確認」的，
+  // 而收到提醒的預約早就確認過了，丟進去只會回一句「這筆已經不能確認了」。
+  // 按這顆的人只是想回一聲「我會來」，記下時間就好，不動預約狀態
+  if (action === 'coming') {
+    const { data: booking } = await supabase
+      .from('bookings')
+      .select('id, status, start_at, customers ( line_user_id )')
+      .eq('id', bookingId)
+      .eq('tenant_id', ctx.tenantId)
+      .maybeSingle()
+
+    const customer = Array.isArray(booking?.customers) ? booking?.customers[0] : booking?.customers
+    const mine = customer?.line_user_id === ctx.userId
+    const live = booking?.status === 'confirmed' || booking?.status === 'pending'
+
+    // 不是他的預約就當作沒這回事——卡片被轉傳出去時會落在這裡
+    if (!booking || !mine || !live) {
+      await replyMessage(ctx.accessToken, ctx.replyToken, [
+        { type: 'text', text: '這筆預約已經不在了，有問題直接跟我說 🙏' },
+      ])
+      return
+    }
+
+    await supabase
+      .from('bookings')
+      .update({ attendance_confirmed_at: new Date().toISOString() })
+      .eq('id', bookingId)
+
+    await replyMessage(ctx.accessToken, ctx.replyToken, [
+      { type: 'text', text: '收到，到時候見 👍' },
+    ])
     return
   }
 

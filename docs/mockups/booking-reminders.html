@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ProLink · 行前提醒</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1ea; --card:#fffcf8; --sunk:#efe7dc;
+  --ink:#2a211c; --ink-2:#574a42; --ink-3:#857466; --ink-4:#b0a093;
+  --hairline:#e4d9cc;
+  --clay:#a34e33; --clay-soft:#f4e3da;
+  --ochre:#a9762b; --ochre-soft:#f7ebd6;
+  --brick:#a63e33; --brick-soft:#f8e4e0;
+  --olive:#6b7a45; --olive-soft:#ecefdf;
+  --sh-1:0 1px 2px rgba(42,33,28,.05), 0 4px 14px -10px rgba(42,33,28,.35);
+  --sh-2:0 2px 4px rgba(42,33,28,.05), 0 22px 44px -28px rgba(42,33,28,.45);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Noto Sans TC","PingFang TC",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.7;-webkit-font-smoothing:antialiased}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums}
+.page{max-width:1120px;margin:0 auto;padding:50px 22px 90px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:15px}
+.kicker::before{content:"";width:36px;height:1px;background:var(--clay)}
+h1{font-family:var(--display);font-size:clamp(26px,4.2vw,40px);font-weight:600;line-height:1.12;letter-spacing:-.025em}
+h1 em{font-style:italic;color:var(--clay)}
+.lede{margin-top:14px;max-width:62ch;color:var(--ink-2);font-size:15.5px}
+.lede b{color:var(--ink);font-weight:700}
+section{margin-top:54px}
+.sec-head{display:flex;align-items:flex-end;gap:14px;padding-bottom:12px;margin-bottom:20px;border-bottom:1px solid var(--hairline)}
+.sec-head .n{font-family:var(--display);font-size:30px;font-weight:400;color:var(--clay);line-height:.9}
+.sec-head h2{font-size:19px;font-weight:700}
+
+.plain{background:var(--card);border-radius:18px;box-shadow:var(--sh-1);padding:20px 24px;margin-bottom:18px}
+.plain h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--clay);font-weight:700;margin-bottom:11px}
+.plain p{font-size:15px;color:var(--ink-2)}
+.plain p+p{margin-top:9px}
+.plain b{color:var(--ink);font-weight:700}
+.plain ul{list-style:none;font-size:14.5px;color:var(--ink-2);margin-top:5px}
+.plain li{padding:6px 0 6px 20px;position:relative}
+.plain li::before{content:"";position:absolute;left:2px;top:17px;width:9px;height:1.5px;background:var(--clay)}
+.warn{margin-top:12px;background:var(--brick-soft);color:var(--brick);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+.good{margin-top:12px;background:var(--olive-soft);color:var(--olive);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+.note{margin-top:12px;background:var(--clay-soft);color:var(--clay);border-radius:13px;padding:12px 15px;font-size:13.5px;font-weight:600}
+
+.stage{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.caption{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);margin-bottom:10px;font-weight:700}
+.caption em{font-style:normal;color:var(--clay)}
+.col{flex:0 0 auto;width:322px;max-width:100%}
+
+/* ── LINE 對話 ─────────────────────────────── */
+.phone{border-radius:32px;padding:9px;background:linear-gradient(160deg,#3a3733,#1a1817);box-shadow:0 26px 52px -30px rgba(0,0,0,.5)}
+.chat{background:#8fa8bf;border-radius:25px;overflow:hidden;padding:14px 12px 18px;min-height:120px}
+.stamp{text-align:center;font-size:10.5px;font-weight:800;color:#fff;opacity:.85;margin:2px 0 12px}
+.stamp span{background:rgba(0,0,0,.18);padding:3px 11px;border-radius:999px}
+.from{display:flex;gap:8px;margin-bottom:14px}
+.av{width:32px;height:32px;border-radius:50%;flex:0 0 32px;background:linear-gradient(150deg,#c9b8a4,#8d7a63)}
+.bub{max-width:225px}
+.who{font-size:10.5px;color:#fff;opacity:.9;font-weight:700;margin-bottom:4px}
+.flex{background:var(--card);border-radius:14px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.flex .top{padding:11px 14px 3px}
+.flex .eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--clay);text-transform:uppercase}
+.flex .ttl{font-size:16px;font-weight:800;letter-spacing:-.01em;margin-top:3px}
+.flex .body{padding:8px 14px 12px}
+.kv{display:flex;gap:10px;font-size:12.5px;padding:3px 0}
+.kv .k{color:var(--ink-4);font-weight:700;flex:0 0 40px}
+.kv .v{color:var(--ink-2);flex:1}
+.kv .v b{color:var(--ink);font-weight:800}
+.acts{border-top:1px solid var(--hairline)}
+.act{display:block;text-align:center;padding:10px;font-size:13px;font-weight:800;color:var(--clay)}
+.act+.act{border-top:1px solid var(--hairline)}
+.act.mute{color:var(--ink-3)}
+.mine{display:flex;justify-content:flex-end;margin-bottom:14px}
+.mine .t{background:#a8e07c;color:#1e2b13;border-radius:14px;padding:8px 12px;font-size:13.5px;font-weight:600;max-width:200px}
+.plainbub{background:var(--card);border-radius:14px;padding:10px 13px;font-size:13.5px;color:var(--ink-2);box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.plainbub b{color:var(--ink);font-weight:800}
+
+/* ── 後台設定 ─────────────────────────────── */
+.panel{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);overflow:hidden;width:460px;max-width:100%}
+.pbar{padding:17px 20px 6px}
+.pbar h3{font-size:15.5px;font-weight:800}
+.pbar p{font-size:12.5px;color:var(--ink-3);margin-top:3px}
+.pbody{padding:8px 20px 20px}
+.row{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-top:1px solid var(--hairline)}
+.row:first-child{border-top:0}
+.row .txt{flex:1;min-width:0}
+.row .txt b{font-size:14px;font-weight:800;display:block}
+.row .txt span{display:block;font-size:12px;color:var(--ink-3);margin-top:3px;line-height:1.55}
+.sw{flex:0 0 44px;width:44px;height:26px;border-radius:999px;background:var(--sunk);position:relative;margin-top:2px}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.sw.on{background:var(--olive)}
+.sw.on::after{left:21px}
+.sub{margin:9px 0 0;padding:11px 13px;background:var(--sunk);border-radius:13px}
+.sub label{display:block;font-size:11px;font-weight:800;color:var(--ink-2);margin-bottom:6px}
+.sel{display:inline-flex;align-items:center;gap:7px;background:var(--card);border-radius:11px;padding:8px 12px;font-size:13.5px;font-weight:700;box-shadow:var(--sh-1)}
+.sel .car{color:var(--ink-4);font-size:10px}
+.ta{width:100%;background:var(--card);border:0;border-radius:11px;padding:10px 12px;font-family:var(--body);font-size:13px;color:var(--ink-2);line-height:1.6;box-shadow:var(--sh-1);resize:none}
+.hint{font-size:11.5px;color:var(--ink-3);margin-top:7px;line-height:1.6}
+.meter{margin-top:14px;background:var(--ochre-soft);border-radius:14px;padding:13px 15px}
+.meter b{font-size:13px;font-weight:800;color:var(--ochre);display:block}
+.meter .bar{height:8px;border-radius:999px;background:#fff;margin:9px 0 7px;overflow:hidden}
+.meter .bar i{display:block;height:100%;background:var(--ochre);width:62%}
+.meter span{font-size:12px;color:var(--ochre);font-weight:600}
+
+/* ── 表格 ─────────────────────────────── */
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:18px;overflow:hidden;box-shadow:var(--sh-1);font-size:14px}
+th,td{text-align:left;padding:12px 16px;border-top:1px solid var(--hairline);vertical-align:top}
+th{background:var(--sunk);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);border:0}
+td b{font-weight:800}
+td:first-child{white-space:nowrap;font-weight:700;color:var(--ink)}
+
+/* ── 方案比較 ─────────────────────────────── */
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.opt{background:var(--card);border-radius:18px;box-shadow:var(--sh-1);padding:18px 20px;border-top:4px solid var(--hairline)}
+.opt.pick{border-top-color:var(--olive);box-shadow:var(--sh-2)}
+.opt .tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--sunk);color:var(--ink-3);margin-bottom:9px}
+.opt.pick .tag{background:var(--olive-soft);color:var(--olive)}
+.opt h4{font-size:15.5px;font-weight:800;margin-bottom:7px}
+.opt p{font-size:13.5px;color:var(--ink-2)}
+.opt dl{margin-top:11px;font-size:13px}
+.opt dt{font-weight:800;color:var(--ink-3);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-top:9px}
+.opt dd{color:var(--ink-2);margin-top:2px}
+
+.ask{background:var(--card);border-radius:18px;box-shadow:var(--sh-2);padding:20px 24px;margin-bottom:14px}
+.ask .q{font-size:16px;font-weight:700;display:flex;gap:11px;align-items:baseline}
+.ask .q .n{font-family:var(--display);color:var(--clay);font-size:20px}
+.ask .why{font-size:13.5px;color:var(--ink-3);margin:7px 0 12px 31px}
+.ask .choice{background:var(--sunk);border-radius:13px;padding:11px 14px;font-size:13.5px;color:var(--ink-2);margin-left:31px}
+.ask .choice+.choice{margin-top:8px}
+.ask .choice b{color:var(--ink);font-weight:700}
+
+@media (max-width:640px){ .page{padding:34px 16px 70px} .col{width:100%} }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="kicker">Sprint 2 · 第三批 · <em style="font-style:normal">2026-08-03 定案</em></div>
+  <h1>行前提醒：<em>在他忘記之前</em>，再敲一次門</h1>
+  <p class="lede">
+    客人在兩週前約好，然後就把它忘了——這是放鳥最大宗的原因，不是故意的。
+    <b>每天中午 12:00 提醒「明天要來」的每一位客人</b>，
+    而且訊息裡放一顆「我無法前往」：取消愈好按，臨時放鳥就愈少。
+    <b>前一天就說不能來</b>，那個時段還賣得掉。
+  </p>
+
+  <!-- ══ 1 ══════════════════════════════════ -->
+  <section>
+    <div class="sec-head"><div class="n">1</div><h2>一天一次，一筆一則</h2></div>
+
+    <div class="plain">
+      <h3>白話說明</h3>
+      <p>每天中午 12:00 掃一次，把<b>明天</b>要來的預約各發一則提醒。客人在<b>前一天中午</b>收到，
+        有一整個下午與晚上可以決定「我到底去不去」——這正是還救得回那個時段的最後時機。</p>
+      <ul>
+        <li>明天下午 2 點的約 → <b>今天 12:00</b> 收到（提前 26 小時）</li>
+        <li>明天早上 9 點的約 → <b>今天 12:00</b> 收到（提前 21 小時）</li>
+        <li>今天下午才臨時成立、明天早上的約 → <b>明天 12:00</b> 補一則（提前 2 小時，總比沒有好）</li>
+      </ul>
+      <p>每筆預約<b>只會收到一則</b>。卡片上是項目、時間、據點名稱，加三顆按鈕：<b>開地圖 / 我會到場 / 我無法前往</b>。</p>
+      <div class="note"><b>地址不印在卡片上</b>（2026-08-03 定案）。預約成立時那則就有了，真的要出門的人會按「開地圖」，不會照著地址自己打進導航——少一行字，三顆按鈕才看得清楚。</div>
+      <div class="note"><b>「我會到場」是發給職人看的。</b>按下去只回一句「收到，到時候見」，不動預約狀態，但今天的名單上會標「已回『我會到』」。沒回的不標——多數客人本來就不會回，把沒回的標成紅字只會讓人誤會他要放鳥。</div>
+      <div class="note"><b>跟夯客對齊。</b>夯客（美業預約系統的市佔第一）是「每天中午 12:00 發隔天的預約提醒」，時間固定不能改，訊息可自訂。我們用同一個形狀，但多兩件事：<b>①卡片上有「我無法前往」</b>（夯客沒有，客人想取消只能自己打字）、<b>②漏掉的會在當天中午補發</b>（夯客那種「只發隔天」的寫法，今天下午才約明天的客人就沒有提醒）。</div>
+      <div class="note">原本規格寫的是「前一晚 ＋ 出發前 2 小時」兩段。<b>那需要每小時掃一次，而 Vercel Hobby 一天只給跑一次</b>——所以先做一天一次，之後排程升級了再把第二段補回來（見第 4 節）。</div>
+      <div class="warn">額度成本：每筆預約多 <b>1 則</b>，從 4 則變 5 則。免費 200 則約等於 40 筆預約。</div>
+    </div>
+  </section>
+
+  <!-- ══ 2 ══════════════════════════════════ -->
+  <section>
+    <div class="sec-head"><div class="n">2</div><h2>客人在 LINE 收到什麼</h2></div>
+
+    <div class="stage">
+      <div class="col">
+        <div class="caption">A · <em>前一天中午 12:00 · 常態</em></div>
+        <div class="phone"><div class="chat">
+          <div class="stamp"><span>昨天 12:00</span></div>
+          <div class="from">
+            <div class="av"></div>
+            <div class="bub">
+              <div class="who">揚翼運動按摩</div>
+              <div class="flex">
+                <div class="top">
+                  <div class="eyebrow">明天的預約</div>
+                  <div class="ttl">明天 (三) 14:00</div>
+                </div>
+                <div class="body">
+                  <div class="kv"><span class="k">項目</span><span class="v"><b>深層運動按摩 90 分</b></span></div>
+                  <div class="kv"><span class="k">時間</span><span class="v"><b>8/4（二）14:00</b></span></div>
+                  <div class="kv"><span class="k">地點</span><span class="v"><b>六合館</b></span></div>
+                </div>
+                <div class="acts">
+                  <span class="act mute">開地圖</span>
+                  <span class="act">我會到場</span>
+                  <span class="act mute">我無法前往</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="col">
+        <div class="caption">B · <em>臨時成立的補一則</em></div>
+        <div class="phone"><div class="chat">
+          <div class="stamp"><span>12:00</span></div>
+          <div class="from">
+            <div class="av"></div>
+            <div class="bub">
+              <div class="who">揚翼運動按摩</div>
+              <div class="flex">
+                <div class="top">
+                  <div class="eyebrow">今天的預約</div>
+                  <div class="ttl">今天 14:00</div>
+                </div>
+                <div class="body">
+                  <div class="kv"><span class="k">項目</span><span class="v"><b>深層運動按摩 90 分</b></span></div>
+                  <div class="kv"><span class="k">時間</span><span class="v"><b>8/3（一）14:00</b></span></div>
+                  <div class="kv"><span class="k">地點</span><span class="v"><b>六合館</b></span></div>
+                  <div class="kv"><span class="k">叮嚀</span><span class="v">三樓沒有電梯，請走樓梯</span></div>
+                </div>
+                <div class="acts">
+                  <span class="act mute">開地圖</span>
+                  <span class="act">我會到場</span>
+                  <span class="act mute">我無法前往</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="plain" style="margin-top:14px">
+          <p style="font-size:13.5px"><b>昨天中午之後才成立</b>的預約會落在這裡——昨天那次掃描的時候它還不存在。當天中午補一則，比讓他完全沒收到好。文案改成「今天」，其餘完全一樣。</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="caption">C · <em>按了「我無法前往」</em></div>
+        <div class="phone"><div class="chat">
+          <div class="mine"><div class="t">我無法前往</div></div>
+          <div class="from">
+            <div class="av"></div>
+            <div class="bub">
+              <div class="flex">
+                <div class="top">
+                  <div class="eyebrow">確定要取消嗎</div>
+                  <div class="ttl">今天 14:00 · 六合館</div>
+                </div>
+                <div class="body">
+                  <div class="kv"><span class="k"></span><span class="v">距離開始只剩 <b>2 小時</b>，這筆算太晚取消。取消後這個時段會放回去讓別人預約。</span></div>
+                </div>
+                <div class="acts">
+                  <span class="act">確定取消</span>
+                  <span class="act mute">我還是會到</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <div class="plain" style="margin-top:14px">
+          <p style="font-size:13.5px">這一段<b>完全沿用現有的取消流程</b>（<code>buildCancelConfirm</code>），提醒卡片上的按鈕只是多一個入口。而且客人按了按鈕之後的回覆走 reply，<b>不計免費額度</b>。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 3 ══════════════════════════════════ -->
+  <section>
+    <div class="sec-head"><div class="n">3</div><h2>職人在後台調什麼</h2></div>
+
+    <div class="stage">
+      <div class="col" style="width:460px">
+        <div class="caption">LINE 設定頁 · <em>新增一區</em></div>
+        <div class="panel">
+          <div class="pbar">
+            <h3>行前提醒</h3>
+            <p>每天中午 12:00 提醒明天要來的客人，訊息裡附「我無法前往」。</p>
+          </div>
+          <div class="pbody">
+
+            <div class="row">
+              <div class="txt">
+                <b>提醒明天的客人</b>
+                <span>前一天中午發一則。他還有一整個下午可以跟你說不能來，那個時段就賣得掉。</span>
+              </div>
+              <div class="sw on"></div>
+            </div>
+
+            <div class="row">
+              <div class="txt">
+                <b>加一句自己的話</b>
+                <span>接在提醒訊息裡。留空就不加。</span>
+                <textarea class="ta" rows="2">三樓沒有電梯，請走樓梯。當天如果遲到超過 15 分鐘，時間會順延結束。</textarea>
+                <p class="hint">寫「停車場在後棟」「先按 3 樓門鈴」這種，比制式文案有用得多。</p>
+              </div>
+            </div>
+
+            <div class="meter">
+              <b>這個月已發 124 / 200 則</b>
+              <div class="bar"><i></i></div>
+              <span>提醒每筆多 1 則，一筆預約約 5 則。免費額度 200 則約等於 40 筆。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col" style="width:430px">
+        <div class="plain">
+          <h3>為什麼時間不給調</h3>
+          <p>夯客也是固定中午 12:00 不能改。給了下拉，職人就得想一個他其實沒有意見的問題，而且<b>排程一天只跑一次，每家店都調不同時間就得跑很多次</b>——那是他看不見的成本。</p>
+          <p>真的有人反映再說。到時候要開放，也是「12:00 或 20:00」二選一，不是任意時間。</p>
+          <div class="good">少一個設定，就少一個他會設錯的地方。</div>
+        </div>
+        <div class="plain">
+          <h3>免費方案看到什麼</h3>
+          <p>整區<b>照常顯示但轉灰</b>，開關按不動，底下一行「升級後自動提醒客人，放鳥率通常會少一半」。</p>
+          <p>藏起來等於他永遠不知道有這個功能——而這正是最有感的付費理由（規格 §1.1）。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 4 ══════════════════════════════════ -->
+  <section>
+    <div class="sec-head"><div class="n">4</div><h2>排程：每天 12:00 一次（定案）</h2></div>
+
+    <div class="plain">
+      <h3>為什麼是一天一次</h3>
+      <p>Vercel Hobby 方案<b>限制排程一天只觸發一次</b>（先前 <code>49f79aa</code> 就是為了這個把每小時改回一天一次），
+        而且<b>整個專案只能有兩個排程</b>。所以「出發前 2 小時」這種要每小時掃的做法現在做不到，
+        一天一次的「前一天中午」則完全做得到——夯客做了好幾年也是這樣。</p>
+      <div class="note">Vercel 的排程時間是 UTC。台北中午 12:00 要寫成 <code>0 4 * * *</code>。</div>
+    </div>
+
+    <div class="plain">
+      <h3>兩個排程位子已經滿了，但有一個是壞的</h3>
+      <p>現有的兩個排程是 <code>auto-cancel-pending</code>（未確認自動釋出）與 <code>send-followup-messages</code>（事後回訪）。
+        後者是<b>舊系統留下來的死程式</b>——它讀的 <code>practitioners</code>、<code>profiles</code> 兩張表在
+        <code>20260727000000_drop_legacy</code> 就整個砍掉了，現在每天跑一次、每天失敗一次。</p>
+      <div class="good">所以這一批把那個位子換成 <code>send-reminders</code>。回訪訊息本來就要重寫（規格 §13），要做時再排。</div>
+    </div>
+
+    <div class="plain">
+      <h3>掃描規則：往前看 36 小時</h3>
+      <p>不是「掃明天整天」，而是<b>「現在起 36 小時內開始、還沒提醒過的」</b>。兩種寫法在正常情況下結果一模一樣
+        （中午 12:00 往後 36 小時 = 明天整天），但 36 小時的寫法多做到兩件事：</p>
+      <ul>
+        <li><b>臨時成立的補得到。</b>昨天中午之後才約的明天早上，仍然會在今天中午收到</li>
+        <li><b>排程漏跑一天不會整批消失。</b>隔天補跑時，還沒開始的那些照樣發得出去</li>
+      </ul>
+      <div class="note">實際提醒時間因此落在<b>開始前 12–36 小時</b>，跟夯客的區間一致。</div>
+    </div>
+
+    <div class="plain">
+      <h3>之後要補第二段的話</h3>
+      <p>提醒邏輯寫成<b>一支跟排程無關的 API</b>：「掃出該提醒的、發完、記下發過了」。
+        改成每小時打（GitHub Actions 免費，或升級 Vercel Pro）就能加上「出發前 2 小時」那段，<b>不用改這支程式</b>。</p>
+    </div>
+  </section>
+
+  <!-- ══ 5 ══════════════════════════════════ -->
+  <section>
+    <div class="sec-head"><div class="n">5</div><h2>規則細節</h2></div>
+    <table>
+      <tr><th>情況</th><th>怎麼處理</th><th>為什麼</th></tr>
+      <tr><td>還在待確認</td><td><b>不發</b></td><td>那筆隨時會被釋出。提醒一筆可能明天就不存在的預約，比不提醒更糟</td></tr>
+      <tr><td>已取消／已完成</td><td>不發</td><td>—</td></tr>
+      <tr><td>客人沒綁 LINE</td><td>不發，也不記錄</td><td>發不出去。名單上顯示「LINE 未綁」，補綁工具排 Sprint 4</td></tr>
+      <tr><td>客人封鎖了官方帳號</td><td>發送失敗時寫 <code>line_blocked_at</code></td><td>與現有通知一致，別讓職人以為客人收到了</td></tr>
+      <tr><td>免費方案</td><td>一則都不發</td><td>規格 §4.3。平台不替免費用戶付 LINE 費用</td></tr>
+      <tr><td>同一筆重複掃到</td><td>只發一次（<code>bookings.reminder_sent_at</code>）</td><td>排程重跑、手動觸發都可能重複掃到。同一則提醒發兩次很擾民，還吃額度</td></tr>
+      <tr><td>已經開始的預約</td><td>不發，但一樣蓋上「已提醒」的章</td><td>免得每天掃到它、每天重試一次</td></tr>
+      <tr><td>發送失敗（連不上 LINE、被封鎖）</td><td>也蓋章，只寫進 log</td><td>下一次掃描是 24 小時後，那時多半已經來不及。與其亂槍打鳥不如留紀錄</td></tr>
+      <tr><td>同一天同一位客人有兩筆預約</td><td>各發各的</td><td>合併訊息要多一套模板，而一天約兩次的客人極少見。先不做</td></tr>
+      <tr><td>時區</td><td>一律用租戶的 <code>timezone</code></td><td>「今天／明天」與 12:00 都是職人所在地的，不是伺服器的</td></tr>
+      <tr><td>訊息裡的「今天／明天」</td><td>用租戶時區換算</td><td>寫「8/4（一）14:00」客人還要自己算是不是明天。直接寫「明天 14:00」</td></tr>
+      <tr><td>測試模式</td><td>照現有機制擋掉，不真的發出去</td><td>與 <code>20260802000004_test_mode</code> 一致</td></tr>
+    </table>
+  </section>
+
+  <!-- ══ 6 ══════════════════════════════════ -->
+  <section>
+    <div class="sec-head"><div class="n">6</div><h2>定案（2026-08-03）</h2></div>
+
+    <div class="ask">
+      <div class="q"><span class="n">1</span><span>每天中午 12:00 跑一次，跟夯客一樣</span></div>
+      <div class="why">Vercel Hobby 一天只給跑一次。市場上做最大的那家也是這個做法，代表這個節奏夠用。</div>
+      <div class="choice">排程寫 <b><code>0 4 * * *</code></b>（UTC）＝ 台北 12:00。位子從壞掉的 <code>send-followup-messages</code> 換過來。</div>
+    </div>
+
+    <div class="ask">
+      <div class="q"><span class="n">2</span><span>預設開著</span></div>
+      <div class="why">職人多半不會去動預設值，而這是他付費之後最有感的功能。</div>
+      <div class="choice">每筆多 <b>1 則</b>，免費額度 200 則約等於 <b>40 筆預約</b>。要省的人自己關。</div>
+    </div>
+
+    <div class="ask">
+      <div class="q"><span class="n">3</span><span>「我無法前往」沿用現有取消流程，先問一次</span></div>
+      <div class="why">誤觸的成本是一個時段整個沒了，而問這一句走回覆訊息不計額度。</div>
+      <div class="choice">這也是<b>夯客沒有的</b>：他們的提醒訊息不給按鈕，客人要取消得自己打字說。</div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

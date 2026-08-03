@@ -7,15 +7,20 @@ import { getCurrentTenant } from '@/lib/tenant'
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
 /**
- * 自動通知的兩個設定。
+ * 自動通知的設定。
  *
  * 「有新預約也通知我」預設開著，但關掉能省下約四分之一的免費額度——
  * 職人本來就會看後台，這則對他價值最低（草稿 line-notifications.html §4）。
+ *
+ * 「行前提醒」也預設開著，理由相反：那是他付費之後最有感的一則
+ * （草稿 booking-reminders.html）。
  */
 export async function saveNotifySettings(input: {
   notifySelfOnNewBooking: boolean
   welcomeMessage: string
   testMode: boolean
+  reminderEnabled: boolean
+  reminderNote: string
 }): Promise<ActionResult> {
   const current = await getCurrentTenant()
   if (!current) return { ok: false, error: '請先登入' }
@@ -29,6 +34,8 @@ export async function saveNotifySettings(input: {
       notify_self_on_new_booking: input.notifySelfOnNewBooking,
       line_welcome_message: input.welcomeMessage.trim() || null,
       test_mode: input.testMode,
+      reminder_enabled: input.reminderEnabled,
+      reminder_note: input.reminderNote.trim() || null,
     },
     { onConflict: 'tenant_id' }
   )

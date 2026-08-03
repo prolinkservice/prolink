@@ -7,7 +7,7 @@ import type { BookingRow } from '@/lib/bookings'
 const BOOKING_FIELDS = `
   id, kind, start_at, end_at, status, source,
   quoted_price, actual_amount, payment_method, note, internal_note,
-  service_address,
+  service_address, attendance_confirmed_at,
   location_id, service_id, customer_id,
   locations(name),
   services(name),
@@ -29,6 +29,7 @@ type BookingQueryRow = {
   note: string | null
   internal_note: string | null
   service_address: string | null
+  attendance_confirmed_at: string | null
   location_id: string | null
   service_id: string | null
   customer_id: string | null
@@ -90,6 +91,7 @@ export async function fetchBookings(input: {
       location_id: row.location_id,
       location_name: one(row.locations)?.name ?? null,
       service_address: row.service_address,
+      attendance_confirmed: Boolean(row.attendance_confirmed_at),
       service_id: row.service_id,
       service_name: one(row.services)?.name ?? null,
       customer_id: row.customer_id,

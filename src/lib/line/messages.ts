@@ -231,6 +231,63 @@ export function bookingConfirmedMessage(input: {
   }
 }
 
+/**
+ * 行前提醒（規格 §6.5）。每天中午發給明天要來的客人。
+ *
+ * 四個刻意的選擇：
+ *   ① 標題寫「明天 14:00」而不是「8/4（一）14:00」——提醒訊息只要傳達「快到了」
+ *   ② **不印地址**（2026-08-03 定案）。客人上一次收到的成立通知裡就有，
+ *      而真的要去的時候他會按「開地圖」，不會照著地址自己打進導航
+ *   ③ 一定要有「我無法前往」。夯客的提醒沒有按鈕，客人想取消只能自己打字說，
+ *      而愈難開口的取消愈容易變成放鳥
+ *   ④ 「我會到場」是給職人看的。今天誰回過、誰沒回應，出門前心裡有數
+ */
+export function reminderMessage(input: {
+  booking: BookingBrief
+  whenLabel: string
+  /** 職人自己寫的叮嚀，例如「三樓沒有電梯」 */
+  note: string | null
+  mapUrl: string | null
+}): LineMessage {
+  const b = input.booking
+  return {
+    type: 'flex',
+    altText: `提醒：${input.whenLabel} 的預約`,
+    contents: bubble({
+      title: `⏰ ${input.whenLabel} 有預約`,
+      color: CLAY,
+      rows: [
+        { label: '項目', value: b.serviceName },
+        { label: '時間', value: b.when },
+        // 地點只寫名字，地址交給「開地圖」那顆按鈕
+        ...(b.locationName ? [{ label: '地點', value: b.locationName }] : []),
+        ...(input.note ? [{ label: '叮嚀', value: input.note }] : []),
+      ],
+      buttons: [
+        ...(input.mapUrl
+          ? [
+              {
+                label: '開地圖',
+                tone: 'quiet' as const,
+                action: { type: 'uri', label: '開地圖', uri: input.mapUrl },
+              },
+            ]
+          : []),
+        {
+          label: '我會到場',
+          action: { type: 'postback', label: '我會到場', data: `a=coming&b=${b.bookingId}` },
+        },
+        {
+          label: '我無法前往',
+          tone: 'quiet' as const,
+          action: { type: 'postback', label: '我無法前往', data: `a=cancel&b=${b.bookingId}` },
+        },
+      ],
+      footNote: '有事無法前往請盡早按上面的按鈕，不用不好意思',
+    }),
+  }
+}
+
 /** 職人取消時發給客人。刻意不寫原因——他填的可能是內部備註（2026-08-02 定案） */
 export function cancelledForCustomerMessage(input: {
   booking: BookingBrief

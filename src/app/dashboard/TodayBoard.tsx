@@ -209,6 +209,13 @@ export function TodayBoard({
                         放鳥 {b.customer_no_show_points} 點
                       </span>
                     )}
+                    {/* 他在行前提醒上回過「我會到場」。沒有這個標記不代表他不來，
+                        多數客人本來就不會回——所以只標有回的，不標沒回的 */}
+                    {b.attendance_confirmed && (
+                      <span className="rounded-full bg-ok-bg px-2.5 py-0.5 text-[10px] font-extrabold text-ok">
+                        已回「我會到」
+                      </span>
+                    )}
                   </div>
 
                   {/* 時長已經在左邊的刻度上，這裡不再重複。
